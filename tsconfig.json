@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "#core/*": ["src/core/*"],
+      "#modules/*": ["src/modules/*"],
+      "#constants/*": ["src/common/constants/*"],
+      "#errors/*": ["src/common/errors/*"],
+      "#helpers/*": ["src/common/helpers/*"],
+      "#aws/*": ["src/core/aws/*"],
+      "#middlewares/*": ["src/core/middlewares/*"],
+      "#utils/*": ["src/common/utils/*"],
+      "#sse/*": ["src/core/sse/*"],
+      "#crons/*": ["src/crons/*"]
+    },
+    "typeRoots": ["./src/common/types", "./node_modules/@types"]
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
