@@ -30,6 +30,16 @@ enum ApprovalStatus {
   REJECTED
 }
 
+enum ResidentStatus {
+  RESIDENCE
+  NO_RESIDENCE
+}
+
+enum IsHouseholder {
+  HOUSEHOLDER
+  MEMBER
+}
+
 enum BoardType {
   NOTICE
   POLL
@@ -113,13 +123,13 @@ model User {
 
 model Apartment {
   id   String @id @default(uuid())
-  name String
+  name String @unique
 
   address     String
   description String?
 
   // apartmentManagementNumber로 쓰이는 곳도 있음
-  officeNumber     String? // 관리사무소 번호
+  officeNumber String? // 관리사무소 번호
 
   startComplexNumber String // 아파트 단지 시작번호
   endComplexNumber   String // 아파트 단지 끝번호
@@ -148,15 +158,17 @@ model Resident {
   id             String         @id @default(uuid())
   name           String
   contact        String
-  dong           Int
-  ho             Int
-  householdType  String // 세대주/세대원 -- ENUM?
+  building       String
+  unitNumber     String
   isRegistered   Boolean        @default(false)
   approvalStatus ApprovalStatus @default(PENDING)
+  residentStatus ResidentStatus @default(RESIDENCE)
+  isHouseholder  IsHouseholder  @default(MEMBER)
   createdAt      DateTime       @default(now())
 
-  userId      String?   @unique
-  user        User?     @relation(fields: [userId], references: [id])
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
+
   apartmentId String
   apartment   Apartment @relation(fields: [apartmentId], references: [id])
 }
@@ -176,7 +188,7 @@ model Board {
   polls      Poll[]
 
   // 아파트별 게시판 1개 보장
-  @@unique([apartmentId, type]) 
+  @@unique([apartmentId, type])
 }
 
 model Notice {
@@ -194,9 +206,6 @@ model Notice {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -217,15 +226,8 @@ model Complaint {
 
   status ComplaintStatus @default(PENDING)
 
-  // API 상태 수정에서 제공
-  dong Int?
-  ho   Int?
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
 
   userId String
   user   User   @relation("ComplaintUser", fields: [userId], references: [id])
@@ -247,9 +249,6 @@ model Poll {
   buildingPermission Int      @default(0)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
-
-  apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -338,8 +337,8 @@ model Event {
   noticeId String? @unique
   notice   Notice? @relation(fields: [noticeId], references: [id])
 
-  pollId   String? @unique
-  poll     Poll?   @relation(fields: [pollId], references: [id])
+  pollId String? @unique
+  poll   Poll?   @relation(fields: [pollId], references: [id])
 
   // noticeId와 pollId 중 하나만 값이 존재하도록 보장(XOR)
   @@check("((noticeId IS NULL AND pollId IS NOT NULL) OR (noticeId IS NOT NULL AND pollId IS NULL))")
