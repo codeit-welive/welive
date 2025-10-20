@@ -17,7 +17,7 @@
       "#helpers/*": ["src/common/helpers/*"],
       "#aws/*": ["src/core/aws/*"],
       "#middlewares/*": ["src/core/middlewares/*"],
-      "#utils/*": ["src/common/utils/*"],
+      "#utils/*": ["src/core/utils/*"],
       "#sse/*": ["src/core/sse/*"],
       "#crons/*": ["src/crons/*"]
     },
