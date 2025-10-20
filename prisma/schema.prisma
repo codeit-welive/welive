@@ -109,9 +109,8 @@ model User {
   createdAt  DateTime   @default(now())
   joinStatus JoinStatus @default(PENDING)
 
-  // SuperAdmmin은 Apartment 관련 정보를 받지 않기에, 백엔드 로직에서 User/Admin에 대해서 필수 처리
-  apartmentId   String?
-  apartment     Apartment?     @relation(fields: [apartmentId], references: [id])
+  apartment Apartment? @relation("ApartmentAdmin")
+
   resident      Resident?
   notifications Notification[]
   complaints    Complaint[]    @relation("ComplaintUser")
@@ -142,8 +141,9 @@ model Apartment {
 
   createdAt DateTime @default(now())
 
-  adminId    String?     @unique
-  admin      User?       @relation(fields: [adminId], references: [id])
+  adminId String? @unique
+  admin   User?   @relation("ApartmentAdmin", fields: [adminId], references: [id])
+
   residents  Resident[]
   notices    Notice[]
   complaints Complaint[]
@@ -186,6 +186,7 @@ model Board {
   notices    Notice[]
   complaints Complaint[]
   polls      Poll[]
+  Comment    Comment[]
 
   // 아파트별 게시판 1개 보장
   @@unique([apartmentId, type])
@@ -213,7 +214,10 @@ model Notice {
   boardId String
   board   Board  @relation(fields: [boardId], references: [id])
 
-  comments Comment[]
+  comments    Comment[]
+  Apartment   Apartment? @relation(fields: [apartmentId], references: [id])
+  apartmentId String?
+  Event       Event?
 }
 
 model Complaint {
@@ -235,7 +239,9 @@ model Complaint {
   boardId String
   board   Board  @relation(fields: [boardId], references: [id])
 
-  comments Comment[]
+  comments    Comment[]
+  Apartment   Apartment? @relation(fields: [apartmentId], references: [id])
+  apartmentId String?
 }
 
 model Poll {
@@ -256,8 +262,11 @@ model Poll {
   boardId String
   board   Board  @relation(fields: [boardId], references: [id])
 
-  options PollOption[]
-  votes   PollVote[]
+  options     PollOption[]
+  votes       PollVote[]
+  Apartment   Apartment?   @relation(fields: [apartmentId], references: [id])
+  apartmentId String?
+  Event       Event?
 }
 
 // ------------------------------
@@ -300,9 +309,13 @@ model Comment {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  boardType BoardType // 응답/요청 DTO
-  boardId   String
-  board     Board     @relation(fields: [boardId], references: [id])
+  boardType   BoardType // 응답/요청 DTO
+  boardId     String
+  board       Board      @relation(fields: [boardId], references: [id])
+  Notice      Notice?    @relation(fields: [noticeId], references: [id])
+  noticeId    String?
+  Complaint   Complaint? @relation(fields: [complaintId], references: [id])
+  complaintId String?
 }
 
 model Notification {
@@ -334,12 +347,10 @@ model Event {
   apartmentId String
   apartment   Apartment @relation(fields: [apartmentId], references: [id])
 
+  // notice 또는 poll 중 하나만 존재하게 백엔드 로직에서 처리
   noticeId String? @unique
   notice   Notice? @relation(fields: [noticeId], references: [id])
 
   pollId String? @unique
   poll   Poll?   @relation(fields: [pollId], references: [id])
-
-  // noticeId와 pollId 중 하나만 값이 존재하도록 보장(XOR)
-  @@check("((noticeId IS NULL AND pollId IS NOT NULL) OR (noticeId IS NOT NULL AND pollId IS NULL))")
 }
