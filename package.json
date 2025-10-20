@@ -22,11 +22,11 @@
     "test:watch": "cross-env NODE_ENV=test jest --watch",
     "test:cov": "cross-env NODE_ENV=test jest --coverage",
     "_section5": "Development",
-    "dev:be": "cross-env NODE_ENV=development nodemon --watch src --ext ts --exec \"ts-node -r tsconfig-paths/register src/core/server.ts\"",
+    "dev:be": "cross-env NODE_ENV=development nodemon --watch src --ext ts --exec \"ts-node -r tsconfig-paths/register src/core/index.ts\"",
     "dev:fe": "cross-env NODE_ENV=development npm run dev --prefix frontend",
     "dev": "concurrently \"npm run dev:be\" \"npm run dev:fe\"",
     "_section6": "Production",
-    "start:be": "cross-env NODE_ENV=production pm2 start dist/core/server.js --name welive-be",
+    "start:be": "cross-env NODE_ENV=production pm2 start dist/core/index.js --name welive-be",
     "start:fe": "cross-env NODE_ENV=production pm2 start npm --name welive-fe -- run start --prefix frontend",
     "start": "npm run start:be && npm run start:fe",
     "stop": "pm2 delete welive-be || true && pm2 delete welive-fe || true"
@@ -110,7 +110,7 @@
     "#helpers/*": "./src/common/helpers/*",
     "#aws/*": "./src/core/aws/*",
     "#middlewares/*": "./src/core/middlewares/*",
-    "#utils/*": "./src/common/utils/*",
+    "#utils/*": "./src/core/utils/*",
     "#sse/*": "./src/core/sse/*",
     "#crons/*": "./src/crons/*"
   },
