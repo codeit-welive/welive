@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { COMPLAINT_VALIDATION } from '#constants/complaint';
 
 export const complaintCreateSchema = z.object({
-  userId: z.string().uuid({ message: '유효한 사용자 ID가 아닙니다.' }),
+  userId: z.uuid({ message: '유효한 사용자 ID가 아닙니다.' }),
   title: z
     .string()
     .min(
@@ -25,8 +25,8 @@ export const complaintCreateSchema = z.object({
       `내용은 최대 ${COMPLAINT_VALIDATION.CONTENT_MAX_LENGTH}자까지 가능합니다.`
     ),
   isPublic: z.boolean().default(false),
-  boardId: z.string().uuid({ version: 'v4', message: '유효한 게시판 ID가 아닙니다.' }),
-  status: z.nativeEnum(ComplaintStatus).default(ComplaintStatus.PENDING),
+  boardId: z.uuid({ message: '유효한 게시판 ID가 아닙니다.' }),
+  status: z.enum(ComplaintStatus).default(ComplaintStatus.PENDING),
 });
 
 export type ComplaintCreateDto = z.infer<typeof complaintCreateSchema>;
