@@ -1,7 +1,7 @@
 import ApiError from '#errors/ApiError';
 import { BoardType } from '@prisma/client';
 import * as ComplaintRepo from './complaints.repo.js';
-import { ComplaintCreateDto } from './dto/complaints.dto.js';
+import { ComplaintCreateDto, ComplaintPatchDto } from './dto/complaints.dto.js';
 import { ComplaintListQuery } from './dto/querys.dto.js';
 
 const validateComplaintBoard = async (userId: string) => {
@@ -85,5 +85,35 @@ export const getComplaint = async (complaintId: string) => {
       updatedAt: comment.updatedAt,
       writerName: comment.user.name,
     })),
+  };
+};
+
+export const patchComplaint = async (complaintId: string, loginUserId: string, data: ComplaintPatchDto) => {
+  if (Object.keys(data).length === 0) {
+    throw ApiError.badRequest('수정할 내용이 없습니다.');
+  }
+  const authorId = await ComplaintRepo.getUserIdByComplaintId(complaintId);
+  if (!authorId) {
+    throw ApiError.notFound('민원을 찾을 수 없습니다.');
+  }
+
+  if (authorId.userId !== loginUserId) {
+    throw ApiError.forbidden('민원을 수정할 권한이 없습니다');
+  }
+
+  const complaint = await ComplaintRepo.patch(complaintId, data);
+  return {
+    complaintId: complaint.id,
+    userId: complaint.userId,
+    title: complaint.title,
+    writerName: complaint.user.name,
+    createdAt: complaint.createdAt,
+    updatedAt: complaint.updatedAt,
+    isPublic: complaint.isPublic,
+    viewsCount: complaint.viewsCount,
+    commentsCount: complaint._count.comments,
+    status: complaint.status,
+    dong: complaint.user.resident!.building,
+    ho: complaint.user.resident!.unitNumber,
   };
 };

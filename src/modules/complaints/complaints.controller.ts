@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { ComplaintCreateDto } from './dto/complaints.dto';
+import { ComplaintCreateDto, ComplaintPatchDto } from './dto/complaints.dto';
 import { ComplaintListQuery } from './dto/querys.dto';
 import * as complaintService from './complaints.service';
 
@@ -28,6 +28,18 @@ export const getComplaintHandler = async (req: Request, res: Response, next: Nex
   try {
     const complaintId = req.params.complaintId;
     const complaint = await complaintService.getComplaint(complaintId);
+    res.status(200).json(complaint);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const patchComplaintHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const complaintId = req.params.complaintId;
+    const userId = req.user.id;
+    const data = res.locals.validatedBody as ComplaintPatchDto;
+    const complaint = await complaintService.patchComplaint(complaintId, userId, data);
     res.status(200).json(complaint);
   } catch (err) {
     next(err);

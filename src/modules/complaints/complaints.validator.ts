@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import forwardZodError from '#utils/zod';
-import { complaintCreateSchema } from './dto/complaints.dto';
+import { complaintCreateSchema, complaintPatchSchema } from './dto/complaints.dto';
 import { complaintListQuerySchema } from './dto/querys.dto';
 import { complaintParamsSchema } from './dto/params.dto';
 
@@ -29,12 +29,23 @@ export const validateComplaintListQuery = async (req: Request, res: Response, ne
   }
 };
 
-export const validateConmplaintParams = async (req: Request, res: Response, next: NextFunction) => {
+export const validateComplaintParams = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { complaintId } = req.params;
     await complaintParamsSchema.parseAsync(complaintId);
     next();
   } catch (err) {
     forwardZodError(err, '민원 상세 조회', next);
+  }
+};
+
+export const validateComplaintPatch = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const validatedBody = await complaintPatchSchema.parseAsync(req.body);
+
+    res.locals.validatedBody = validatedBody;
+    next();
+  } catch (err) {
+    forwardZodError(err, '민원 수정', next);
   }
 };

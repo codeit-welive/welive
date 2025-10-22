@@ -1,5 +1,5 @@
 import prisma from '../../core/prisma.js';
-import { ComplaintCreateDto } from './dto/complaints.dto.js';
+import { ComplaintCreateDto, ComplaintPatchDto } from './dto/complaints.dto.js';
 import { BoardType } from '@prisma/client';
 
 export const getComplaintBoardIdByUserId = async (userId: string) => {
@@ -112,6 +112,48 @@ export const getById = async (complaintId: string) => {
             select: {
               id: true,
               name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
+export const getUserIdByComplaintId = async (complaintId: string) => {
+  return await prisma.complaint.findUnique({
+    where: { id: complaintId },
+    select: {
+      userId: true,
+    },
+  });
+};
+
+export const patch = async (complaintId: string, data: ComplaintPatchDto) => {
+  return await prisma.complaint.update({
+    where: { id: complaintId },
+    data,
+    select: {
+      id: true,
+      userId: true,
+      title: true,
+      status: true,
+      isPublic: true,
+      createdAt: true,
+      updatedAt: true,
+      viewsCount: true,
+      _count: {
+        select: {
+          comments: true,
+        },
+      },
+      user: {
+        select: {
+          name: true,
+          resident: {
+            select: {
+              building: true, // dong
+              unitNumber: true, // ho
             },
           },
         },

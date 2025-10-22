@@ -29,4 +29,31 @@ export const complaintCreateSchema = z.object({
   status: z.enum(ComplaintStatus).default(ComplaintStatus.PENDING),
 });
 
+export const complaintPatchSchema = z
+  .object({
+    title: z
+      .string()
+      .min(
+        COMPLAINT_VALIDATION.TITLE_MIN_LENGTH,
+        `제목은 최소 ${COMPLAINT_VALIDATION.TITLE_MIN_LENGTH}자 이상이어야 합니다.`
+      )
+      .max(
+        COMPLAINT_VALIDATION.TITLE_MAX_LENGTH,
+        `제목은 최대 ${COMPLAINT_VALIDATION.TITLE_MAX_LENGTH}자까지 가능합니다.`
+      ),
+    content: z
+      .string()
+      .min(
+        COMPLAINT_VALIDATION.CONTENT_MIN_LENGTH,
+        `내용은 최소 ${COMPLAINT_VALIDATION.CONTENT_MIN_LENGTH}자 이상이어야 합니다.`
+      )
+      .max(
+        COMPLAINT_VALIDATION.CONTENT_MAX_LENGTH,
+        `내용은 최대 ${COMPLAINT_VALIDATION.CONTENT_MAX_LENGTH}자까지 가능합니다.`
+      ),
+    isPublic: z.boolean(),
+  })
+  .partial();
+
 export type ComplaintCreateDto = z.infer<typeof complaintCreateSchema>;
+export type ComplaintPatchDto = z.infer<typeof complaintPatchSchema>;
