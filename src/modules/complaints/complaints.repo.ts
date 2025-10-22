@@ -32,8 +32,8 @@ export const create = async (data: ComplaintCreateDto) => {
   });
 };
 
-export const getList = (boardId: string, page: number, limit: number) => {
-  return prisma.complaint.findMany({
+export const getList = async (boardId: string, page: number, limit: number) => {
+  return await prisma.complaint.findMany({
     where: { boardId },
     select: {
       id: true,
@@ -67,8 +67,55 @@ export const getList = (boardId: string, page: number, limit: number) => {
   });
 };
 
-export const getCount = (boardId: string) => {
-  return prisma.complaint.count({
+export const getCount = async (boardId: string) => {
+  return await prisma.complaint.count({
     where: { boardId },
+  });
+};
+
+export const getById = async (complaintId: string) => {
+  return await prisma.complaint.findUnique({
+    where: { id: complaintId },
+    select: {
+      id: true,
+      userId: true,
+      title: true,
+      status: true,
+      isPublic: true,
+      createdAt: true,
+      updatedAt: true,
+      viewsCount: true,
+      content: true,
+      _count: {
+        select: {
+          comments: true,
+        },
+      },
+      user: {
+        select: {
+          name: true,
+          resident: {
+            select: {
+              building: true, // dong
+              unitNumber: true, // ho
+            },
+          },
+        },
+      },
+      comments: {
+        select: {
+          id: true,
+          content: true,
+          createdAt: true,
+          updatedAt: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
   });
 };

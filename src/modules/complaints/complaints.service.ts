@@ -1,7 +1,8 @@
 import ApiError from '#errors/ApiError';
+import { BoardType } from '@prisma/client';
 import * as ComplaintRepo from './complaints.repo.js';
 import { ComplaintCreateDto } from './dto/complaints.dto.js';
-import { ComplaintListQuery } from './dto/query.dto.js';
+import { ComplaintListQuery } from './dto/querys.dto.js';
 
 const validateComplaintBoard = async (userId: string) => {
   // 1. 게시판 검증
@@ -52,5 +53,37 @@ export const getComplaintList = async (userId: string, query: ComplaintListQuery
       ho: complaint.user.resident!.unitNumber,
     })),
     totalCount,
+  };
+};
+
+export const getComplaint = async (complaintId: string) => {
+  const complaint = await ComplaintRepo.getById(complaintId);
+
+  if (!complaint) {
+    throw ApiError.notFound('민원을 찾을 수 없습니다.');
+  }
+  return {
+    complaintId: complaint.id,
+    userId: complaint.userId,
+    title: complaint.title,
+    writerName: complaint.user.name,
+    createdAt: complaint.createdAt,
+    updatedAt: complaint.updatedAt,
+    isPublic: complaint.isPublic,
+    viewsCount: complaint.viewsCount,
+    commentsCount: complaint._count.comments,
+    status: complaint.status,
+    dong: complaint.user.resident!.building,
+    ho: complaint.user.resident!.unitNumber,
+    content: complaint.content,
+    boardType: BoardType.COMPLAINT,
+    comments: complaint.comments.map((comment) => ({
+      id: comment.id,
+      userId: comment.user.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      writerName: comment.user.name,
+    })),
   };
 };

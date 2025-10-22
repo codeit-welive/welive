@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { ComplaintCreateDto } from './dto/complaints.dto';
-import { ComplaintListQuery } from './dto/query.dto';
+import { ComplaintListQuery } from './dto/querys.dto';
 import * as complaintService from './complaints.service';
 
 export const createComplaintHandler = async (_req: Request, res: Response, next: NextFunction) => {
@@ -19,6 +19,16 @@ export const getComplaintListHandler = async (req: Request, res: Response, next:
     const query = res.locals.validatedQuery as ComplaintListQuery;
     const result = await complaintService.getComplaintList(userId, query);
     res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getComplaintHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const complaintId = req.params.complaintId;
+    const complaint = await complaintService.getComplaint(complaintId);
+    res.status(200).json(complaint);
   } catch (err) {
     next(err);
   }
