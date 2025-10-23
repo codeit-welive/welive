@@ -17,7 +17,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 
 import routes from '#core/router';
-import env, { CORS_ORIGINS } from '#core/env';
+import { CORS_ORIGINS } from '#core/env';
 import { errorHandler } from '#middlewares/errorHandler';
 import ApiError from '#errors/ApiError';
 
@@ -40,7 +40,7 @@ app.use(
         'default-src': ["'self'"],
         'script-src': ["'self'", "'unsafe-inline'"],
         'style-src': ["'self'", "'unsafe-inline'"],
-        'img-src': ["'self'", 'data:', 'https:', ...(env.NODE_ENV !== 'production' ? ['http:', 'blob:'] : [])],
+        'img-src': ["'self'", 'data:', 'https:', ...(process.env.NODE_ENV !== 'production' ? ['http:', 'blob:'] : [])],
         'object-src': ["'none'"],
         'frame-ancestors': ["'none'"],
       },
