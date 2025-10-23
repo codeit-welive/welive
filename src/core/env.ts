@@ -7,8 +7,6 @@ load();
  * 유틸 함수
  */
 const trimTrailingSlash = (s: string) => s.replace(/\/+$/, '');
-const trimLeadingSlash = (s: string) => s.replace(/^\/+/, '');
-const joinUrl = (a: string, b: string) => `${trimTrailingSlash(a)}/${trimLeadingSlash(b)}`;
 
 /**
  * RUNTIME FLAGS
@@ -89,9 +87,21 @@ export const APP_ORIGIN = IS_DEV && env.BASE_URL_DEV ? env.BASE_URL_DEV : env.BA
 export const FRONT_ORIGIN = IS_DEV && env.FRONT_URL_DEV ? env.FRONT_URL_DEV : env.FRONT_URL;
 
 /**
+ * AWS & FILE URL CONFIG
+ */
+type EnvWithAws = typeof env & {
+  AWS_ACCESS_KEY_ID?: string;
+  AWS_SECRET_ACCESS_KEY?: string;
+  AWS_REGION?: string;
+  AWS_S3_BUCKET_NAME?: string;
+  AWS_S3_BASE_URL?: string;
+};
+
+/**
  * FILE URL
  */
-const rawFileBase = (IS_DEV ? env.FILE_BASE_URL_DEV : env.FILE_BASE_URL) || (env as any).AWS_S3_BASE_URL;
+const rawFileBase = (IS_DEV ? env.FILE_BASE_URL_DEV : env.FILE_BASE_URL) || (env as EnvWithAws).AWS_S3_BASE_URL;
+
 export const FILE_BASE_URL = rawFileBase
   ? trimTrailingSlash(rawFileBase)
   : IS_PROD
@@ -105,11 +115,11 @@ export const FILE_BASE_URL = rawFileBase
  */
 export const AWS_CONFIG = IS_PROD
   ? {
-      accessKeyId: (env as any).AWS_ACCESS_KEY_ID,
-      secretAccessKey: (env as any).AWS_SECRET_ACCESS_KEY,
-      region: (env as any).AWS_REGION,
-      bucketName: (env as any).AWS_S3_BUCKET_NAME,
-      baseUrl: (env as any).AWS_S3_BASE_URL,
+      accessKeyId: (env as EnvWithAws).AWS_ACCESS_KEY_ID,
+      secretAccessKey: (env as EnvWithAws).AWS_SECRET_ACCESS_KEY,
+      region: (env as EnvWithAws).AWS_REGION,
+      bucketName: (env as EnvWithAws).AWS_S3_BUCKET_NAME,
+      baseUrl: (env as EnvWithAws).AWS_S3_BASE_URL,
       enabled: true,
     }
   : { enabled: false };

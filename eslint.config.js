@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-plugin-prettier';
 
 export default tseslint.config(
-  { ignores: ['node_modules/**', 'dist/**',] },
+  { ignores: ['node_modules/**', 'dist/**'] },
 
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -53,7 +53,7 @@ export default tseslint.config(
         {
           selector: 'variable',
           types: ['boolean'],
-          format: ['camelCase'],
+          format: ['camelCase', 'UPPER_CASE'],
         },
       ],
 
