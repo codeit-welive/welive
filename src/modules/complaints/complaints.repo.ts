@@ -74,49 +74,62 @@ export const getCount = async (boardId: string) => {
 };
 
 export const getById = async (complaintId: string) => {
-  return await prisma.complaint.findUnique({
-    where: { id: complaintId },
-    select: {
-      id: true,
-      userId: true,
-      title: true,
-      status: true,
-      isPublic: true,
-      createdAt: true,
-      updatedAt: true,
-      viewsCount: true,
-      content: true,
-      _count: {
-        select: {
-          comments: true,
+  return await prisma.$transaction(async (tx) => {
+    // 1. 조회수 증가
+    await tx.complaint.update({
+      where: { id: complaintId },
+      data: {
+        viewsCount: {
+          increment: 1,
         },
       },
-      user: {
-        select: {
-          name: true,
-          resident: {
-            select: {
-              building: true, // dong
-              unitNumber: true, // ho
+    });
+
+    // 2. 증가된 데이터 조회
+    return await tx.complaint.findUnique({
+      where: { id: complaintId },
+      select: {
+        id: true,
+        userId: true,
+        title: true,
+        status: true,
+        isPublic: true,
+        createdAt: true,
+        updatedAt: true,
+        viewsCount: true,
+        content: true,
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            resident: {
+              select: {
+                building: true, // dong
+                unitNumber: true, // ho
+              },
+            },
+          },
+        },
+        comments: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
           },
         },
       },
-      comments: {
-        select: {
-          id: true,
-          content: true,
-          createdAt: true,
-          updatedAt: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
-    },
+    });
   });
 };
 
