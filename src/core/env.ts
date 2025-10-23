@@ -11,9 +11,17 @@ const trimLeadingSlash = (s: string) => s.replace(/^\/+/, '');
 const joinUrl = (a: string, b: string) => `${trimTrailingSlash(a)}/${trimLeadingSlash(b)}`;
 
 /**
+ * RUNTIME FLAGS
+ */
+const NODE_ENV = process.env.NODE_ENV ?? 'development';
+const IS_PROD = NODE_ENV === 'production';
+const IS_DEV = NODE_ENV === 'development';
+const IS_TEST = NODE_ENV === 'test';
+
+/**
  * 환경 변수 스키마
  */
-const schema = z.object({
+const baseSchema = z.object({
   // DATABASE
   DATABASE_URL: z.string().url(),
   DATABASE_URL_DEV: z.string().url().optional(),
@@ -30,7 +38,7 @@ const schema = z.object({
   FRONT_URL: z.string().url(),
   FRONT_URL_DEV: z.string().url().optional(),
 
-  // FILE URL (S3 기반)
+  // FILE URL (optional in dev/test)
   FILE_BASE_URL: z.string().url().optional(),
   FILE_BASE_URL_DEV: z.string().url().optional(),
 
@@ -41,14 +49,28 @@ const schema = z.object({
   REFRESH_TOKEN_SECRET: z.string().min(10),
   INVITATION_TOKEN_SECRET: z.string().min(10),
   PASSWORD_PEPPER: z.string().min(10),
-
-  // AWS S3
-  AWS_ACCESS_KEY_ID: z.string().min(10),
-  AWS_SECRET_ACCESS_KEY: z.string().min(10),
-  AWS_REGION: z.string().min(2),
-  AWS_S3_BUCKET_NAME: z.string().min(3),
-  AWS_S3_BASE_URL: z.string().url(),
 });
+
+/**
+ * AWS 스키마(production)
+ */
+const awsSchema = IS_PROD
+  ? z.object({
+      AWS_ACCESS_KEY_ID: z.string().min(10),
+      AWS_SECRET_ACCESS_KEY: z.string().min(10),
+      AWS_REGION: z.string().min(2),
+      AWS_S3_BUCKET_NAME: z.string().min(3),
+      AWS_S3_BASE_URL: z.string().url(),
+    })
+  : z.object({
+      AWS_ACCESS_KEY_ID: z.string().optional(),
+      AWS_SECRET_ACCESS_KEY: z.string().optional(),
+      AWS_REGION: z.string().optional(),
+      AWS_S3_BUCKET_NAME: z.string().optional(),
+      AWS_S3_BASE_URL: z.string().optional(),
+    });
+
+const schema = baseSchema.merge(awsSchema);
 
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
@@ -60,36 +82,37 @@ if (!parsed.success) {
 const env = parsed.data;
 
 /**
- * RUNTIME FLAGS
+ * DATABASE / ORIGINS
  */
-export const IS_DEV = env.NODE_ENV === 'development';
-export const IS_PROD = env.NODE_ENV === 'production';
-export const IS_TEST = env.NODE_ENV === 'test';
+export const DB_URL = IS_DEV && env.DATABASE_URL_DEV ? env.DATABASE_URL_DEV : env.DATABASE_URL;
+export const APP_ORIGIN = IS_DEV && env.BASE_URL_DEV ? env.BASE_URL_DEV : env.BASE_URL;
+export const FRONT_ORIGIN = IS_DEV && env.FRONT_URL_DEV ? env.FRONT_URL_DEV : env.FRONT_URL;
 
 /**
- * DATABASE
+ * FILE URL
  */
-export const DB_URL = trimTrailingSlash(IS_DEV && env.DATABASE_URL_DEV ? env.DATABASE_URL_DEV : env.DATABASE_URL);
+const rawFileBase = (IS_DEV ? env.FILE_BASE_URL_DEV : env.FILE_BASE_URL) || (env as any).AWS_S3_BASE_URL;
+export const FILE_BASE_URL = rawFileBase
+  ? trimTrailingSlash(rawFileBase)
+  : IS_PROD
+    ? (() => {
+        throw new Error('❌ FILE_BASE_URL or AWS_S3_BASE_URL is required in production.');
+      })()
+    : `http://localhost:${env.PORT}/uploads`;
 
 /**
- * API ORIGIN
+ * AWS CONFIG (only enabled in production)
  */
-export const APP_ORIGIN = trimTrailingSlash(IS_DEV && env.BASE_URL_DEV ? env.BASE_URL_DEV : env.BASE_URL);
-
-/**
- * FRONT ORIGIN
- */
-export const FRONT_ORIGIN = trimTrailingSlash(IS_DEV && env.FRONT_URL_DEV ? env.FRONT_URL_DEV : env.FRONT_URL);
-
-/**
- * FILE BASE URL (S3 기준)
- */
-const rawFileBase = (IS_DEV ? env.FILE_BASE_URL_DEV : env.FILE_BASE_URL) || env.AWS_S3_BASE_URL;
-export const FILE_BASE_URL = trimTrailingSlash(rawFileBase);
-
-if (IS_PROD && !FILE_BASE_URL) {
-  console.warn('⚠️ FILE_BASE_URL is empty in production. Public file URLs may be broken.');
-}
+export const AWS_CONFIG = IS_PROD
+  ? {
+      accessKeyId: (env as any).AWS_ACCESS_KEY_ID,
+      secretAccessKey: (env as any).AWS_SECRET_ACCESS_KEY,
+      region: (env as any).AWS_REGION,
+      bucketName: (env as any).AWS_S3_BUCKET_NAME,
+      baseUrl: (env as any).AWS_S3_BASE_URL,
+      enabled: true,
+    }
+  : { enabled: false };
 
 /**
  * CORS ORIGINS
@@ -99,15 +122,5 @@ export const CORS_ORIGINS = env.CORS_ORIGIN.split(',')
   .filter(Boolean);
 if (!CORS_ORIGINS.includes(FRONT_ORIGIN)) CORS_ORIGINS.push(FRONT_ORIGIN);
 
-/**
- * AWS S3
- */
-export const AWS_CONFIG = {
-  accessKeyId: env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-  region: env.AWS_REGION,
-  bucketName: env.AWS_S3_BUCKET_NAME,
-  baseUrl: env.AWS_S3_BASE_URL,
-};
-
+export { IS_DEV, IS_PROD, IS_TEST };
 export default env;
