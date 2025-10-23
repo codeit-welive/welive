@@ -1,5 +1,5 @@
 import { UserRole } from '@prisma/client';
-import { NextFunction, Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import ApiError from '#errors/ApiError';
 
 const requireRole = (allowedRole: UserRole[]) => {
