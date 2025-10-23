@@ -14,7 +14,7 @@ export const extractToken = (authHeader: AuthHeaderDto): string => {
   return authHeader.authorization.slice(7);
 };
 
-export const generateAccessToken = (user: { id: string, role: UserRole }): string => {
+export const generateAccessToken = (user: { id: string; role: UserRole }): string => {
   try {
     return jwt.sign({ id: user.id, role: user.role }, ACCESS_SECRET, { expiresIn: '1h' });
   } catch (err) {
