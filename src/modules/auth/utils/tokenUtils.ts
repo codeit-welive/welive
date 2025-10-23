@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import env from '#core/env';
 import type { DecodedToken, AuthHeaderDto } from '#modules/auth/dto/token.dto';
 import ApiError from '#errors/ApiError';
+import { UserRole } from '@prisma/client';
 
 const ACCESS_SECRET = env.ACCESS_TOKEN_SECRET;
 const REFRESH_SECRET = env.REFRESH_TOKEN_SECRET;
@@ -13,9 +14,9 @@ export const extractToken = (authHeader: AuthHeaderDto): string => {
   return authHeader.authorization.slice(7);
 };
 
-export const generateAccessToken = (user: { id: number }): string => {
+export const generateAccessToken = (user: { id: string; role: UserRole }): string => {
   try {
-    return jwt.sign({ id: user.id }, ACCESS_SECRET, { expiresIn: '1h' });
+    return jwt.sign({ id: user.id, role: user.role }, ACCESS_SECRET, { expiresIn: '1h' });
   } catch (err) {
     throw new ApiError(500, '❌ Access Token 생성에 실패했습니다.');
   }
@@ -25,11 +26,11 @@ export const verifyAccessToken = (token: string): DecodedToken => {
   try {
     return jwt.verify(token, ACCESS_SECRET) as DecodedToken;
   } catch {
-    throw new ApiError(403, '❌ Access Token이 유효하지 않습니다.');
+    throw new ApiError(401, '❌ Access Token이 유효하지 않습니다.');
   }
 };
 
-export const generateRefreshToken = (user: { id: number }): string => {
+export const generateRefreshToken = (user: { id: string }): string => {
   try {
     return jwt.sign({ id: user.id }, REFRESH_SECRET, { expiresIn: '14d' });
   } catch (err) {

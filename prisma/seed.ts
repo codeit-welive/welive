@@ -104,6 +104,7 @@ const createAdminAndApartment = async () => {
 const RESIDENT_IDS = [uuid(), uuid()];
 
 const createResidents = async () => {
+  // 1) 유저 생성
   await prisma.user.createMany({
     data: [
       {
@@ -131,9 +132,10 @@ const createResidents = async () => {
     ],
   });
 
-  await prisma.resident.createMany({
-    data: [
-      {
+  // 2) Resident 생성
+  const residents = await prisma.$transaction([
+    prisma.resident.create({
+      data: {
         name: '주민일',
         contact: '01022222222',
         building: '101',
@@ -143,9 +145,10 @@ const createResidents = async () => {
         residentStatus: 'RESIDENCE',
         isHouseholder: 'HOUSEHOLDER',
         apartmentId: APT_ID,
-        userId: RESIDENT_IDS[0],
       },
-      {
+    }),
+    prisma.resident.create({
+      data: {
         name: '주민이',
         contact: '01033333333',
         building: '102',
@@ -155,9 +158,18 @@ const createResidents = async () => {
         residentStatus: 'RESIDENCE',
         isHouseholder: 'MEMBER',
         apartmentId: APT_ID,
-        userId: RESIDENT_IDS[1],
       },
-    ],
+    }),
+  ]);
+
+  // 3) User와 Resident 연결
+  await prisma.user.update({
+    where: { id: RESIDENT_IDS[0] },
+    data: { residentId: residents[0].id },
+  });
+  await prisma.user.update({
+    where: { id: RESIDENT_IDS[1] },
+    data: { residentId: residents[1].id },
   });
 };
 

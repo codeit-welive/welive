@@ -53,7 +53,7 @@ export default tseslint.config(
         {
           selector: 'variable',
           types: ['boolean'],
-          format: ['camelCase'],
+          format: ['camelCase', 'UPPER_CASE'],
         },
       ],
 
