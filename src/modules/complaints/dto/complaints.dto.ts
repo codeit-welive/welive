@@ -1,6 +1,6 @@
 import { ComplaintStatus } from '@prisma/client';
 import { z } from 'zod';
-import { COMPLAINT_VALIDATION } from '#constants/complaint';
+import { COMPLAINT_VALIDATION } from '#constants/complaint.constant';
 
 export const complaintCreateSchema = z.object({
   userId: z.uuid({ message: '유효한 사용자 ID가 아닙니다.' }),
