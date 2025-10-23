@@ -1,3 +1,35 @@
+/**
+ * @file 환경 변수 사용 예시
+ * @description
+ * #core/env 모듈에서 검증된 환경 변수를 불러와 사용하는 방법입니다.
+ * 필요한 값만 개별 import 하거나, env 전체를 기본 import로 가져올 수 있습니다.
+ *
+ * 예시:
+ * ```ts
+ * import {
+ *   DATABASE_URL,
+ *   BASE_URL,
+ *   FRONT_URL,
+ *   FILE_BASE_URL,
+ *   AWS_CONFIG,
+ *   CORS_ORIGINS,
+ * } from '#core/env';
+ *
+ * // 또는
+ * // import env from '#core/env';
+ *
+ * console.log('데이터베이스 연결 URL:', DATABASE_URL);
+ * console.log('API 서버 ORIGIN:', BASE_URL);
+ * console.log('프론트엔드 ORIGIN:', FRONT_URL);
+ * console.log('파일 기본 경로:', FILE_BASE_URL);
+ * console.log('CORS 허용 목록:', CORS_ORIGINS);
+ *
+ * if (AWS_CONFIG.enabled) {
+ *   console.log('S3 버킷 URL:', AWS_CONFIG.baseUrl);
+ * }
+ * ```
+ */
+
 import { config as load } from 'dotenv';
 import { z } from 'zod';
 
@@ -13,8 +45,6 @@ const trimTrailingSlash = (s: string) => s.replace(/\/+$/, '');
  */
 const NODE_ENV = process.env.NODE_ENV ?? 'development';
 const IS_PROD = NODE_ENV === 'production';
-const IS_DEV = NODE_ENV === 'development';
-const IS_TEST = NODE_ENV === 'test';
 
 /**
  * 환경 변수 스키마
@@ -22,7 +52,6 @@ const IS_TEST = NODE_ENV === 'test';
 const baseSchema = z.object({
   // DATABASE
   DATABASE_URL: z.string().url(),
-  DATABASE_URL_DEV: z.string().url().optional(),
 
   // PORT
   PORT: z.coerce.number().int().positive().default(3001),
@@ -30,22 +59,17 @@ const baseSchema = z.object({
 
   // API ORIGINS
   BASE_URL: z.string().url(),
-  BASE_URL_DEV: z.string().url().optional(),
 
   // FRONT ORIGIN
   FRONT_URL: z.string().url(),
-  FRONT_URL_DEV: z.string().url().optional(),
 
   // FILE URL (optional in dev/test)
   FILE_BASE_URL: z.string().url().optional(),
-  FILE_BASE_URL_DEV: z.string().url().optional(),
 
   // RUNTIME
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   CORS_ORIGIN: z.string().default(''),
   ACCESS_TOKEN_SECRET: z.string().min(10),
   REFRESH_TOKEN_SECRET: z.string().min(10),
-  INVITATION_TOKEN_SECRET: z.string().min(10),
   PASSWORD_PEPPER: z.string().min(10),
 });
 
@@ -82,9 +106,10 @@ const env = parsed.data;
 /**
  * DATABASE / ORIGINS
  */
-export const DB_URL = IS_DEV && env.DATABASE_URL_DEV ? env.DATABASE_URL_DEV : env.DATABASE_URL;
-export const APP_ORIGIN = IS_DEV && env.BASE_URL_DEV ? env.BASE_URL_DEV : env.BASE_URL;
-export const FRONT_ORIGIN = IS_DEV && env.FRONT_URL_DEV ? env.FRONT_URL_DEV : env.FRONT_URL;
+
+export const DATABASE_URL = env.DATABASE_URL;
+export const BASE_URL = env.BASE_URL;
+export const FRONT_URL = env.FRONT_URL;
 
 /**
  * AWS & FILE URL CONFIG
@@ -100,7 +125,7 @@ type EnvWithAws = typeof env & {
 /**
  * FILE URL
  */
-const rawFileBase = (IS_DEV ? env.FILE_BASE_URL_DEV : env.FILE_BASE_URL) || (env as EnvWithAws).AWS_S3_BASE_URL;
+const rawFileBase = env.FILE_BASE_URL;
 
 export const FILE_BASE_URL = rawFileBase
   ? trimTrailingSlash(rawFileBase)
@@ -127,10 +152,15 @@ export const AWS_CONFIG = IS_PROD
 /**
  * CORS ORIGINS
  */
-export const CORS_ORIGINS = env.CORS_ORIGIN.split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
-if (!CORS_ORIGINS.includes(FRONT_ORIGIN)) CORS_ORIGINS.push(FRONT_ORIGIN);
+export const CORS_ORIGINS = [
+  ...env.CORS_ORIGIN.split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
+];
 
-export { IS_DEV, IS_PROD, IS_TEST };
+// FRONT_URL이 명시되어 있고, 목록에 없으면 추가
+if (env.FRONT_URL && !CORS_ORIGINS.includes(env.FRONT_URL)) {
+  CORS_ORIGINS.push(env.FRONT_URL);
+}
+
 export default env;
