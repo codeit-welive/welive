@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-plugin-prettier';
 
 export default tseslint.config(
-  { ignores: ['node_modules/**', 'dist/**',] },
+  { ignores: ['node_modules/**', 'dist/**'] },
 
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -23,7 +23,7 @@ export default tseslint.config(
     },
     rules: {
       // 포맷
-      'prettier/prettier': 'error',
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
 
       // 문자열: 홑따옴표 우선, 이스케이프 필요 시 큰따옴표 허용
       quotes: ['error', 'single', { avoidEscape: true }],

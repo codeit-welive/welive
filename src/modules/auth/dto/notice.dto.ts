@@ -1,4 +1,4 @@
-import type { User, Notice } from '@prisma/client';
+import * as z from 'zod';
 
 export interface NoticeCreateDTO {
   title: string;
