@@ -4,15 +4,16 @@ import ApiError from '#errors/ApiError';
 import { UserRole } from '@prisma/client';
 
 const authMiddleware: RequestHandler = (req, res, next) => {
-  const token = req.cookies['access_token'] as string | undefined;
+  const cookies = req.cookies as Record<string, string>;
+  const token = cookies['access_token'];
 
   if (!token) throw new ApiError(401, '로그인이 필요합니다.');
 
-  const decoded = verifyAccessToken(token) as { id: string, role: UserRole };
+  const decoded = verifyAccessToken(token) as { id: string; role: UserRole };
 
-  req.user = { 
+  req.user = {
     id: decoded.id,
-    role: decoded.role 
+    role: decoded.role,
   };
 
   next();
