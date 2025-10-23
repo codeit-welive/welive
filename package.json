@@ -16,7 +16,7 @@
     "format": "prettier --write .",
     "_section3": "Build & Clean",
     "clean": "rimraf dist",
-    "build": "npm run clean && tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
+    "build": "npm run clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "_section4": "Test",
     "test": "cross-env NODE_ENV=test jest --runInBand",
     "test:watch": "cross-env NODE_ENV=test jest --watch",
