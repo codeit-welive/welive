@@ -25,12 +25,11 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
       code: isAPI ? err.code : 'INTERNAL_ERROR',
       message:
         ENV === 'production'
-          ? (isAPI ? err.message : '서버 내부 오류가 발생했습니다.')
+          ? isAPI
+            ? err.message
+            : '서버 내부 오류가 발생했습니다.'
           : (err as Error).message || 'Internal server error',
-      details:
-        ENV !== 'production' && isAPI
-          ? err.details
-          : undefined, // 개발 환경에서만 상세 정보 포함
+      details: ENV !== 'production' && isAPI ? err.details : undefined, // 개발 환경에서만 상세 정보 포함
     },
   };
 
@@ -42,11 +41,19 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
    * - test: 콘솔 로그 비활성화
    */
   if (ENV === 'development') {
-    console.error(`\n[${status}] ${err.stack || err}`);
+    if (err instanceof Error) {
+      console.error(`\n[${status}] ${err.stack}`);
+    } else {
+      console.error(`\n[${status}] ${String(err)}`);
+    }
   } else if (ENV === 'production') {
     // 운영 환경에서는 시스템 오류만 로깅
-    if (!isAPI || !err.isOperational) {
-      console.error('[Unexpected Error]', err);
+    if (!isAPI || !(err as { isOperational?: boolean }).isOperational) {
+      if (err instanceof Error) {
+        console.error('[Unexpected Error]', err);
+      } else {
+        console.error('[Unexpected Error]', String(err));
+      }
     }
   } else if (ENV === 'test') {
     // fallback, 테스트 환경에서는 로그 출력 생략
