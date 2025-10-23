@@ -1,0 +1,45 @@
+name: CI (PR)
+
+on:
+  pull_request:
+    branches: ['**']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: welive_test
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U app -d welive_test"
+          --health-interval=5s --health-timeout=3s --health-retries=10
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://app:app@localhost:5432/welive_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Prisma generate & migrate
+        run: |
+          npx prisma generate --schema=prisma/schema.prisma
+          npx prisma migrate deploy --schema=prisma/schema.prisma
+
+      - name: Test
+        run: echo "⚙️ Skipping tests (no test files yet)"
+        # run: CI=true npm test

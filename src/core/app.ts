@@ -77,7 +77,9 @@ app.use(limiter);
  */
 app.use(compression());
 
-/** CORS (화이트리스트 기반) */
+/**
+ * CORS (화이트리스트 기반)
+ */
 app.use(
   cors({
     origin: (origin, cb) => {
