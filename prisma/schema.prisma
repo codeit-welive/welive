@@ -111,7 +111,9 @@ model User {
 
   apartment Apartment? @relation("ApartmentAdmin")
 
-  resident      Resident?
+  residentId String?   @unique
+  resident   Resident? @relation("UserResident", fields: [residentId], references: [id], onDelete: Cascade)
+
   notifications Notification[]
   complaints    Complaint[]    @relation("ComplaintUser")
   comments      Comment[]
@@ -138,19 +140,17 @@ model Apartment {
   endFloorNumber     String // 아파트 최상층
   startHoNumber      String // 아파트 시작 호수
   endHoNumber        String // 아파트 끝 호수
-
-  createdAt DateTime @default(now())
+  createdAt          DateTime @default(now())
 
   adminId String? @unique
-  admin   User?   @relation("ApartmentAdmin", fields: [adminId], references: [id])
+  admin   User?   @relation("ApartmentAdmin", fields: [adminId], references: [id], onDelete: Cascade)
 
   residents  Resident[]
   notices    Notice[]
   complaints Complaint[]
   polls      Poll[]
   events     Event[]
-
-  boards Board[]
+  boards     Board[]
 }
 
 // User랑 별개로 존재
@@ -166,11 +166,10 @@ model Resident {
   isHouseholder  IsHouseholder  @default(MEMBER)
   createdAt      DateTime       @default(now())
 
-  userId String? @unique
-  user   User?   @relation(fields: [userId], references: [id])
+  user User? @relation("UserResident")
 
   apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
 }
 
 // ------------------------------
@@ -214,7 +213,8 @@ model Notice {
   boardId String
   board   Board  @relation(fields: [boardId], references: [id])
 
-  comments    Comment[]
+  comments Comment[]
+
   Apartment   Apartment? @relation(fields: [apartmentId], references: [id])
   apartmentId String?
   Event       Event?
@@ -239,16 +239,16 @@ model Complaint {
   boardId String
   board   Board  @relation(fields: [boardId], references: [id])
 
-  comments    Comment[]
+  comments Comment[]
+
   Apartment   Apartment? @relation(fields: [apartmentId], references: [id])
   apartmentId String?
 }
 
 model Poll {
-  id      String @id @default(uuid())
-  title   String
-  content String
-
+  id        String   @id @default(uuid())
+  title     String
+  content   String
   startDate DateTime
   endDate   DateTime
 
@@ -262,9 +262,10 @@ model Poll {
   boardId String
   board   Board  @relation(fields: [boardId], references: [id])
 
-  options     PollOption[]
-  votes       PollVote[]
-  Apartment   Apartment?   @relation(fields: [apartmentId], references: [id])
+  options PollOption[]
+  votes   PollVote[]
+
+  Apartment   Apartment? @relation(fields: [apartmentId], references: [id])
   apartmentId String?
   Event       Event?
 }
@@ -274,25 +275,27 @@ model Poll {
 // ------------------------------
 
 model PollOption {
-  id     String     @id @default(uuid())
+  id     String @id @default(uuid())
   title  String
   pollId String
-  poll   Poll       @relation(fields: [pollId], references: [id])
-  votes  PollVote[]
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  votes PollVote[]
 }
 
 model PollVote {
-  id       String     @id @default(uuid())
-  userId   String
-  user     User       @relation(fields: [userId], references: [id])
-  pollId   String
-  poll     Poll       @relation(fields: [pollId], references: [id])
-  optionId String
-  option   PollOption @relation(fields: [optionId], references: [id])
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  optionId String?
+  option   PollOption? @relation(fields: [optionId], references: [id])
 
   createdAt DateTime @default(now())
 
-  // 투표에 1회만 참여 가능
   @@unique([pollId, userId])
 }
 
@@ -309,13 +312,15 @@ model Comment {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  boardType   BoardType // 응답/요청 DTO
-  boardId     String
-  board       Board      @relation(fields: [boardId], references: [id])
-  Notice      Notice?    @relation(fields: [noticeId], references: [id])
-  noticeId    String?
-  Complaint   Complaint? @relation(fields: [complaintId], references: [id])
+  boardType BoardType // 응답/요청 DTO
+  boardId   String
+  board     Board     @relation(fields: [boardId], references: [id])
+
+  noticeId String?
+  Notice   Notice? @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+
   complaintId String?
+  Complaint   Complaint? @relation(fields: [complaintId], references: [id], onDelete: Cascade)
 }
 
 model Notification {

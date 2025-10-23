@@ -11,12 +11,7 @@ const config: Config = {
       'ts-jest',
       {
         useESM: false,
-        tsconfig: {
-          module: 'CommonJS',
-          moduleResolution: 'Node',
-          isolatedModules: true,
-          esModuleInterop: true,
-        },
+        tsconfig: 'tsconfig.json',
       },
     ],
   },
@@ -29,9 +24,7 @@ const config: Config = {
   setupFilesAfterEnv: ['./tests/setup/jest.setup.js'],
 
   collectCoverage: true,
-  collectCoverageFrom: [
-    'src/**/*.{ts,js}',
-  ],
+  collectCoverageFrom: ['src/**/*.{ts,js}'],
   coverageDirectory: 'coverage',
   testTimeout: 30_000,
 };

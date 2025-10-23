@@ -1,16 +1,20 @@
 import type { RequestHandler } from 'express';
 import { verifyAccessToken } from '#modules/auth/utils/tokenUtils';
 import ApiError from '#errors/ApiError';
+import { UserRole } from '@prisma/client';
 
 const authMiddleware: RequestHandler = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  const cookies = req.cookies as Record<string, string>;
+  const token = cookies['access_token'];
 
   if (!token) throw new ApiError(401, '로그인이 필요합니다.');
 
-  const decoded = verifyAccessToken(token);
+  const decoded = verifyAccessToken(token) as { id: string; role: UserRole };
 
-  req.user = { id: decoded.id };
+  req.user = {
+    id: decoded.id,
+    role: decoded.role,
+  };
 
   next();
 };
