@@ -1,7 +1,7 @@
-import prisma from '../../core/prisma.js';
-import { ComplaintCreateDto, ComplaintPatchDto } from './dto/complaints.dto.js';
-import { ComplaintListQuery } from './dto/querys.dto.js';
-import { buildComplaintWhereConditions } from './complaints.util.js';
+import prisma from '../../core/prisma';
+import { ComplaintCreateDto, ComplaintPatchDto } from './dto/complaints.dto';
+import { ComplaintListQuery } from './dto/querys.dto';
+import { buildComplaintWhereConditions } from './complaints.util';
 import { BoardType, ComplaintStatus } from '@prisma/client';
 
 // ==================== Board 관련 조회 ====================

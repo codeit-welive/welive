@@ -1,19 +1,19 @@
 import ApiError from '#errors/ApiError';
-import * as ComplaintRepo from './complaints.repo.js';
+import * as ComplaintRepo from './complaints.repo';
 import {
   ComplaintCreateDto,
   ComplaintPatchDto,
   ComplaintPatchStatusDto,
   ComplaintDeleteDto,
-} from './dto/complaints.dto.js';
-import { ComplaintListQuery } from './dto/querys.dto.js';
+} from './dto/complaints.dto';
+import { ComplaintListQuery } from './dto/querys.dto';
 import {
   mapComplaintToDetailResponse,
   mapComplaintToListItemResponse,
   validateComplaintBoard,
   verifyComplaintAuthor,
   verifyApartmentAdmin,
-} from './complaints.util.js';
+} from './complaints.util';
 import { ComplaintStatus, UserRole } from '@prisma/client';
 import { COMPLAINT_ERROR_MESSAGES } from '#constants/complaint.constant';
 

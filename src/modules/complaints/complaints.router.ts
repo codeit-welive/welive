@@ -8,7 +8,7 @@ import {
   validateComplaintPatch,
   validateComplaintPatchStatus,
   validateComplaintDelete,
-} from './complaints.validator.js';
+} from './complaints.validator';
 import {
   createComplaintHandler,
   getComplaintListHandler,
@@ -16,7 +16,7 @@ import {
   patchComplaintHandler,
   patchComplaintStatusHandler,
   deleteComplaintHandler,
-} from './complaints.controller.js';
+} from './complaints.controller';
 
 const router = Router();
 

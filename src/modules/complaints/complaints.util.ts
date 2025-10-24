@@ -1,8 +1,8 @@
 import ApiError from '#errors/ApiError';
 import { BoardType, ComplaintStatus, Prisma } from '@prisma/client';
-import { ComplaintDetailResponseDto, CommentResponseDto, ComplaintListItemResponseDto } from './dto/response.dto.js';
-import { ComplaintListQuery } from './dto/querys.dto.js';
-import * as ComplaintRepo from './complaints.repo.js';
+import { ComplaintDetailResponseDto, CommentResponseDto, ComplaintListItemResponseDto } from './dto/response.dto';
+import { ComplaintListQuery } from './dto/querys.dto';
+import * as ComplaintRepo from './complaints.repo';
 import { COMPLAINT_ERROR_MESSAGES } from '#constants/complaint.constant';
 
 // ==================== 검증 함수 ====================
