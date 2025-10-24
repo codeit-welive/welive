@@ -27,12 +27,14 @@ export default tseslint.config(
 
       // 문자열: 홑따옴표 우선, 이스케이프 필요 시 큰따옴표 허용
       quotes: ['error', 'single', { avoidEscape: true }],
+      quoteProps: 'consistent',
 
       // console 허용: error, warn만
       'no-console': 'off',
 
       // 미사용 변수 무시 설정
       'no-unused-vars': 'off',
+
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
