@@ -3,7 +3,5 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[prisma]": {
     "editor.defaultFormatter": "Prisma.prisma"
-  },
-  "terminal.integrated.allowChords": false,
-  "files.eol": "\n"
+  }
 }
