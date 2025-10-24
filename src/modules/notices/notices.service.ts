@@ -1,4 +1,4 @@
-import { NoticeCreateDTO, NoticeQueryDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
+import { NoticeCreateDTO, NoticeListQueryDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
 import { Prisma } from '@prisma/client';
 import {
   createNoticeRepo,
@@ -15,7 +15,7 @@ export const createNoticeService = async (data: NoticeCreateDTO) => {
   return await createNoticeRepo(data);
 };
 
-export const getNoticeListService = async (data: NoticeQueryDTO) => {
+export const getNoticeListService = async (data: NoticeListQueryDTO) => {
   const page = data.page;
   const pageSize = data.pageSize;
   const skip = (page - 1) * pageSize;

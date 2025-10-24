@@ -1,18 +1,24 @@
 import express from 'express';
 import { createNotice, deleteNotice, getNotice, getNoticeList, updateNotice } from './notices.controller';
-import { validateNoticeCreate, validateNoticeQuery, validateNoticeUpdate } from './notices.validator';
+import {
+  validateNoticeCreate,
+  validateNoticeParams,
+  validateNoticeQuery,
+  validateNoticeUpdate,
+} from './notices.validator';
 import requireRole from '#core/middlewares/requireRole';
+import authMiddleware from '#core/middlewares/authMiddleware';
 
 const noticeRouter = express.Router();
 
 noticeRouter
   .route('/')
-  .post(requireRole(['ADMIN']), validateNoticeCreate, createNotice)
-  .get(requireRole(['ADMIN', 'USER']), validateNoticeQuery, getNoticeList);
+  .post(authMiddleware, requireRole(['ADMIN']), validateNoticeCreate, createNotice)
+  .get(authMiddleware, requireRole(['ADMIN', 'USER']), validateNoticeQuery, getNoticeList);
 noticeRouter
   .route('/:noticeId')
-  .get(requireRole(['ADMIN', 'USER']), getNotice)
-  .patch(requireRole(['ADMIN']), validateNoticeUpdate, updateNotice)
-  .delete(requireRole(['ADMIN']), deleteNotice);
+  .get(authMiddleware, requireRole(['ADMIN', 'USER']), validateNoticeParams, getNotice)
+  .patch(authMiddleware, requireRole(['ADMIN']), validateNoticeParams, validateNoticeUpdate, updateNotice)
+  .delete(authMiddleware, requireRole(['ADMIN']), deleteNotice);
 
 export default noticeRouter;

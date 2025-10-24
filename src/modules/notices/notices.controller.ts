@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express';
-import type { NoticeCreateDTO, NoticeQueryDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
+import type { NoticeCreateDTO, NoticeListQueryDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
 import { PAGINATION } from '#constants/pagination.constant';
 import { NoticeCategory } from '@prisma/client';
 import ApiError from '#errors/ApiError';
@@ -38,9 +38,9 @@ export const createNotice: RequestHandler = async (req, res, next) => {
 
 export const getNoticeList: RequestHandler = async (req, res, next) => {
   try {
-    const query = res.locals.query as NoticeQueryDTO;
+    const query = res.locals.query as NoticeListQueryDTO;
     const { page, pageSize, category, search } = query;
-    const dto: NoticeQueryDTO = {
+    const dto: NoticeListQueryDTO = {
       page: page ? Number(page) : PAGINATION.DEFAULT_PAGE,
       pageSize: pageSize ? Number(pageSize) : PAGINATION.DEFAULT_LIMIT,
       category: category as NoticeCategory,

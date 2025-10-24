@@ -1,17 +1,27 @@
 import type { RequestHandler } from 'express';
 import forwardZodError from '#utils/zod';
-import { noticeCreateSchema, noticeQuerySchema, noticeUpdateSchema } from './dto/notices.dto';
+import { noticeCreateSchema, noticeListQuerySchema, noticeParamsSchema, noticeUpdateSchema } from './dto/notices.dto';
+
+export const validateNoticeParams: RequestHandler = async (req, res, next) => {
+  try {
+    const { noticeId } = req.params;
+    await noticeParamsSchema.parseAsync(noticeId);
+    next();
+  } catch (err) {
+    forwardZodError(err, '공지 상세 조회', next);
+  }
+};
 
 export const validateNoticeQuery: RequestHandler = async (req, res, next) => {
   try {
-    const validatedParams = await noticeQuerySchema.parseAsync({
+    const validatedQuery = await noticeListQuerySchema.parseAsync({
       ...req.query,
     });
 
-    res.locals.query = validatedParams;
+    res.locals.query = validatedQuery;
     next();
   } catch (err) {
-    forwardZodError(err, '쿼리 오류', next);
+    forwardZodError(err, '공지 목록 조회', next);
   }
 };
 
