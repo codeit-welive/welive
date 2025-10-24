@@ -10,6 +10,7 @@ import {
   getNoticeService,
   updateNoticeService,
 } from './notices.service';
+import { RESPONSE_MESSAGES } from '#constants/response.constant';
 
 /**
  * @function createNotice
@@ -29,7 +30,7 @@ export const createNotice: RequestHandler = async (req, res, next) => {
   try {
     const data = res.locals.validatedBody as NoticeCreateDTO;
     await createNoticeService(data);
-    return res.status(201).json({ message: '정상적으로 등록 처리되었습니다.' });
+    return res.status(201).json({ message: RESPONSE_MESSAGES.CREATE_SUCCESS });
   } catch (err) {
     next(err);
   }
@@ -82,7 +83,7 @@ export const deleteNotice: RequestHandler = async (req, res, next) => {
   try {
     const noticeId = req.params.noticeId;
     await deleteNoticeService(noticeId);
-    return res.status(200).json({ message: '정상적으로 삭제 처리되었습니다' });
+    return res.status(200).json({ message: RESPONSE_MESSAGES.DELETE_SUCCESS });
   } catch (err) {
     next(err);
   }
