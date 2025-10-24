@@ -17,7 +17,6 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 
 import routes from '#core/router';
-import sseRouter from '#core/sse';
 import { CORS_ORIGINS } from '#core/env';
 import { errorHandler } from '#middlewares/errorHandler';
 import ApiError from '#errors/ApiError';
@@ -103,11 +102,6 @@ app.use(cookieParser());
  * API 라우터
  */
 app.use('/api', routes);
-
-/**
- * SSE 라우터
- */
-app.use('/sse', sseRouter);
 
 /**
  * 404 핸들러
