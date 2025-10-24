@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  # PostgreSQL 데이터베이스 서비스
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+    env_file:
+      - ../.env
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Node.js 애플리케이션 서비스
+  web:
+    build:
+      context: ../
+      dockerfile: infra/Dockerfile
+    restart: always
+    ports:
+      - '3001:3001'
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ../.env
+    # volumes:
+    #   - uploads:/app/uploads
+
+volumes:
+  db:
+  # uploads:

@@ -19,6 +19,7 @@
       "#middlewares/*": ["src/core/middlewares/*"],
       "#utils/*": ["src/core/utils/*"],
       "#sse/*": ["src/core/sse/*"],
+      "#sanitize/*": ["src/core/sanitize/*"],
       "#crons/*": ["src/crons/*"]
     },
     "typeRoots": ["./src/common/types", "./node_modules/@types"]
