@@ -106,10 +106,16 @@ const env = parsed.data;
 /**
  * DATABASE / ORIGINS
  */
-
 export const DATABASE_URL = env.DATABASE_URL;
 export const BASE_URL = env.BASE_URL;
 export const FRONT_URL = env.FRONT_URL;
+
+/**
+ * RUNTIME
+ */
+export const ACCESS_TOKEN_SECRET = env.ACCESS_TOKEN_SECRET;
+export const REFRESH_TOKEN_SECRET = env.REFRESH_TOKEN_SECRET;
+export const PASSWORD_PEPPER = env.PASSWORD_PEPPER;
 
 /**
  * AWS & FILE URL CONFIG
