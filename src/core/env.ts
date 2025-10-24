@@ -31,9 +31,16 @@
  */
 
 import { config as load } from 'dotenv';
+import fs from 'fs';
 import { z } from 'zod';
 
-load();
+if (process.env.SKIP_DOTENV !== 'true') {
+  if (process.env.NODE_ENV === 'test' && fs.existsSync('.env.test')) {
+    load({ path: '.env.test', override: true });
+  } else {
+    load({ override: true });
+  }
+}
 
 /**
  * 유틸 함수
