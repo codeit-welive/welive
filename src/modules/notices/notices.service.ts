@@ -17,12 +17,18 @@ const getNoticeList = async (data: NoticeQueryDTO) => {
   if (search !== null) {
     where = {
       ...where,
-      title: {
-        contains: search,
-      },
-      content: {
-        contains: search,
-      },
+      OR: [
+        {
+          title: {
+            contains: search,
+          },
+        },
+        {
+          content: {
+            contains: search,
+          },
+        },
+      ],
     };
   }
   const rawNoticeList = await noticesRepo.getNoticeList(where, pageSize, skip);
