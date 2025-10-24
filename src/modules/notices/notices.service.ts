@@ -76,7 +76,7 @@ const getNotice = async (noticeId: string, boardId: string) => {
 
 const updateNotice = async (noticeId: string, data: NoticeUpdateDTO) => {
   const checkNotice = await noticesRepo.existNotice(noticeId);
-  if (checkNotice < 1) {
+  if (!checkNotice) {
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
   const notice = await noticesRepo.updateNotice(noticeId, data);
@@ -92,7 +92,7 @@ const updateNotice = async (noticeId: string, data: NoticeUpdateDTO) => {
 
 const deleteNotice = async (noticeId: string) => {
   const checkNotice = await noticesRepo.existNotice(noticeId);
-  if (checkNotice < 1) {
+  if (!checkNotice) {
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
   await noticesRepo.deleteNotice(noticeId);

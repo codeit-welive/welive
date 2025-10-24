@@ -11,11 +11,12 @@ const getBoardType = async (boardId: string) => {
 };
 
 const existNotice = async (noticeId: string) => {
-  return await prisma.notice.count({
+  const exists = await prisma.notice.count({
     where: {
       id: noticeId,
     },
   });
+  return exists > 0;
 };
 
 const createNotice = async (data: NoticeCreateDTO) => {
@@ -26,6 +27,9 @@ const createNotice = async (data: NoticeCreateDTO) => {
       category: data.category,
       user: { connect: { id: data.userId } },
       board: { connect: { id: data.boardId } },
+      startDate: data.startDate ?? null,
+      endDate: data.endDate ?? null,
+      isPinned: data.isPinned ?? false,
     },
   });
   return notice;
@@ -120,7 +124,6 @@ const updateNotice = async (noticeId: string, data: NoticeUpdateDTO) => {
       isPinned: data.isPinned,
       startDate: data.startDate,
       endDate: data.endDate,
-      userId: data.userId,
     },
     select: {
       id: true,
