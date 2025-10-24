@@ -1,3 +1,8 @@
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+  jest.spyOn(console, 'log').mockImplementation(() => {});
+});
+
 const prisma = require('#core/prisma.ts').default;
 
 afterEach(async () => {
