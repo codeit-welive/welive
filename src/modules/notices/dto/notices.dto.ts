@@ -36,6 +36,9 @@ export const noticeCreateSchema = z.object({
     .max(NOTICE_VALIDATION.CONTENT_MAX_LENGTH, `내용은 최대 ${NOTICE_VALIDATION.CONTENT_MAX_LENGTH}자까지 가능합니다.`),
   category: z.enum(['MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'COMPLAINT', 'ETC']),
   boardId: z.uuid({ message: '유효한 게시판 ID가 아닙니다.' }),
+  startDate: z.iso.datetime().optional(),
+  endDate: z.iso.datetime().optional(),
+  isPinned: z.boolean().optional(),
 });
 
 export type NoticeCreateDTO = z.infer<typeof noticeCreateSchema>;
@@ -55,9 +58,9 @@ export const noticeUpdateSchema = z.object({
     .max(NOTICE_VALIDATION.CONTENT_MAX_LENGTH, `내용은 최대 ${NOTICE_VALIDATION.CONTENT_MAX_LENGTH}자까지 가능합니다.`),
   category: z.enum(['MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'COMPLAINT', 'ETC']),
   boardId: z.uuid({ message: '유효한 게시판 ID가 아닙니다.' }),
-  startDate: z.iso.datetime(),
-  endDate: z.iso.datetime(),
-  isPinned: z.boolean(),
+  startDate: z.iso.datetime().optional(),
+  endDate: z.iso.datetime().optional(),
+  isPinned: z.boolean().optional(),
 });
 
 export type NoticeUpdateDTO = z.infer<typeof noticeUpdateSchema>;

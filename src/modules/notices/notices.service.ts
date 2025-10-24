@@ -25,14 +25,46 @@ const getNoticeList = async (data: NoticeQueryDTO) => {
       },
     };
   }
-  return await noticesRepo.getNoticeList(where, pageSize, skip);
+  const rawNoticeList = await noticesRepo.getNoticeList(where, pageSize, skip);
+  const noticeList = rawNoticeList.data.map((notice) => ({
+    id: notice.id,
+    userId: notice.user.id,
+    category: notice.category,
+    title: notice.title,
+    writerName: notice.user.name,
+    createdAt: notice.createdAt.toISOString(),
+    updatedAt: notice.updatedAt.toISOString(),
+    viewsCount: notice.viewsCount,
+    commentsCount: notice._count.comments,
+    isPinned: notice.isPinned,
+  }));
+  const total = rawNoticeList.total;
+  return { noticeList, total };
 };
 
-const getNotice = async (noticeId: string) => {
-  const notice = await noticesRepo.getNotice(noticeId);
-  if (!notice) {
+const getNotice = async (noticeId: string, boardId: string) => {
+  const rawNotice = await noticesRepo.getNotice(noticeId);
+  const boardName = await noticesRepo.getBoardType(boardId);
+  if (!rawNotice) {
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
+  const { user, comments, _count: commentsCount, ...rest } = rawNotice;
+  const commentList = comments.map((comment) => ({
+    id: comment.id,
+    userId: comment.user.id,
+    content: comment.content,
+    createdAt: comment.createdAt.toISOString(),
+    updatedAt: comment.updatedAt.toISOString(),
+    writerName: comment.user.name,
+  }));
+  const notice = {
+    ...rest,
+    userId: user.id,
+    writerName: user.name,
+    commentsCount: commentsCount.comments,
+    boardName,
+    comments: commentList,
+  };
   return notice;
 };
 
@@ -42,7 +74,14 @@ const updateNotice = async (noticeId: string, data: NoticeUpdateDTO) => {
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
   const notice = await noticesRepo.updateNotice(noticeId, data);
-  return notice;
+  const { user, _count: commentsCount, ...rest } = notice;
+  const updatedNotice = {
+    ...rest,
+    userId: user.id,
+    writerName: user.name,
+    commentsCount,
+  };
+  return updatedNotice;
 };
 
 const deleteNotice = async (noticeId: string) => {

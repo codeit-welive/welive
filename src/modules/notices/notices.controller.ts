@@ -1,10 +1,5 @@
 import type { RequestHandler } from 'express';
-import type {
-  NoticeCreateDTO,
-  NoticeEntityDTO,
-  NoticeQueryDTO,
-  NoticeUpdateDTO,
-} from '#modules/notices/dto/notices.dto';
+import type { NoticeCreateDTO, NoticeQueryDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
 import noticesService from './notices.service';
 import { PAGINATION } from '#constants/pagination';
 import { NoticeCategory } from '@prisma/client';
@@ -43,20 +38,7 @@ export const getNoticeList: RequestHandler = async (req, res, next) => {
       category: category as NoticeCategory,
       search: search ? (search as string) : null,
     };
-    const rawData = await noticesService.getNoticeList(dto);
-    const noticeList = rawData.data.map((notice) => ({
-      id: notice.id,
-      userId: notice.user.id,
-      category: notice.category,
-      title: notice.title,
-      writerName: notice.user.name,
-      createdAt: notice.createdAt.toISOString(),
-      updatedAt: notice.updatedAt.toISOString(),
-      viewsCount: notice.viewsCount,
-      commentsCount: notice._count,
-      isPinned: notice.isPinned,
-    }));
-    const total = rawData.total;
+    const { noticeList, total } = await noticesService.getNoticeList(dto);
     return res.status(200).json({ noticeList, total });
   } catch (err) {
     next(err);
@@ -66,24 +48,8 @@ export const getNoticeList: RequestHandler = async (req, res, next) => {
 export const getNotice: RequestHandler = async (req, res, next) => {
   try {
     const noticeId = req.params.noticeId;
-    const rawData: NoticeEntityDTO = await noticesService.getNotice(noticeId);
-    const { user, comments, _count: commentsCount, ...rest } = rawData;
-    const commentList = comments.map((comment) => ({
-      id: comment.id,
-      userId: comment.user.id,
-      content: comment.content,
-      createdAt: comment.createdAt.toISOString(),
-      updatedAt: comment.updatedAt.toISOString(),
-      writerName: comment.user.name,
-    }));
-    const notice = {
-      ...rest,
-      userId: user.id,
-      writerName: user.name,
-      commentsCount,
-      boardName: '공지사항',
-      comments: commentList,
-    };
+    const boardId = req.params.boardId;
+    const notice = await noticesService.getNotice(noticeId, boardId);
     return res.status(200).json(notice);
   } catch (err) {
     next(err);
@@ -98,15 +64,8 @@ export const updateNotice: RequestHandler = async (req, res, next) => {
     if (userId !== data.userId) {
       throw ApiError.forbidden('수정 권한이 없습니다.');
     }
-    const rawNotice = await noticesService.updateNotice(noticeId, data);
-    const { user, _count: commentsCount, ...rest } = rawNotice;
-    const notice = {
-      ...rest,
-      userId: user.id,
-      writerName: user.name,
-      commentsCount,
-    };
-    return res.status(204).json(notice);
+    const updatedNotice = await noticesService.updateNotice(noticeId, data);
+    return res.status(200).json(updatedNotice);
   } catch (err) {
     next(err);
   }
