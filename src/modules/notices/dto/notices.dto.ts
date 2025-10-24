@@ -62,7 +62,7 @@ export const noticeUpdateSchema = z.object({
 
 export type NoticeUpdateDTO = z.infer<typeof noticeUpdateSchema>;
 
-export interface noticeEntityDTO {
+export interface NoticeEntityDTO {
   id: string;
   user: {
     id: string;
@@ -81,7 +81,7 @@ export interface noticeEntityDTO {
   comments: CommentDTO[];
 }
 
-export interface noticeListReponseDTO {
+export interface NoticeListReponseDTO {
   id: string;
   userId: string;
   category: string;

@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import type {
   NoticeCreateDTO,
-  noticeEntityDTO,
+  NoticeEntityDTO,
   NoticeQueryDTO,
   NoticeUpdateDTO,
 } from '#modules/notices/dto/notices.dto';
@@ -66,7 +66,7 @@ export const getNoticeList: RequestHandler = async (req, res, next) => {
 export const getNotice: RequestHandler = async (req, res, next) => {
   try {
     const noticeId = req.params.noticeId;
-    const rawData: noticeEntityDTO = await noticesService.getNotice(noticeId);
+    const rawData: NoticeEntityDTO = await noticesService.getNotice(noticeId);
     const { user, comments, _count: commentsCount, ...rest } = rawData;
     const commentList = comments.map((comment) => ({
       id: comment.id,
