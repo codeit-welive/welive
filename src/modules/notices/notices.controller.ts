@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import type { NoticeCreateDTO, NoticeQueryDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
-import { PAGINATION } from '#constants/pagination';
+import { PAGINATION } from '#constants/pagination.constant';
 import { NoticeCategory } from '@prisma/client';
 import ApiError from '#errors/ApiError';
 import {
