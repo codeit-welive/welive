@@ -1,9 +1,15 @@
 import type { RequestHandler } from 'express';
 import type { NoticeCreateDTO, NoticeQueryDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
-import noticesService from './notices.service';
 import { PAGINATION } from '#constants/pagination';
 import { NoticeCategory } from '@prisma/client';
 import ApiError from '#errors/ApiError';
+import {
+  createNoticeService,
+  deleteNoticeService,
+  getNoticeListService,
+  getNoticeService,
+  updateNoticeService,
+} from './notices.service';
 
 /**
  * @function createNotice
@@ -22,7 +28,7 @@ import ApiError from '#errors/ApiError';
 export const createNotice: RequestHandler = async (req, res, next) => {
   try {
     const data = res.locals.validatedBody as NoticeCreateDTO;
-    await noticesService.createNotice(data);
+    await createNoticeService(data);
     return res.status(201).json({ message: '정상적으로 등록 처리되었습니다.' });
   } catch (err) {
     next(err);
@@ -31,14 +37,15 @@ export const createNotice: RequestHandler = async (req, res, next) => {
 
 export const getNoticeList: RequestHandler = async (req, res, next) => {
   try {
-    const { page, limit, category, search } = req.query;
+    const query = res.locals.query as NoticeQueryDTO;
+    const { page, pageSize, category, search } = query;
     const dto: NoticeQueryDTO = {
       page: page ? Number(page) : PAGINATION.DEFAULT_PAGE,
-      pageSize: limit ? Number(limit) : PAGINATION.DEFAULT_LIMIT,
+      pageSize: pageSize ? Number(pageSize) : PAGINATION.DEFAULT_LIMIT,
       category: category as NoticeCategory,
-      search: search ? (search as string) : null,
+      search: search ?? null,
     };
-    const { noticeList, total } = await noticesService.getNoticeList(dto);
+    const { noticeList, total } = await getNoticeListService(dto);
     return res.status(200).json({ noticeList, total });
   } catch (err) {
     next(err);
@@ -49,7 +56,7 @@ export const getNotice: RequestHandler = async (req, res, next) => {
   try {
     const noticeId = req.params.noticeId;
     const boardId = req.params.boardId;
-    const notice = await noticesService.getNotice(noticeId, boardId);
+    const notice = await getNoticeService(noticeId, boardId);
     return res.status(200).json(notice);
   } catch (err) {
     next(err);
@@ -64,7 +71,7 @@ export const updateNotice: RequestHandler = async (req, res, next) => {
     if (userId !== data.userId) {
       throw ApiError.forbidden('수정 권한이 없습니다.');
     }
-    const updatedNotice = await noticesService.updateNotice(noticeId, data);
+    const updatedNotice = await updateNoticeService(noticeId, data);
     return res.status(200).json(updatedNotice);
   } catch (err) {
     next(err);
@@ -74,7 +81,7 @@ export const updateNotice: RequestHandler = async (req, res, next) => {
 export const deleteNotice: RequestHandler = async (req, res, next) => {
   try {
     const noticeId = req.params.noticeId;
-    await noticesService.deleteNotice(noticeId);
+    await deleteNoticeService(noticeId);
     return res.status(200).json({ message: '정상적으로 삭제 처리되었습니다' });
   } catch (err) {
     next(err);

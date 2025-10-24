@@ -1,13 +1,21 @@
 import { NoticeCreateDTO, NoticeQueryDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
 import { Prisma } from '@prisma/client';
-import noticesRepo from './notices.repo';
+import {
+  createNoticeRepo,
+  deleteNoticeRepo,
+  existNoticeRepo,
+  getBoardTypeRepo,
+  getNoticeListRepo,
+  getNoticeRepo,
+  updateNoticeRepo,
+} from './notices.repo';
 import ApiError from '#errors/ApiError';
 
-const createNotice = async (data: NoticeCreateDTO) => {
-  return await noticesRepo.createNotice(data);
+export const createNoticeService = async (data: NoticeCreateDTO) => {
+  return await createNoticeRepo(data);
 };
 
-const getNoticeList = async (data: NoticeQueryDTO) => {
+export const getNoticeListService = async (data: NoticeQueryDTO) => {
   const page = data.page;
   const pageSize = data.pageSize;
   const skip = (page - 1) * pageSize;
@@ -31,7 +39,7 @@ const getNoticeList = async (data: NoticeQueryDTO) => {
       ],
     };
   }
-  const rawNoticeList = await noticesRepo.getNoticeList(where, pageSize, skip);
+  const rawNoticeList = await getNoticeListRepo(where, pageSize, skip);
   const noticeList = rawNoticeList.data.map((notice) => ({
     id: notice.id,
     userId: notice.user.id,
@@ -48,9 +56,9 @@ const getNoticeList = async (data: NoticeQueryDTO) => {
   return { noticeList, total };
 };
 
-const getNotice = async (noticeId: string, boardId: string) => {
-  const rawNotice = await noticesRepo.getNotice(noticeId);
-  const boardName = await noticesRepo.getBoardType(boardId);
+export const getNoticeService = async (noticeId: string, boardId: string) => {
+  const rawNotice = await getNoticeRepo(noticeId);
+  const boardName = await getBoardTypeRepo(boardId);
   if (!rawNotice) {
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
@@ -74,12 +82,12 @@ const getNotice = async (noticeId: string, boardId: string) => {
   return notice;
 };
 
-const updateNotice = async (noticeId: string, data: NoticeUpdateDTO) => {
-  const checkNotice = await noticesRepo.existNotice(noticeId);
+export const updateNoticeService = async (noticeId: string, data: NoticeUpdateDTO) => {
+  const checkNotice = await existNoticeRepo(noticeId);
   if (!checkNotice) {
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
-  const notice = await noticesRepo.updateNotice(noticeId, data);
+  const notice = await updateNoticeRepo(noticeId, data);
   const { user, _count: commentsCount, ...rest } = notice;
   const updatedNotice = {
     ...rest,
@@ -90,18 +98,10 @@ const updateNotice = async (noticeId: string, data: NoticeUpdateDTO) => {
   return updatedNotice;
 };
 
-const deleteNotice = async (noticeId: string) => {
-  const checkNotice = await noticesRepo.existNotice(noticeId);
+export const deleteNoticeService = async (noticeId: string) => {
+  const checkNotice = await existNoticeRepo(noticeId);
   if (!checkNotice) {
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
-  await noticesRepo.deleteNotice(noticeId);
-};
-
-export default {
-  createNotice,
-  getNoticeList,
-  getNotice,
-  updateNotice,
-  deleteNotice,
+  await deleteNoticeRepo(noticeId);
 };

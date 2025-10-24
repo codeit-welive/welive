@@ -6,5 +6,5 @@ export const NOTICE_VALIDATION = {
   /** 내용 최소 길이 */
   CONTENT_MIN_LENGTH: 10,
   /** 내용 최대 길이 */
-  CONTENT_MAX_LENGTH: 500,
+  CONTENT_MAX_LENGTH: 2000,
 } as const;

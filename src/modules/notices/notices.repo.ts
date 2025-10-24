@@ -2,7 +2,7 @@ import prisma from '#core/prisma';
 import { NoticeCreateDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
 import { Prisma } from '@prisma/client';
 
-const getBoardType = async (boardId: string) => {
+export const getBoardTypeRepo = async (boardId: string) => {
   const boardType = await prisma.board.findUnique({
     where: { id: boardId },
     select: { type: true },
@@ -10,7 +10,7 @@ const getBoardType = async (boardId: string) => {
   return boardType;
 };
 
-const existNotice = async (noticeId: string) => {
+export const existNoticeRepo = async (noticeId: string) => {
   const exists = await prisma.notice.count({
     where: {
       id: noticeId,
@@ -19,7 +19,7 @@ const existNotice = async (noticeId: string) => {
   return exists > 0;
 };
 
-const createNotice = async (data: NoticeCreateDTO) => {
+export const createNoticeRepo = async (data: NoticeCreateDTO) => {
   const notice = await prisma.notice.create({
     data: {
       title: data.title,
@@ -35,7 +35,7 @@ const createNotice = async (data: NoticeCreateDTO) => {
   return notice;
 };
 
-const getNoticeList = async (where: Prisma.NoticeWhereInput, pageSize: number, skip: number) => {
+export const getNoticeListRepo = async (where: Prisma.NoticeWhereInput, pageSize: number, skip: number) => {
   const [noticeList, total] = await Promise.all([
     prisma.notice.findMany({
       where,
@@ -69,7 +69,7 @@ const getNoticeList = async (where: Prisma.NoticeWhereInput, pageSize: number, s
   return { data: noticeList, total };
 };
 
-const getNotice = async (noticeId: string) => {
+export const getNoticeRepo = async (noticeId: string) => {
   const notice = await prisma.notice.findUnique({
     where: { id: noticeId },
     select: {
@@ -111,7 +111,7 @@ const getNotice = async (noticeId: string) => {
   return notice;
 };
 
-const updateNotice = async (noticeId: string, data: NoticeUpdateDTO) => {
+export const updateNoticeRepo = async (noticeId: string, data: NoticeUpdateDTO) => {
   const notice = await prisma.notice.update({
     where: {
       id: noticeId,
@@ -149,20 +149,10 @@ const updateNotice = async (noticeId: string, data: NoticeUpdateDTO) => {
   return notice;
 };
 
-const deleteNotice = async (noticeId: string) => {
+export const deleteNoticeRepo = async (noticeId: string) => {
   await prisma.notice.delete({
     where: {
       id: noticeId,
     },
   });
-};
-
-export default {
-  getBoardType,
-  existNotice,
-  createNotice,
-  getNoticeList,
-  getNotice,
-  updateNotice,
-  deleteNotice,
 };

@@ -1,14 +1,6 @@
 import { z } from 'zod';
 import { NOTICE_VALIDATION } from '#constants/notice';
-
-type NoticeCategory =
-  | 'MAINTENANCE'
-  | 'EMERGENCY'
-  | 'COMMUNITY'
-  | 'RESIDENT_VOTE'
-  | 'RESIDENT_COUNCIL'
-  | 'COMPLAINT'
-  | 'ETC';
+import { NoticeCategory } from '@prisma/client';
 
 type CommentDTO = {
   id: string;
@@ -20,6 +12,15 @@ type CommentDTO = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+export const noticeQuerySchema = z.object({
+  page: z.number().gt(1),
+  pageSize: z.number().gt(5),
+  category: z.enum(['MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'COMPLAINT', 'ETC']),
+  search: z.string().optional().nullable(),
+});
+
+export type NoticeQueryDTO = z.infer<typeof noticeQuerySchema>;
 
 export const noticeCreateSchema = z.object({
   userId: z.uuid({ message: '유효한 사용자 ID가 아닙니다.' }),
@@ -95,11 +96,4 @@ export interface NoticeListReponseDTO {
   viewsCount: number;
   commentsCount: number;
   isPinned: boolean;
-}
-
-export interface NoticeQueryDTO {
-  page: number;
-  pageSize: number;
-  category: NoticeCategory;
-  search: string | null;
 }
