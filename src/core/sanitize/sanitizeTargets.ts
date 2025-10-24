@@ -1,11 +1,4 @@
-export type SanitizeDomain =
-  | 'notices'
-  | 'complaints'
-  | 'polls'
-  | 'pollOptions'
-  | 'comments'
-  | 'notifications'
-  | 'residents';
+export type SanitizeDomain = 'notices' | 'complaints' | 'polls' | 'pollOptions' | 'comments' | 'notifications';
 
 export const sanitizeTargets: Record<SanitizeDomain, readonly string[]> = {
   notices: ['title', 'content'],
@@ -14,5 +7,4 @@ export const sanitizeTargets: Record<SanitizeDomain, readonly string[]> = {
   pollOptions: ['title', 'content'],
   comments: ['title', 'content'],
   notifications: ['title', 'content'],
-  residents: ['title', 'content'],
 };

@@ -15,7 +15,7 @@ export class SseClient {
    */
   send(event: SseEvent): void {
     this.res.write(`event: ${event.event}\n`);
-    this.res.write(`data: ${JSON.stringify(event.data)}`);
+    this.res.write(`data: ${JSON.stringify(event.data)}\n\n`);
   }
 
   /**

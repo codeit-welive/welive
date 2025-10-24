@@ -4,12 +4,14 @@ import { NotificationType } from '@prisma/client';
  * SSE 전송 데이터 타입 정의
  */
 export interface NotificationPayload {
-  id: string;
+  notificationId: string;
   content: string;
-  type: NotificationType;
+  notificationType: NotificationType;
   notifiedAt: string;
   isChecked: boolean;
-  recipientId: string;
+  complaintId?: string | null;
+  noticeId?: string | null;
+  pollId?: string | null;
 }
 
 /**
@@ -17,5 +19,5 @@ export interface NotificationPayload {
  */
 // prettier-ignore
 export type SseEvent =
-  | { event: 'notification'; data: NotificationPayload }
-  | { event: 'ping'; data: { ts: number } };
+  | { event: 'alarm'; data: NotificationPayload[] }
+  | { event: 'ping'; data?: Record<string, never> };
