@@ -1,27 +1,50 @@
 import { Router } from 'express';
+import authMiddleware from '#middlewares/authMiddleware';
+import requireRole from '#middlewares/requireRole';
 import {
   validateComplaintCreate,
   validateComplaintListQuery,
   validateComplaintParams,
   validateComplaintPatch,
+  validateComplaintPatchStatus,
+  validateComplaintDelete,
 } from './complaints.validator.js';
 import {
   createComplaintHandler,
   getComplaintListHandler,
   getComplaintHandler,
   patchComplaintHandler,
+  patchComplaintStatusHandler,
+  deleteComplaintHandler,
 } from './complaints.controller.js';
 
 const router = Router();
 
 router
   .route('/')
-  .post(validateComplaintCreate, createComplaintHandler)
-  .get(validateComplaintListQuery, getComplaintListHandler);
+  .post(authMiddleware, requireRole(['USER']), validateComplaintCreate, createComplaintHandler)
+  .get(authMiddleware, requireRole(['ADMIN', 'USER']), validateComplaintListQuery, getComplaintListHandler);
 
 router
   .route('/:complaintId')
-  .get(validateComplaintParams, getComplaintHandler)
-  .patch(validateComplaintParams, validateComplaintPatch, patchComplaintHandler);
+  .get(authMiddleware, requireRole(['ADMIN', 'USER']), validateComplaintParams, getComplaintHandler)
+  .patch(authMiddleware, requireRole(['USER']), validateComplaintParams, validateComplaintPatch, patchComplaintHandler)
+  .delete(
+    authMiddleware,
+    requireRole(['ADMIN', 'USER']),
+    validateComplaintParams,
+    validateComplaintDelete,
+    deleteComplaintHandler
+  );
+
+router
+  .route('/:complaintId/status')
+  .patch(
+    authMiddleware,
+    requireRole(['ADMIN']),
+    validateComplaintParams,
+    validateComplaintPatchStatus,
+    patchComplaintStatusHandler
+  );
 
 export default router;
