@@ -20,6 +20,7 @@ import routes from '#core/router';
 import { CORS_ORIGINS } from '#core/env';
 import { errorHandler } from '#middlewares/errorHandler';
 import ApiError from '#errors/ApiError';
+import noticeRouter from '#modules/notices/notices.router';
 
 const app: Application = express();
 
@@ -102,6 +103,7 @@ app.use(cookieParser());
  * API 라우터
  */
 app.use('/api', routes);
+app.use('/api/notices', noticeRouter);
 
 /**
  * 404 핸들러
