@@ -6,10 +6,14 @@
  * - 관련 Notification 생성 및 SSE 전송
  */
 
+import pLimit from 'p-limit';
 import prisma from '#core/prisma';
 import { logger } from '#core/logger';
 import { sendSseNotification } from '#sse/sseEmitter';
 import type { NotificationPayload } from '#sse/types';
+import { isPast, isWithinInterval, getDelayMs } from './poll.time.utils';
+
+const limit = pLimit(5);
 
 /**
  * 개별 Poll 활성화 처리
@@ -59,23 +63,37 @@ export const activatePoll = async (pollId: string, userId: string): Promise<void
  */
 export const activateReadyPolls = async (): Promise<void> => {
   try {
-    const readyPolls = await prisma.poll.findMany({
-      where: {
-        startDate: { lte: new Date() },
-        status: 'PENDING',
-      },
-      select: { id: true, userId: true },
+    const polls = await prisma.poll.findMany({
+      where: { status: 'PENDING' },
+      select: { id: true, userId: true, startDate: true },
     });
 
-    if (readyPolls.length === 0) {
+    if (polls.length === 0) {
       logger.polls.debug('활성화할 투표 없음');
       return;
     }
 
-    await Promise.all(readyPolls.map(({ id, userId }) => activatePoll(id, userId)));
+    const tasks = polls.map((poll) =>
+      limit(async () => {
+        if (isPast(poll.startDate)) {
+          await activatePoll(poll.id, poll.userId);
+        } else if (isWithinInterval(poll.startDate)) {
+          const delay = getDelayMs(poll.startDate);
+          setTimeout(async () => {
+            try {
+              await activatePoll(poll.id, poll.userId);
+            } catch (err) {
+              logger.polls.error(err as Error, `예약된 투표 ${poll.id} 활성화 실패`);
+            }
+          }, delay);
+        }
+      })
+    );
 
-    logger.polls.debug(`활성화된 투표 ${readyPolls.length}건 일괄 처리 완료`);
+    await Promise.all(tasks);
+
+    logger.polls.debug(`투표 활성화 처리 완료 (${polls.length}건 검사)`);
   } catch (error) {
-    logger.polls.error(error as Error, '투표 활성화 일괄 처리 중 오류 발생');
+    logger.polls.error(error as Error, '투표 활성화 처리 중 오류 발생');
   }
 };

@@ -6,10 +6,14 @@
  * - 관련 Notification을 생성
  */
 
+import pLimit from 'p-limit';
 import prisma from '#core/prisma';
 import { logger } from '#core/logger';
 import { sendSseNotification } from '#sse/sseEmitter';
 import type { NotificationPayload } from '#core/sse/types';
+import { isPast, isWithinInterval, getDelayMs } from './poll.time.utils';
+
+const limit = pLimit(5);
 
 /**
  * 개별 Poll 만료 처리
@@ -54,27 +58,40 @@ export const closePoll = async (pollId: string): Promise<void> => {
 };
 
 /**
- * 이미 종료된 Poll 전체 처리 (서버 시작 시 1회 실행)
+ * 만료 가능한 Poll 전체 처리
  */
 export const closeExpiredPolls = async (): Promise<void> => {
   try {
-    const expiredPolls = await prisma.poll.findMany({
-      where: {
-        endDate: { lte: new Date() },
-        status: { not: 'CLOSED' },
-      },
-      select: { id: true },
+    const polls = await prisma.poll.findMany({
+      where: { status: { not: 'CLOSED' } },
+      select: { id: true, endDate: true },
     });
 
-    if (expiredPolls.length === 0) {
-      logger.polls.debug('만료된 투표 없음');
+    if (polls.length === 0) {
+      logger.polls.debug('만료 대상 투표 없음');
       return;
     }
 
-    await Promise.all(expiredPolls.map(({ id }) => closePoll(id)));
+    const tasks = polls.map((poll) => {
+      limit(async () => {
+        if (isPast(poll.endDate)) {
+          await closePoll(poll.id);
+        } else if (isWithinInterval(poll.endDate)) {
+          const delay = getDelayMs(poll.endDate);
+          setTimeout(async () => {
+            try {
+              await closePoll(poll.id);
+            } catch (err) {
+              logger.polls.error(err as Error, `예약된 투표 ${poll.id} 만료 실패`);
+            }
+          }, delay);
+        }
+      });
+    });
 
-    logger.polls.debug(`만료된 투표 ${expiredPolls.length}건 일괄 처리 완료`);
+    await Promise.all(tasks);
+    logger.polls.debug(`투표 만료 처리 완료 (${polls.length}건 검사)`);
   } catch (error) {
-    logger.polls.error(error as Error, '만료 투표 일괄 처리 중 오류 발생');
+    logger.polls.error(error as Error, '투표 만료 처리 중 오류 발생');
   }
 };
