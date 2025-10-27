@@ -2,7 +2,7 @@ import http from 'http';
 import app from '#core/app';
 import env from '#core/env';
 import prisma from '#core/prisma';
-//import pollScheduler from '#crons/pollScheduler';
+import { startAllJobs } from '#jobs/index';
 
 const PORT = env.PORT || 3000;
 const server = http.createServer(app);
@@ -27,7 +27,7 @@ void (async () => {
 /**
  * 스케줄러 실행
  */
-//pollScheduler.start();
+startAllJobs();
 
 /**
  * 서버 시작
