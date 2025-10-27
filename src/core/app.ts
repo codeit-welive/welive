@@ -17,7 +17,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 
 import routes from '#core/router';
-import { CORS_ORIGINS } from '#core/env';
+import env from '#core/env';
 import { errorHandler } from '#middlewares/errorHandler';
 import ApiError from '#errors/ApiError';
 
@@ -84,7 +84,7 @@ app.use(
   cors({
     origin: (origin, cb) => {
       if (!origin) return cb(null, true);
-      if (CORS_ORIGINS.includes(origin)) return cb(null, true);
+      if (env.CORS_ORIGINS.includes(origin)) return cb(null, true);
       return cb(new Error('Not allowed by CORS'));
     },
     credentials: true,
