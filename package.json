@@ -119,7 +119,7 @@
     "#utils/*": "./src/core/utils/*",
     "#sse/*": "./src/core/sse/*",
     "#sanitize/*": "./src/core/sanitize/*",
-    "#crons/*": "./src/crons/*"
+    "#jobs/*": "./src/jobs/*"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"

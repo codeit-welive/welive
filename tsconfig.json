@@ -20,7 +20,7 @@
       "#utils/*": ["src/core/utils/*"],
       "#sse/*": ["src/core/sse/*"],
       "#sanitize/*": ["src/core/sanitize/*"],
-      "#crons/*": ["src/crons/*"]
+      "#jobs/*": ["src/jobs/*"]
     },
     "typeRoots": ["./src/common/types", "./node_modules/@types"]
   },
