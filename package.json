@@ -2,7 +2,7 @@
   "name": "welive",
   "version": "1.0.0",
   "description": "Codeit1Team Project Welive",
-  "main": "dist/core/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "_section1": "Prisma",
     "seed": "ts-node -r tsconfig-paths/register prisma/seed.ts",
@@ -24,11 +24,11 @@
     "test:migrate": "dotenv -e .env.test -- npx prisma migrate deploy --schema=prisma/schema.prisma",
     "test:reset": "dotenv -e .env.test -- npx prisma migrate reset --force --skip-generate --schema=prisma/schema.prisma",
     "_section5": "Development",
-    "dev:be": "cross-env NODE_ENV=development nodemon --watch src --ext ts --exec \"ts-node -r tsconfig-paths/register src/core/index.ts\"",
+    "dev:be": "cross-env NODE_ENV=development nodemon --watch src --ext ts --exec \"ts-node -r tsconfig-paths/register src/index.ts\"",
     "dev:fe": "cross-env NODE_ENV=development npm run dev --prefix frontend",
     "dev": "concurrently \"npm run dev:be\" \"npm run dev:fe\"",
     "_section6": "Production",
-    "start:be": "cross-env NODE_ENV=production pm2 start dist/core/index.js --name welive-be",
+    "start:be": "cross-env NODE_ENV=production pm2 start dist/index.js --name welive-be",
     "start:fe": "cross-env NODE_ENV=production pm2 start npm --name welive-fe -- run start --prefix frontend",
     "start": "npm run start:be && npm run start:fe",
     "stop": "pm2 delete welive-be || true && pm2 delete welive-fe || true"
