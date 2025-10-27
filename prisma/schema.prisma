@@ -123,14 +123,12 @@ model User {
 }
 
 model Apartment {
-  id   String @id @default(uuid())
-  name String @unique
+  id            String @id @default(uuid())
+  apartmentName String @unique
 
-  address     String
-  description String?
-
-  // apartmentManagementNumber로 쓰이는 곳도 있음
-  officeNumber String? // 관리사무소 번호
+  apartmentAddress          String
+  description               String?
+  apartmentManagementNumber String? // 관리사무소 번호
 
   startComplexNumber String // 아파트 단지 시작번호
   endComplexNumber   String // 아파트 단지 끝번호
@@ -246,11 +244,12 @@ model Complaint {
 }
 
 model Poll {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   title     String
   content   String
   startDate DateTime
   endDate   DateTime
+  status    PollStatus @default(PENDING)
 
   buildingPermission Int      @default(0)
   createdAt          DateTime @default(now())

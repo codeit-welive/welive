@@ -79,9 +79,9 @@ const createAdminAndApartment = async () => {
   const apartment = await prisma.apartment.create({
     data: {
       id: APT_ID,
-      name: '위리브아파트',
-      address: DEFAULT_ADDRESS,
-      officeNumber: '0211111111',
+      apartmentName: '위리브아파트',
+      apartmentAddress: DEFAULT_ADDRESS,
+      apartmentManagementNumber: '0211111111',
       startComplexNumber: '101',
       endComplexNumber: '105',
       startDongNumber: '101',
