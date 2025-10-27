@@ -1,33 +1,16 @@
 /**
- * @file 환경 변수 사용 예시
- * @description
- * #core/env 모듈에서 검증된 환경 변수를 불러와 사용하는 방법입니다.
- * 필요한 값만 개별 import 하거나, env 전체를 기본 import로 가져올 수 있습니다.
+ * @file #core/env.ts
+ * @description 환경 변수 로더 및 검증기
  *
- * 예시:
+ * @usage
+ * 환경 변수는 기본적으로 `env` 객체를 통해 접근하는 것을 권장합니다.
+ *
  * ```ts
- * import {
- *   DATABASE_URL,
- *   BASE_URL,
- *   FRONT_URL,
- *   FILE_BASE_URL,
- *   AWS_CONFIG,
- *   CORS_ORIGINS,
- * } from '#core/env';
- *
- * // 또는
- * // import env from '#core/env';
- *
- * console.log('데이터베이스 연결 URL:', DATABASE_URL);
- * console.log('API 서버 ORIGIN:', BASE_URL);
- * console.log('프론트엔드 ORIGIN:', FRONT_URL);
- * console.log('파일 기본 경로:', FILE_BASE_URL);
- * console.log('CORS 허용 목록:', CORS_ORIGINS);
- *
- * if (AWS_CONFIG.enabled) {
- *   console.log('S3 버킷 URL:', AWS_CONFIG.baseUrl);
- * }
+ * import env from '#core/env';
+ * console.log(env.NODE_ENV);
+ * console.log(env.BASE_URL);
  * ```
+ *
  */
 
 import { config as load } from 'dotenv';
@@ -46,6 +29,7 @@ if (process.env.SKIP_DOTENV !== 'true') {
  * 유틸 함수
  */
 const trimTrailingSlash = (s: string) => s.replace(/\/+$/, '');
+const normalizeOrigin = (s: string) => trimTrailingSlash(s).toLowerCase();
 
 /**
  * RUNTIME FLAGS
@@ -99,33 +83,48 @@ const awsSchema = IS_PROD
       AWS_S3_BASE_URL: z.string().optional(),
     });
 
+/**
+ * Parse
+ */
 const schema = baseSchema.merge(awsSchema);
-
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
   console.error('❌ Invalid environment variables:');
   for (const i of parsed.error.issues) console.error(`- ${i.path.join('.')}: ${i.message}`);
-  throw new Error('Invalid environment variables');
+  process.exit(1);
 }
 
 const env = parsed.data;
 
 /**
- * DATABASE / ORIGINS
+ * Environment Resolution
  */
-export const DATABASE_URL = env.DATABASE_URL;
-export const BASE_URL = env.BASE_URL;
-export const FRONT_URL = env.FRONT_URL;
+const BASE_URL = env.BASE_URL;
+const FRONT_URL = env.FRONT_URL;
+const PORT = env.PORT;
+
+const ACCESS_TOKEN_SECRET = env.ACCESS_TOKEN_SECRET;
+const REFRESH_TOKEN_SECRET = env.REFRESH_TOKEN_SECRET;
+const PASSWORD_PEPPER = env.PASSWORD_PEPPER;
 
 /**
- * RUNTIME
+ * FILE URL
  */
-export const ACCESS_TOKEN_SECRET = env.ACCESS_TOKEN_SECRET;
-export const REFRESH_TOKEN_SECRET = env.REFRESH_TOKEN_SECRET;
-export const PASSWORD_PEPPER = env.PASSWORD_PEPPER;
+const rawFileBase = env.FILE_BASE_URL?.trim();
+
+let FILE_BASE_URL: string;
+
+if (rawFileBase) {
+  FILE_BASE_URL = trimTrailingSlash(rawFileBase);
+} else if (IS_PROD) {
+  console.error('❌ Missing FILE_BASE_URL in production environment');
+  process.exit(1);
+} else {
+  FILE_BASE_URL = `http://localhost:${PORT}/uploads`;
+}
 
 /**
- * AWS & FILE URL CONFIG
+ * AWS CONFIG
  */
 type EnvWithAws = typeof env & {
   AWS_ACCESS_KEY_ID?: string;
@@ -135,23 +134,7 @@ type EnvWithAws = typeof env & {
   AWS_S3_BASE_URL?: string;
 };
 
-/**
- * FILE URL
- */
-const rawFileBase = env.FILE_BASE_URL;
-
-export const FILE_BASE_URL = rawFileBase
-  ? trimTrailingSlash(rawFileBase)
-  : IS_PROD
-    ? (() => {
-        throw new Error('❌ FILE_BASE_URL or AWS_S3_BASE_URL is required in production.');
-      })()
-    : `http://localhost:${env.PORT}/uploads`;
-
-/**
- * AWS CONFIG (only enabled in production)
- */
-export const AWS_CONFIG = IS_PROD
+const AWS_CONFIG = IS_PROD
   ? {
       accessKeyId: (env as EnvWithAws).AWS_ACCESS_KEY_ID,
       secretAccessKey: (env as EnvWithAws).AWS_SECRET_ACCESS_KEY,
@@ -165,15 +148,30 @@ export const AWS_CONFIG = IS_PROD
 /**
  * CORS ORIGINS
  */
-export const CORS_ORIGINS = [
-  ...env.CORS_ORIGIN.split(',')
-    .map((s) => s.trim())
-    .filter(Boolean),
-];
+const CORS_ORIGINS = Array.from(
+  new Set(
+    env.CORS_ORIGIN.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map(normalizeOrigin)
+  )
+);
 
 // FRONT_URL이 명시되어 있고, 목록에 없으면 추가
-if (env.FRONT_URL && !CORS_ORIGINS.includes(env.FRONT_URL)) {
-  CORS_ORIGINS.push(env.FRONT_URL);
+const normalizedFront = normalizeOrigin(env.FRONT_URL);
+if (env.FRONT_URL && !CORS_ORIGINS.includes(normalizedFront)) {
+  CORS_ORIGINS.push(normalizedFront);
 }
 
-export default env;
+export default {
+  NODE_ENV,
+  BASE_URL,
+  FRONT_URL,
+  PORT,
+  FILE_BASE_URL,
+  AWS_CONFIG,
+  CORS_ORIGINS,
+  ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET,
+  PASSWORD_PEPPER,
+};
