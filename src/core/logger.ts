@@ -122,6 +122,7 @@ export const logger = Object.assign(baseLogger, {
   users: createDomainLogger('users'),
 
   // 전체 시스템 수준 로그
+  sse: createDomainLogger('sse'),
   system: createDomainLogger('system'),
 });
 
