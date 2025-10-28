@@ -24,7 +24,7 @@
     "test:migrate": "dotenv -e .env.test -- npx prisma migrate deploy --schema=prisma/schema.prisma",
     "test:reset": "dotenv -e .env.test -- npx prisma migrate reset --force --skip-generate --schema=prisma/schema.prisma",
     "_section5": "Development",
-    "dev:be": "cross-env NODE_ENV=development nodemon --watch src --ext ts --exec \"ts-node -r tsconfig-paths/register src/index.ts\"",
+    "dev:be": "chcp 65001 >NUL && cross-env NODE_ICU_DATA=node_modules/full-icu NODE_ENCODING=utf8 NODE_ENV=development nodemon --watch src --ext ts --exec \"ts-node -r tsconfig-paths/register src/index.ts\"",
     "dev:fe": "cross-env NODE_ENV=development npm run dev --prefix frontend",
     "dev": "concurrently \"npm run dev:be\" \"npm run dev:fe\"",
     "_section6": "Production",
