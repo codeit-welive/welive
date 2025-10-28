@@ -128,7 +128,7 @@ model Apartment {
 
   apartmentAddress          String
   description               String?
-  apartmentManagementNumber String? // 관리사무소 번호
+  apartmentManagementNumber String? @unique // 관리사무소 번호
 
   startComplexNumber String // 아파트 단지 시작번호
   endComplexNumber   String // 아파트 단지 끝번호
@@ -155,7 +155,7 @@ model Apartment {
 model Resident {
   id             String         @id @default(uuid())
   name           String
-  contact        String
+  contact        String         @unique
   building       String
   unitNumber     String
   isRegistered   Boolean        @default(false)
