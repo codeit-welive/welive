@@ -13,15 +13,22 @@
  *
  */
 
+jest.spyOn(process, 'exit').mockImplementation(((code?: number) => {
+  throw new Error(`process.exit: ${code}`);
+}) as never);
+
 import { config as load } from 'dotenv';
 import fs from 'fs';
 import { z } from 'zod';
 
+/**
+ * dotenv 로드
+ */
 if (process.env.SKIP_DOTENV !== 'true') {
   if (process.env.NODE_ENV === 'test' && fs.existsSync('.env.test')) {
-    load({ path: '.env.test', override: true });
+    load({ path: '.env.test', override: true, quiet: true });
   } else {
-    load({ override: true });
+    load({ override: true, quiet: true });
   }
 }
 
@@ -42,20 +49,20 @@ const IS_PROD = NODE_ENV === 'production';
  */
 const baseSchema = z.object({
   // DATABASE
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: z.url(),
 
   // PORT
   PORT: z.coerce.number().int().positive().default(3001),
   FE_PORT: z.coerce.number().int().positive().optional(),
 
   // API ORIGINS
-  BASE_URL: z.string().url(),
+  BASE_URL: z.url(),
 
   // FRONT ORIGIN
-  FRONT_URL: z.string().url(),
+  FRONT_URL: z.url(),
 
   // FILE URL (optional in dev/test)
-  FILE_BASE_URL: z.string().url().optional(),
+  FILE_BASE_URL: z.url().optional(),
 
   // RUNTIME
   CORS_ORIGIN: z.string().default(''),
@@ -73,7 +80,7 @@ const awsSchema = IS_PROD
       AWS_SECRET_ACCESS_KEY: z.string().min(10),
       AWS_REGION: z.string().min(2),
       AWS_S3_BUCKET_NAME: z.string().min(3),
-      AWS_S3_BASE_URL: z.string().url(),
+      AWS_S3_BASE_URL: z.url(),
     })
   : z.object({
       AWS_ACCESS_KEY_ID: z.string().optional(),
