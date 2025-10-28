@@ -2,10 +2,19 @@ import http from 'http';
 import app from '#core/app';
 import env from '#core/env';
 import prisma from '#core/prisma';
+import { logger } from '#core/logger';
 import { startAllJobs } from '#jobs/index';
 
 const PORT = env.PORT || 3000;
 const server = http.createServer(app);
+
+/**
+ * 유틸
+ */
+const shutdown = async (code = 0) => {
+  await prisma.$disconnect();
+  process.exit(code);
+};
 
 /**
  * DB 연결 확인
@@ -13,14 +22,14 @@ const server = http.createServer(app);
 void (async () => {
   try {
     await prisma.$connect();
-    console.log('✅ Database connected');
+    logger.system.info('✅ Database connected');
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error('❌ Failed to connect to database:', err.message);
+      logger.system.error(err, '❌ Database connection failed');
     } else {
-      console.error('❌ Failed to connect to database:', String(err));
+      logger.system.error(`❌ Database connection failed: ${String(err)}`);
     }
-    process.exit(1);
+    shutdown(1);
   }
 })();
 
@@ -33,20 +42,29 @@ startAllJobs();
  * 서버 시작
  */
 server.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  logger.system.info(`✅ Server running on http://localhost:${PORT}`);
+});
+
+server.on('error', async (err) => {
+  logger.system.error(err, '❌ Server failed to start');
+  shutdown(1);
 });
 
 /**
  * 비동기 예외 처리
  */
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('⚠️ Unhandled Rejection at:', promise, 'reason:', reason);
+  if (reason instanceof Error) {
+    logger.system.error(reason, '❌ Unhandled Promise Rejection');
+  } else {
+    logger.system.error(`❌ Unhandled Promise Rejection: ${String(reason)}`);
+  }
 });
 
 /**
  * 미처리 예외 처리
  */
-process.on('uncaughtException', (err) => {
-  console.error('🚫 Uncaught Exception thrown:', err);
-  process.exit(1);
+process.on('uncaughtException', async (err) => {
+  logger.system.error(err, '❌ Uncaught Exception thrown');
+  shutdown(1);
 });

@@ -23,21 +23,47 @@ const isDev = env.NODE_ENV !== 'production';
 
 /**
  * Pino 기본 인스턴스 생성
- * - level: 로그 최소 레벨 설정(debug: 모든 로그 / info: 요약 중심)
+ * - level: 로그 최소 레벨 설정 (debug: 모든 로그 / info: 요약 중심)
  * - base: pid, hostname 등의 메타 데이터 제거 후 간결하게 출력
- * - timestamp: ISO 표준 시각 출력
- * - transport: (개발 환경일 경우) 컬러/단일 라인 형식 활성화
+ * - timestamp:
+ *    • 모든 환경에서 UTC+9(Asia/Seoul) 기준으로 출력
+ *    • 개발 환경(dev/test): HH:MM:SS 형식 (가독성 중심)
+ *    • 운영 환경(prod): YYYY-MM-DD HH:MM:SS 형식 (기록 중심)
+ * - transport:
+ *    • 개발 환경(dev/test): pino-pretty 활성화 (컬러, 단일 라인)
+ *    • 운영 환경(prod): JSON 로그로 출력 (수집/분석용)
  */
 const baseLogger = pino({
   level: isDev ? 'debug' : 'info',
   base: undefined,
-  timestamp: pino.stdTimeFunctions.isoTime,
+  timestamp: () => {
+    const now = new Date();
+    // UTC+9 (Asia/Seoul) 변환
+    const local = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+
+    if (isDev) {
+      // 개발환경: HH:MM:SS
+      const hh = String(local.getUTCHours()).padStart(2, '0');
+      const mm = String(local.getUTCMinutes()).padStart(2, '0');
+      const ss = String(local.getUTCSeconds()).padStart(2, '0');
+      return `,"time":"${hh}:${mm}:${ss}"`;
+    } else {
+      // 운영환경: YYYY-MM-DD HH:MM:SS
+      const yyyy = local.getUTCFullYear();
+      const MM = String(local.getUTCMonth() + 1).padStart(2, '0');
+      const dd = String(local.getUTCDate()).padStart(2, '0');
+      const hh = String(local.getUTCHours()).padStart(2, '0');
+      const mm = String(local.getUTCMinutes()).padStart(2, '0');
+      const ss = String(local.getUTCSeconds()).padStart(2, '0');
+      return `,"time":"${yyyy}-${MM}-${dd} ${hh}:${mm}:${ss}"`;
+    }
+  },
   transport: isDev
     ? {
         target: 'pino-pretty',
         options: {
           colorize: true,
-          translateTime: 'HH:MM:ss',
+          translateTime: false,
           ignore: 'pid,hostname',
           singleLine: true,
         },
