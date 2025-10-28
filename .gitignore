@@ -4,5 +4,4 @@ dist
 .env.production
 .env.test
 .DS_Store
-prisma/migrations
 coverage
