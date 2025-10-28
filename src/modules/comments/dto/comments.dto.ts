@@ -16,6 +16,12 @@ export const commentPatchSchema = commentCreateSchema.extend({
   commentId: z.uuid({ message: '유효한 댓글 ID가 아닙니다.' }),
 });
 
+export const commentDeleteSchema = z.object({
+  userId: z.uuid({ message: '유효한 사용자 ID가 아닙니다.' }),
+  role: z.enum([UserRole.ADMIN, UserRole.USER], '댓글 작성 권한이 없는 역할입니다.'),
+  commentId: z.uuid({ message: '유효한 댓글 ID가 아닙니다.' }),
+});
+
 export type CommentWithUserDto = Prisma.CommentGetPayload<{
   select: {
     id: true;
@@ -33,3 +39,4 @@ export type CommentWithUserDto = Prisma.CommentGetPayload<{
 
 export type CommentCreateDto = z.infer<typeof commentCreateSchema>;
 export type CommentPatchDto = z.infer<typeof commentPatchSchema>;
+export type CommentDeleteDto = z.infer<typeof commentDeleteSchema>;
