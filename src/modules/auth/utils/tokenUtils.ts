@@ -1,8 +1,10 @@
 import jwt from 'jsonwebtoken';
-import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '#core/env';
+import env from '#core/env';
 import type { DecodedToken, AuthHeaderDto } from '#modules/auth/dto/token.dto';
 import ApiError from '#errors/ApiError';
 import { UserRole } from '@prisma/client';
+
+const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = env;
 
 export const extractToken = (authHeader: AuthHeaderDto): string => {
   if (!authHeader.authorization.startsWith('Bearer ')) throw ApiError.unauthorized('토큰 형식이 올바르지 않습니다.');
