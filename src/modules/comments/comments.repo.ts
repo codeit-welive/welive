@@ -106,3 +106,50 @@ export const create = async (data: CommentCreateDto, boardId: string) => {
     },
   });
 };
+
+export const getUserIdByCommentId = async (commentId: string) => {
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: { userId: true },
+  });
+  return comment?.userId;
+};
+
+export const patchComment = async (commentId: string, content: string) => {
+  return await prisma.comment.update({
+    where: { id: commentId },
+    data: {
+      content,
+    },
+    select: {
+      id: true,
+      userId: true,
+      content: true,
+      createdAt: true,
+      updatedAt: true,
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+};
+
+export const getAdminIdByCommentId = async (commentId: string) => {
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: {
+      board: {
+        select: {
+          apartment: {
+            select: {
+              adminId: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  return comment?.board.apartment.adminId;
+};
