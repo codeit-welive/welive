@@ -9,7 +9,6 @@ if (fs.existsSync(envPath)) dotenv.config({ path: envPath });
 else dotenv.config();
 
 import express, { Application, Request, Response, NextFunction } from 'express';
-import cors from 'cors';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import compression from 'compression';
@@ -17,8 +16,8 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 
 import routes from '#core/router';
-import env from '#core/env';
 import { errorHandler } from '#middlewares/errorHandler';
+import corsMiddleware from '#core/middlewares/cors';
 import ApiError from '#errors/ApiError';
 
 const app: Application = express();
@@ -80,16 +79,7 @@ app.use(compression());
 /**
  * CORS (화이트리스트 기반)
  */
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin) return cb(null, true);
-      if (env.CORS_ORIGINS.includes(origin)) return cb(null, true);
-      return cb(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-  })
-);
+app.use(corsMiddleware);
 
 /**
  * Body & Cookie 파서
