@@ -28,19 +28,3 @@ export const adminDataMapper = async (data: SignupAdminRequestDto) => {
     },
   };
 };
-
-export const userDataMapper = async (data: SignupUserRequestDto) => {
-  return {
-    userData: {
-      username: data.username,
-      password: await hashPassword(data.password),
-      contact: data.contact,
-      name: data.name,
-      email: data.email,
-      role: data.role,
-      avatar: data.avatar,
-      building: data.apartmentDong,
-      unitNumber: data.apartmentHo,
-    },
-  };
-};
