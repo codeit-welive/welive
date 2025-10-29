@@ -3,13 +3,14 @@ import { SseClient } from './sseClient';
 import type { SseEvent, NotificationPayload } from './types';
 import authMiddleware from '#core/middlewares/authMiddleware';
 import prisma from '#core/prisma';
+import env from '#core/env';
 
 const router = Router();
 const clients = new Map<string, SseClient>();
 
 /**
  * @route GET /api/notifications/sse
- * @desc 로그인한 사용자의 읽지 않은 알림을 30초마다 실시간 전송
+ * @desc 로그인한 사용자의 읽지 않은 알림을 실시간 전송
  * @access Private (JWT 쿠키 인증)
  */
 router.get('/sse', authMiddleware, async (req, res) => {
@@ -82,8 +83,10 @@ export const broadcast = (payload: NotificationPayload): void => {
 const baseInterval = 30_000;
 
 // prettier-ignore
-setInterval(() => {
-  for (const client of clients.values()) client.ping();
-}, baseInterval + (Math.random() * 10_000 - 5_000));
+if (env.NODE_ENV !== 'test') {
+  setInterval(() => {
+    for (const client of clients.values()) client.ping();
+  }, baseInterval + (Math.random() * 10_000 - 5_000));
+}
 
 export default router;
