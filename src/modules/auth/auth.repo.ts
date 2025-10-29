@@ -108,7 +108,7 @@ export const getPasswordByUsername = async (username: string) => {
 };
 
 export const getUserByUsername = async (username: string, role: UserRole) => {
-  return prisma.user.findUnique({
+  return prisma.user.findUniqueOrThrow({
     where: { username },
     select: {
       ...UserSelectFields,
