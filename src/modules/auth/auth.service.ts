@@ -35,7 +35,6 @@ export const login = async (data: LoginDto) => {
   const { username, password } = data;
   const hashedPassword = await getPasswordByUsername(username);
 
-  console.log(password, hashedPassword.password);
   if (!(await isPasswordValid(password, hashedPassword.password))) {
     throw ApiError.unauthorized('잘못된 비밀번호입니다');
   }
