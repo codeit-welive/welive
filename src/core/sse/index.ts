@@ -9,7 +9,7 @@ const clients = new Map<string, SseClient>();
 
 /**
  * @route GET /api/notifications/sse
- * @desc 로그인한 사용자의 읽지 않은 알림을 30초마다 실시간 전송
+ * @desc 로그인한 사용자의 읽지 않은 알림을 실시간 전송
  * @access Private (JWT 쿠키 인증)
  */
 router.get('/sse', authMiddleware, async (req, res) => {
