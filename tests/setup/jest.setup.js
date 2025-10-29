@@ -1,4 +1,7 @@
 beforeAll(() => {
+  jest.spyOn(process, 'exit').mockImplementation((code) => {
+    throw new Error(`process.exit called (${code})`);
+  });
   jest.spyOn(console, 'error').mockImplementation(() => {});
   jest.spyOn(console, 'log').mockImplementation(() => {});
 });
