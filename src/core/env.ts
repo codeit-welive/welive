@@ -65,6 +65,7 @@ const baseSchema = z.object({
   ACCESS_TOKEN_SECRET: z.string().min(10),
   REFRESH_TOKEN_SECRET: z.string().min(10),
   PASSWORD_PEPPER: z.string().min(10),
+  DEFAULT_AVATAR_URL: z.url(),
 });
 
 /**
@@ -113,6 +114,7 @@ const PORT = env.PORT;
 const ACCESS_TOKEN_SECRET = env.ACCESS_TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = env.REFRESH_TOKEN_SECRET;
 const PASSWORD_PEPPER = env.PASSWORD_PEPPER;
+const DEFAULT_AVATAR_URL = env.DEFAULT_AVATAR_URL;
 
 /**
  * FILE URL
@@ -181,4 +183,5 @@ export default {
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
   PASSWORD_PEPPER,
+  DEFAULT_AVATAR_URL,
 };

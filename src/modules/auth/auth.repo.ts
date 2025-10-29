@@ -1,5 +1,6 @@
 import prisma from '#core/prisma';
 import { SignupSuperAdminRequestDto, UserDto, ApartmentDto, SignupUserRequestDto } from './dto/register.dto';
+import { BoardType, User, UserRole } from '@prisma/client';
 
 const UserSelectFields = {
   id: true,
@@ -18,12 +19,17 @@ export const createSuperAdmin = async (data: SignupSuperAdminRequestDto) => {
 };
 
 export const createAdmin = async (userData: UserDto, apartmentData: ApartmentDto) => {
-  // 유저 생성 후 아파트를 생성하고 유저와 연결
+  // 유저 생성 -> 아파트 생성 후 연결 -> 아파트의 공지, 민원, 투표 게시판 생성
   return await prisma.user.create({
     data: {
       ...userData,
       apartment: {
-        create: apartmentData,
+        create: {
+          ...apartmentData,
+          boards: {
+            create: [{ type: BoardType.NOTICE }, { type: BoardType.COMPLAINT }, { type: BoardType.POLL }],
+          },
+        },
       },
     },
     select: UserSelectFields,
@@ -87,6 +93,53 @@ export const getApartmentRangeByName = async (apartmentName: string) => {
       endFloorNumber: true,
       startHoNumber: true,
       endHoNumber: true,
+    },
+  });
+};
+
+export const getPasswordByUsername = async (username: string) => {
+  return prisma.user.findUniqueOrThrow({
+    where: { username },
+    select: {
+      password: true,
+      role: true,
+    },
+  });
+};
+
+export const getUserByUsername = async (username: string, role: UserRole) => {
+  return prisma.user.findUniqueOrThrow({
+    where: { username },
+    select: {
+      ...UserSelectFields,
+      apartment:
+        role === UserRole.ADMIN
+          ? {
+              select: {
+                id: true,
+                apartmentName: true,
+                boards: { select: { id: true, type: true } },
+              },
+            }
+          : undefined,
+      resident:
+        role === UserRole.USER
+          ? {
+              select: {
+                building: true,
+                apartment: {
+                  select: {
+                    id: true,
+                    apartmentName: true,
+                    boards: { select: { id: true, type: true } },
+                  },
+                },
+              },
+            }
+          : undefined,
+      username: true,
+      contact: true,
+      avatar: true,
     },
   });
 };
