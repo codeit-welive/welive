@@ -1,15 +1,16 @@
 import { RequestHandler } from 'express';
-import { registSuperAdmin, registAdmin, registUser } from './auth.service';
+import { registSuperAdmin, registAdmin, registUser, login } from './auth.service';
 import ApiError from '#errors/ApiError';
 import { Prisma } from '@prisma/client';
 import { checkDuplicateData } from './utils/checkDuplicateData';
+import env from '#core/env';
 
 export const registSuperAdminHandler: RequestHandler = async (req, res, next) => {
   try {
     const data = res.locals.validatedBody;
 
     const result = await registSuperAdmin(data);
-    res.status(201).json(result);
+    return res.status(201).json(result);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       const errorFields = err.meta?.target as string[];
@@ -24,7 +25,7 @@ export const registerAdminHandler: RequestHandler = async (req, res, next) => {
     const data = res.locals.validatedBody;
 
     const result = await registAdmin(data);
-    res.status(201).json(result);
+    return res.status(201).json(result);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       const errorFields = err.meta?.target as string[];
@@ -39,7 +40,7 @@ export const registerUserHandler: RequestHandler = async (req, res, next) => {
     const data = res.locals.validatedBody;
 
     const result = await registUser(data);
-    res.status(201).json(result);
+    return res.status(201).json(result);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === 'P2002') {
@@ -47,6 +48,38 @@ export const registerUserHandler: RequestHandler = async (req, res, next) => {
         throw ApiError.conflict(checkDuplicateData(errorFields).message);
       } else if (err.code === 'P2025') {
         throw ApiError.notFound('해당 아파트가 존재하지 않습니다.');
+      }
+    }
+    next(err);
+  }
+};
+
+export const loginHandler: RequestHandler = async (req, res, next) => {
+  try {
+    const data = res.locals.validatedBody;
+    const result = await login(data);
+
+    res.cookie('access_token', result.accessToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 1000, // 1 hour
+      path: '/',
+    });
+
+    res.cookie('refresh_token', result.refreshToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+      path: '/',
+    });
+
+    return res.status(200).json(result.user);
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === 'P2025') {
+        throw ApiError.notFound('사용자를 찾을 수 없습니다');
       }
     }
     next(err);

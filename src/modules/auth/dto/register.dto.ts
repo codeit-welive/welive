@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import dns from 'dns/promises';
+import env from '#core/env';
 import { UserRole, JoinStatus } from '@prisma/client';
 import { ACCOUNT_VALIDATION, APARTMENT_VALIDATION } from '#constants/auth.constant';
 
@@ -62,7 +63,7 @@ export const userSchema = z.object({
     .max(ACCOUNT_VALIDATION.NAME_MAX_LENGTH, `이름은 최대 ${ACCOUNT_VALIDATION.NAME_MAX_LENGTH}자 이하여야 합니다.`),
   email: emailWithMX,
   role: z.enum(UserRole, '유효하지 않은 사용자 역할입니다.').default(UserRole.USER),
-  avatar: z.string().default('process.env.DEFAULT_AVATAR'),
+  avatar: z.url().default(env.DEFAULT_AVATAR_URL),
 });
 
 export const signupSuperAdminRequestDtoSchema = userSchema.extend({

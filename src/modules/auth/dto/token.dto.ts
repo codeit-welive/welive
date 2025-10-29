@@ -13,10 +13,6 @@ export interface RefreshDto {
   expiresAt: Date;
 }
 
-export interface AuthHeaderDto {
-  authorization: string;
-}
-
 export interface TokenDto {
   accessToken: string;
   refreshToken: string;

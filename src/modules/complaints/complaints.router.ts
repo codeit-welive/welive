@@ -20,11 +20,28 @@ import {
 
 const router = Router();
 
+/**
+ * POST /complaints
+ * 민원 생성 (USER만 가능)
+ *
+ * GET /complaints
+ * 민원 목록 조회 (ADMIN, USER)
+ */
 router
   .route('/')
   .post(authMiddleware, requireRole(['USER']), validateComplaintCreate, createComplaintHandler)
   .get(authMiddleware, requireRole(['ADMIN', 'USER']), validateComplaintListQuery, getComplaintListHandler);
 
+/**
+ * GET /complaints/:complaintId
+ * 민원 상세 조회 (ADMIN, USER)
+ *
+ * PATCH /complaints/:complaintId
+ * 민원 수정 - 본인이 작성한 민원만 수정 가능 (USER만 가능)
+ *
+ * DELETE /complaints/:complaintId
+ * 민원 삭제 - USER: 본인만, ADMIN: 관리 아파트 모든 민원
+ */
 router
   .route('/:complaintId')
   .get(authMiddleware, requireRole(['ADMIN', 'USER']), validateComplaintParams, getComplaintHandler)
@@ -37,6 +54,10 @@ router
     deleteComplaintHandler
   );
 
+/**
+ * PATCH /complaints/:complaintId/status
+ * 민원 상태 변경 (ADMIN만 가능)
+ */
 router
   .route('/:complaintId/status')
   .patch(

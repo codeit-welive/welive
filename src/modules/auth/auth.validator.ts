@@ -5,6 +5,7 @@ import {
   signupAdminRequestDtoSchema,
   signupUserRequestDtoSchema,
 } from './dto/register.dto';
+import { LoginDtoSchema } from './dto/login.dto';
 import { isValidateApartmentRange } from './utils/isValidateApartmentRange';
 import ApiError from '#errors/ApiError';
 
@@ -44,5 +45,15 @@ export const validateUserCreate: RequestHandler = async (req, res, next) => {
     next();
   } catch (err) {
     forwardZodError(err, '일반 유저 생성', next);
+  }
+};
+
+export const validateLogin: RequestHandler = async (req, res, next) => {
+  try {
+    const validatedBody = LoginDtoSchema.parse(req.body);
+    res.locals.validatedBody = validatedBody;
+    next();
+  } catch (err) {
+    forwardZodError(err, '로그인', next);
   }
 };

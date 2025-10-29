@@ -1,16 +1,8 @@
 import jwt, { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import env from '#core/env';
-import type { DecodedToken, AuthHeaderDto } from '#modules/auth/dto/token.dto';
+import type { DecodedToken } from '#modules/auth/dto/token.dto';
 import ApiError from '#errors/ApiError';
 import { UserRole } from '@prisma/client';
-
-/**
- * Authorization 헤더에서 Bearer 토큰 추출
- */
-export const extractToken = (authHeader: AuthHeaderDto): string => {
-  if (!authHeader?.authorization?.startsWith('Bearer ')) throw ApiError.unauthorized('토큰 형식이 올바르지 않습니다.');
-  return authHeader.authorization.slice(7);
-};
 
 /**
  * Access Token 생성
