@@ -18,6 +18,7 @@ import rateLimit from 'express-rate-limit';
 import routes from '#core/router';
 import { errorHandler } from '#middlewares/errorHandler';
 import corsMiddleware from '#core/middlewares/cors';
+import httpLogger from '#core/httpLogger';
 import ApiError from '#errors/ApiError';
 
 const app: Application = express();
@@ -80,6 +81,11 @@ app.use(compression());
  * CORS (화이트리스트 기반)
  */
 app.use(corsMiddleware);
+
+/**
+ * HTTP 요청 로거 (morgan + pino)
+ */
+app.use(httpLogger);
 
 /**
  * Body & Cookie 파서

@@ -13,17 +13,6 @@
  *
  */
 
-/**
- * Jest 환경에서만 process.exit를 mock 처리
- */
-if (process.env.NODE_ENV === 'test') {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const jest = require('jest-mock');
-  jest.spyOn(process, 'exit').mockImplementation(((code?: number) => {
-    throw new Error(`process.exit: ${code}`);
-  }) as never);
-}
-
 import { config as load } from 'dotenv';
 import fs from 'fs';
 import { z } from 'zod';
@@ -76,6 +65,7 @@ const baseSchema = z.object({
   ACCESS_TOKEN_SECRET: z.string().min(10),
   REFRESH_TOKEN_SECRET: z.string().min(10),
   PASSWORD_PEPPER: z.string().min(10),
+  DEFAULT_AVATAR_URL: z.url(),
 });
 
 /**
@@ -105,7 +95,11 @@ const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
   console.error('❌ Invalid environment variables:');
   for (const i of parsed.error.issues) console.error(`- ${i.path.join('.')}: ${i.message}`);
-  process.exit(1);
+  if (process.env.NODE_ENV !== 'test') {
+    process.exit(1);
+  } else {
+    throw new Error('Invalid environment variables (test mode)');
+  }
 }
 
 const env = parsed.data;
@@ -120,6 +114,7 @@ const PORT = env.PORT;
 const ACCESS_TOKEN_SECRET = env.ACCESS_TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = env.REFRESH_TOKEN_SECRET;
 const PASSWORD_PEPPER = env.PASSWORD_PEPPER;
+const DEFAULT_AVATAR_URL = env.DEFAULT_AVATAR_URL;
 
 /**
  * FILE URL
@@ -188,4 +183,5 @@ export default {
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
   PASSWORD_PEPPER,
+  DEFAULT_AVATAR_URL,
 };

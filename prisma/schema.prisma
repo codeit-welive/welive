@@ -182,7 +182,7 @@ model Board {
   id          String    @id @default(uuid())
   type        BoardType
   apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
 
   notices    Notice[]
   complaints Complaint[]
@@ -217,7 +217,7 @@ model Notice {
 
   comments Comment[]
 
-  Apartment   Apartment? @relation(fields: [apartmentId], references: [id])
+  Apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   apartmentId String?
   Event       Event?
 }
@@ -243,7 +243,7 @@ model Complaint {
 
   comments Comment[]
 
-  Apartment   Apartment? @relation(fields: [apartmentId], references: [id])
+  Apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   apartmentId String?
 }
 
@@ -268,7 +268,7 @@ model Poll {
   options PollOption[]
   votes   PollVote[]
 
-  Apartment   Apartment? @relation(fields: [apartmentId], references: [id])
+  Apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   apartmentId String?
   Event       Event?
 }
@@ -353,14 +353,14 @@ model Event {
   createdAt DateTime @default(now())
 
   apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
 
   // notice 또는 poll 중 하나만 존재하게 백엔드 로직에서 처리
   noticeId String? @unique
-  notice   Notice? @relation(fields: [noticeId], references: [id])
+  notice   Notice? @relation(fields: [noticeId], references: [id], onDelete: Cascade)
 
   pollId String? @unique
-  poll   Poll?   @relation(fields: [pollId], references: [id])
+  poll   Poll?   @relation(fields: [pollId], references: [id], onDelete: Cascade)
 }
 
 // ------------------------------
