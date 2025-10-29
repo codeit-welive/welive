@@ -1,7 +1,11 @@
-import { createSuperAdmin, createAdmin, createUser } from './auth.repo';
+import { createSuperAdmin, createAdmin, createUser, getPasswordByUsername, getUserByUsername } from './auth.repo';
 import { SignupSuperAdminRequestDto, SignupAdminRequestDto, SignupUserRequestDto } from './dto/register.dto';
-import { hashPassword } from '#core/utils/passwordUtils';
+import { LoginDto } from './dto/login.dto';
+import { hashPassword, isPasswordValid } from '#core/utils/passwordUtils';
 import { adminDataMapper } from './utils/dataMapper';
+import { searchResultToResponse } from './utils/searchResultMapper';
+import { generateAccessToken, generateRefreshToken } from './utils/tokenUtils';
+import ApiError from '#errors/ApiError';
 
 export const registSuperAdmin = async (data: SignupSuperAdminRequestDto) => {
   const createdSuperAdmin = await createSuperAdmin({
@@ -22,4 +26,20 @@ export const registAdmin = async (data: SignupAdminRequestDto) => {
 export const registUser = async (data: SignupUserRequestDto) => {
   const createdUser = await createUser(data);
   return createdUser;
+};
+
+export const login = async (data: LoginDto) => {
+  const { username, password } = data;
+  const hashedPassword = await getPasswordByUsername(username);
+
+  if (await !isPasswordValid(password, hashedPassword.password)) {
+    throw ApiError.unauthorized('잘못된 비밀번호입니다');
+  }
+
+  const rawUserData = await getUserByUsername(username, hashedPassword.role);
+  const createdUser = searchResultToResponse(rawUserData);
+
+  const accessToken = generateAccessToken({ id: createdUser.id, role: createdUser.role });
+  const refreshToken = generateRefreshToken({ id: createdUser.id });
+  return { user: createdUser, accessToken, refreshToken };
 };
