@@ -24,7 +24,10 @@ export const registAdmin = async (data: SignupAdminRequestDto) => {
 };
 
 export const registUser = async (data: SignupUserRequestDto) => {
-  const createdUser = await createUser(data);
+  const createdUser = await createUser({
+    ...data,
+    password: await hashPassword(data.password),
+  });
   return createdUser;
 };
 
@@ -32,7 +35,8 @@ export const login = async (data: LoginDto) => {
   const { username, password } = data;
   const hashedPassword = await getPasswordByUsername(username);
 
-  if (await isPasswordValid(password, hashedPassword.password)) {
+  console.log(password, hashedPassword.password);
+  if (!(await isPasswordValid(password, hashedPassword.password))) {
     throw ApiError.unauthorized('잘못된 비밀번호입니다');
   }
 
