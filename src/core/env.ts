@@ -13,9 +13,16 @@
  *
  */
 
-jest.spyOn(process, 'exit').mockImplementation(((code?: number) => {
-  throw new Error(`process.exit: ${code}`);
-}) as never);
+/**
+ * Jest 환경에서만 process.exit를 mock 처리
+ */
+if (process.env.NODE_ENV === 'test') {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const jest = require('jest-mock');
+  jest.spyOn(process, 'exit').mockImplementation(((code?: number) => {
+    throw new Error(`process.exit: ${code}`);
+  }) as never);
+}
 
 import { config as load } from 'dotenv';
 import fs from 'fs';

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import dns from 'dns/promises';
 import { UserRole, JoinStatus } from '@prisma/client';
-import { ACCOUNT_VALIDATION, APARTMENT_VALIDATION } from '#constants/auth';
+import { ACCOUNT_VALIDATION, APARTMENT_VALIDATION } from '#constants/auth.constant';
 
 const emailWithMX = z.email({ message: '이메일 형식이 올바르지 않습니다.' }).refine(
   async (email) => {
