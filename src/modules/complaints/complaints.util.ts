@@ -9,6 +9,10 @@ import { COMPLAINT_ERROR_MESSAGES } from '#constants/complaint.constant';
 
 /**
  * 사용자의 민원 게시판 ID 조회 및 검증
+ * @description USER가 속한 아파트의 민원 게시판 ID를 조회합니다
+ * @param userId - 사용자 ID
+ * @returns 민원 게시판 ID
+ * @throws ApiError.forbidden - 게시판 없음 (사용자가 아파트에 속하지 않음)
  */
 export const validateComplaintBoard = async (userId: string): Promise<string> => {
   const boardId = await ComplaintRepo.getComplaintBoardIdByUserId(userId);
@@ -22,6 +26,12 @@ export const validateComplaintBoard = async (userId: string): Promise<string> =>
 
 /**
  * 민원 작성자 본인 확인 (USER용)
+ * @description 민원의 작성자가 본인인지 확인합니다. 주로 수정/삭제 시 사용
+ * @param complaintId - 민원 ID
+ * @param userId - 확인할 사용자 ID
+ * @returns 민원의 userId와 status
+ * @throws ApiError.notFound - 민원 없음
+ * @throws ApiError.forbidden - 작성자 본인 아님
  */
 export const verifyComplaintAuthor = async (
   complaintId: string,
@@ -42,6 +52,13 @@ export const verifyComplaintAuthor = async (
 
 /**
  * 아파트 관리자 권한 확인 (ADMIN용)
+ * @description ADMIN이 해당 민원을 관리할 수 있는 권한이 있는지 확인합니다
+ *   민원이 속한 아파트의 관리자인지 검증
+ * @param complaintId - 민원 ID
+ * @param userId - 확인할 ADMIN ID
+ * @returns void
+ * @throws ApiError.notFound - 민원 없음
+ * @throws ApiError.forbidden - 관리 권한 없음 (해당 아파트 관리자 아님)
  */
 export const verifyApartmentAdmin = async (complaintId: string, userId: string): Promise<void> => {
   const adminId = await ComplaintRepo.getComplaintWithBoardInfo(complaintId);
@@ -59,6 +76,10 @@ export const verifyApartmentAdmin = async (complaintId: string, userId: string):
 
 /**
  * 민원 목록 조회용 where 조건 생성
+ * @description 쿼리 파라미터를 기반으로 Prisma where 조건을 생성합니다
+ * @param boardId - 게시판 ID
+ * @param query - 목록 조회 쿼리 (status, isPublic, dong, ho, keyword)
+ * @returns Prisma where 조건 객체
  */
 export const buildComplaintWhereConditions = (
   boardId: string,
@@ -111,7 +132,13 @@ export const buildComplaintWhereConditions = (
 
 // ==================== 응답 매핑 함수 ====================
 
-// 상세 응답 매핑 함수
+/**
+ * 민원 상세 응답 매핑 함수
+ * @description DB에서 조회한 민원 상세 데이터를 클라이언트 응답 형식으로 변환
+ * @param complaint - DB에서 조회한 민원 데이터 (user, comments 포함)
+ * @returns 민원 상세 응답 DTO (ComplaintDetailResponseDto)
+ * @throws ApiError.internal - 거주자 정보 없음 (데이터 무결성 오류)
+ */
 export const mapComplaintToDetailResponse = (complaint: {
   id: string;
   userId: string;
@@ -173,7 +200,13 @@ export const mapComplaintToDetailResponse = (complaint: {
   };
 };
 
-// 목록 응답 매핑 함수
+/**
+ * 민원 목록 아이템 응답 매핑 함수
+ * @description DB에서 조회한 민원 목록 데이터를 클라이언트 응답 형식으로 변환
+ * @param complaint - DB에서 조회한 민원 데이터 (user 포함, content 제외)
+ * @returns 민원 목록 아이템 응답 DTO (ComplaintListItemResponseDto)
+ * @throws ApiError.internal - 거주자 정보 없음 (데이터 무결성 오류)
+ */
 export const mapComplaintToListItemResponse = (complaint: {
   id: string;
   userId: string;

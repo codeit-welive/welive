@@ -9,6 +9,10 @@ import {
 import { complaintListQuerySchema } from './dto/querys.dto';
 import { complaintParamsSchema } from './dto/params.dto';
 
+/**
+ * 민원 생성 요청 검증
+ * req.user와 req.body를 결합하여 Zod 스키마로 검증 후 res.locals.validatedBody에 저장
+ */
 export const validateComplaintCreate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validatedBody = await complaintCreateSchema.parseAsync({
@@ -23,6 +27,10 @@ export const validateComplaintCreate = async (req: Request, res: Response, next:
   }
 };
 
+/**
+ * 민원 목록 조회 쿼리 검증
+ * req.query를 Zod 스키마로 검증 후 res.locals.validatedQuery에 저장
+ */
 export const validateComplaintListQuery = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validatedQuery = await complaintListQuerySchema.parseAsync(req.query);
@@ -34,6 +42,10 @@ export const validateComplaintListQuery = async (req: Request, res: Response, ne
   }
 };
 
+/**
+ * 민원 params 검증
+ * req.params.complaintId를 Zod 스키마로 검증
+ */
 export const validateComplaintParams = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { complaintId } = req.params;
@@ -44,6 +56,10 @@ export const validateComplaintParams = async (req: Request, res: Response, next:
   }
 };
 
+/**
+ * 민원 수정 요청 검증
+ * req.body를 Zod 스키마로 검증 후 res.locals.validatedBody에 저장
+ */
 export const validateComplaintPatch = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validatedBody = await complaintPatchSchema.parseAsync(req.body);
@@ -55,6 +71,10 @@ export const validateComplaintPatch = async (req: Request, res: Response, next: 
   }
 };
 
+/**
+ * 민원 상태 변경 요청 검증
+ * req.user와 req.body를 결합하여 Zod 스키마로 검증
+ */
 export const validateComplaintPatchStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validatedBody = await complaintPatchStatusSchema.parseAsync({
@@ -69,6 +89,10 @@ export const validateComplaintPatchStatus = async (req: Request, res: Response, 
   }
 };
 
+/**
+ * 민원 삭제 요청 검증
+ * req.user를 Zod 스키마로 검증 후 res.locals.validatedBody에 저장
+ */
 export const validateComplaintDelete = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validatedBody = await complaintDeleteSchema.parseAsync({
