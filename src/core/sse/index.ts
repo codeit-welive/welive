@@ -3,6 +3,7 @@ import { SseClient } from './sseClient';
 import type { SseEvent, NotificationPayload } from './types';
 import authMiddleware from '#core/middlewares/authMiddleware';
 import prisma from '#core/prisma';
+import env from '#core/env';
 
 const router = Router();
 const clients = new Map<string, SseClient>();
@@ -82,8 +83,10 @@ export const broadcast = (payload: NotificationPayload): void => {
 const baseInterval = 30_000;
 
 // prettier-ignore
-setInterval(() => {
-  for (const client of clients.values()) client.ping();
-}, baseInterval + (Math.random() * 10_000 - 5_000));
+if (env.NODE_ENV !== 'test') {
+  setInterval(() => {
+    for (const client of clients.values()) client.ping();
+  }, baseInterval + (Math.random() * 10_000 - 5_000));
+}
 
 export default router;
