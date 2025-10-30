@@ -55,7 +55,8 @@ export const getPollList: RequestHandler = async (req, res, next) => {
   }
 };
 
-//투표 마감 시 관리자와 입주민 모두 투표 결과 조회가 가능하며, 마감된 투표는 자동으로 공지사항에 등록됩니다.
+//투표 마감 시 관리자와 입주민 모두 투표 결과 조회가 가능하며,
+//마감된 투표는 자동으로 공지사항에 등록됩니다.
 export const getPoll: RequestHandler = async (req, res, next) => {
   try {
     const pollId = req.params.pollId;
