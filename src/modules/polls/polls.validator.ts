@@ -41,17 +41,3 @@ export const validatePatchPollBody: RequestHandler = async (req, res, next) => {
     forwardZodError(err, '투표 수정', next);
   }
 };
-
-export const validateNoticeUpdate: RequestHandler = async (req, res, next) => {
-  try {
-    const validatedBody = await noticeUpdateSchema.parseAsync({
-      userId: req.user.id,
-      ...req.body,
-    });
-
-    res.locals.validatedBody = validatedBody;
-    next();
-  } catch (err) {
-    forwardZodError(err, '공지 수정', next);
-  }
-};
