@@ -18,7 +18,7 @@ import {
   deleteComplaintHandler,
 } from './complaints.controller';
 
-const router = Router();
+const complaintRouter = Router();
 
 /**
  * POST /complaints
@@ -27,7 +27,7 @@ const router = Router();
  * GET /complaints
  * 민원 목록 조회 (ADMIN, USER)
  */
-router
+complaintRouter
   .route('/')
   .post(authMiddleware, requireRole(['USER']), validateComplaintCreate, createComplaintHandler)
   .get(authMiddleware, requireRole(['ADMIN', 'USER']), validateComplaintListQuery, getComplaintListHandler);
@@ -42,7 +42,7 @@ router
  * DELETE /complaints/:complaintId
  * 민원 삭제 - USER: 본인만, ADMIN: 관리 아파트 모든 민원
  */
-router
+complaintRouter
   .route('/:complaintId')
   .get(authMiddleware, requireRole(['ADMIN', 'USER']), validateComplaintParams, getComplaintHandler)
   .patch(authMiddleware, requireRole(['USER']), validateComplaintParams, validateComplaintPatch, patchComplaintHandler)
@@ -58,7 +58,7 @@ router
  * PATCH /complaints/:complaintId/status
  * 민원 상태 변경 (ADMIN만 가능)
  */
-router
+complaintRouter
   .route('/:complaintId/status')
   .patch(
     authMiddleware,
@@ -68,4 +68,4 @@ router
     patchComplaintStatusHandler
   );
 
-export default router;
+export default complaintRouter;
