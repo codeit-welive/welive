@@ -85,3 +85,24 @@ export const loginHandler: RequestHandler = async (req, res, next) => {
     next(err);
   }
 };
+
+export const logoutHandler: RequestHandler = async (req, res, next) => {
+  try {
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
+};
