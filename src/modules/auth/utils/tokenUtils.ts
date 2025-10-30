@@ -33,9 +33,9 @@ export const verifyAccessToken = (token: string): DecodedToken => {
 /**
  * Refresh Token 생성
  */
-export const generateRefreshToken = (user: { id: string }): string => {
+export const generateRefreshToken = (user: { id: string; role: UserRole }): string => {
   try {
-    return jwt.sign({ id: user.id }, env.REFRESH_TOKEN_SECRET, { expiresIn: '14d' });
+    return jwt.sign({ id: user.id, role: user.role }, env.REFRESH_TOKEN_SECRET, { expiresIn: '14d' });
   } catch (err) {
     throw new ApiError(500, '❌ Refresh Token 생성에 실패했습니다.', 'INTERNAL_ERROR', err);
   }
