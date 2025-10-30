@@ -117,7 +117,7 @@ export const patchPollService = async (pollId: string, data: patchPollBodyDTO) =
     throw ApiError.badRequest;
   }
   if (status.status !== 'PENDING') {
-    throw ApiError.unprocessable('시작된 투표를 수정할 수 없습니다.');
+    throw ApiError.unprocessable('투표 진행 중에는 수정을 할 수 없습니다.');
   }
 };
 
@@ -127,7 +127,7 @@ export const deletePollService = async (pollId: string) => {
     throw ApiError.badRequest;
   }
   if (status.status !== 'PENDING') {
-    throw ApiError.unprocessable('시작된 투표를 삭제할 수 없습니다.');
+    throw ApiError.unprocessable('투표 진행 중에는 삭제를 할 수 없습니다.');
   }
   await deletePollRepo(pollId);
 };
