@@ -12,6 +12,7 @@ import sseRouter from '#sse/index';
 import authRouter from '#modules/auth/auth.router';
 import complaintRouter from '#modules/complaints/complaints.router';
 import noticeRouter from '#modules/notices/notices.router';
+import commentRouter from '#modules/comments/comments.router';
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.use('/notifications', sseRouter);
 router.use('/auth', authRouter);
 router.use('/complaints', complaintRouter);
 router.use('/notices', noticeRouter);
+router.use('/comments', commentRouter);
 
 export default router;
