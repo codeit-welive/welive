@@ -1,4 +1,3 @@
-// tests/core/sse/index.test.ts
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import router from '#sse/index';
 import prisma from '#core/prisma';
