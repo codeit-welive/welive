@@ -6,7 +6,7 @@ describe('[Core] 환경 변수 검증', () => {
     process.env = { SKIP_DOTENV: 'true' }; // 강제로 dotenv 비활성화
 
     expect(() => {
-      require('../../src/core/env');
+      require('#core/env');
     }).toThrow();
   });
 
@@ -24,6 +24,9 @@ describe('[Core] 환경 변수 검증', () => {
       ACCESS_TOKEN_SECRET: 'abcdefghij', // zod에서 최소 길이 10 이상
       REFRESH_TOKEN_SECRET: 'abcdefghijk',
       PASSWORD_PEPPER: 'abcdefghijkl',
+      DEFAULT_AVATAR_URL: 'https://test.com',
+
+      SKIP_DOTENV: 'true',
     };
 
     expect(() => {
