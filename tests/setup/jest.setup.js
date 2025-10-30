@@ -43,6 +43,8 @@ beforeAll(() => {
 const prisma = require('#core/prisma.ts').default;
 
 afterEach(async () => {
+  if (process.env.__SKIP_GLOBAL_DB_CLEANUP__ === 'true') return;
+
   await prisma.$transaction([
     prisma.event.deleteMany(),
     prisma.notification.deleteMany(),
