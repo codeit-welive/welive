@@ -43,6 +43,6 @@ export const login = async (data: LoginDto) => {
   const createdUser = searchResultToResponse(rawUserData);
 
   const accessToken = generateAccessToken({ id: createdUser.id, role: createdUser.role });
-  const refreshToken = generateRefreshToken({ id: createdUser.id });
+  const refreshToken = generateRefreshToken({ id: createdUser.id, role: createdUser.role });
   return { user: createdUser, accessToken, refreshToken };
 };

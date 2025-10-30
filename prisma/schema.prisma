@@ -217,7 +217,7 @@ model Notice {
 
   comments Comment[]
 
-  Apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   apartmentId String?
   Event       Event?
 }
@@ -243,7 +243,7 @@ model Complaint {
 
   comments Comment[]
 
-  Apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   apartmentId String?
 }
 
@@ -268,7 +268,7 @@ model Poll {
   options PollOption[]
   votes   PollVote[]
 
-  Apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   apartmentId String?
   Event       Event?
 }

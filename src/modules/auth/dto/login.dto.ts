@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { UserRole, JoinStatus, BoardType } from '@prisma/client';
 
 export const LoginDtoSchema = z.object({
   username: z.string().min(1, '아이디를 입력해주세요.'),
