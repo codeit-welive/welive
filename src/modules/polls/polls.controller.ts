@@ -1,8 +1,15 @@
 import { RESPONSE_MESSAGES } from '#constants/response.constant';
 import { RequestHandler } from 'express';
-import { createPollBodyDTO } from './dto/polls.dto';
-import { createPollService, deletePollService, getPollListService, getPollService } from './polls.service';
+import { createPollBodyDTO, pollListQueryDTO } from './dto/polls.dto';
+import {
+  createPollService,
+  deletePollService,
+  getPollListService,
+  getPollService,
+  patchPollService,
+} from './polls.service';
 import { PAGINATION } from '#constants/pagination.constant';
+import { PollStatus } from '@prisma/client';
 
 /**
  * @function createPoll
@@ -20,7 +27,7 @@ import { PAGINATION } from '#constants/pagination.constant';
 
 export const createPoll: RequestHandler = async (req, res, next) => {
   try {
-    const body = req.body as createPollBodyDTO;
+    const body = res.locals.body as createPollBodyDTO;
     await createPollService(body);
     return res.status(201).json({ message: RESPONSE_MESSAGES.CREATE_SUCCESS });
   } catch (err) {
@@ -30,22 +37,40 @@ export const createPoll: RequestHandler = async (req, res, next) => {
 
 export const getPollList: RequestHandler = async (req, res, next) => {
   try {
-    const query = res.locals.query
-    const boardId = req.params.boardId
-    const {page, pageSize} = query;
-    const dto = {
+    const query = res.locals.query;
+    const userId = req.user.id;
+    const boardId = res.locals.body.boardId;
+    const { page, pageSize, votingStatus, apartment, search } = query;
+    const dto: pollListQueryDTO = {
       page: page ? Number(page) : PAGINATION.DEFAULT_PAGE,
       pageSize: pageSize ? Number(page) : PAGINATION.DEFAULT_LIMIT,
+      votingStatus: votingStatus as PollStatus,
+      apartment: apartment, //아파트 동에 따라 투표권이 갈림.
+      search: search,
     };
-    const {polls, total} = await getPollListService(page, pageSize, boardId)
+    const { polls, totalCount } = await getPollListService(userId, dto, boardId);
+    return res.status(200).json({ polls, totalCount });
+  } catch (err) {
+    next(err);
   }
-}
+};
 
 export const getPoll: RequestHandler = async (req, res, next) => {
   try {
     const pollId = req.params.pollId;
     const poll = await getPollService(pollId);
-    return poll;
+    return res.status(200).json(poll);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const patchPoll: RequestHandler = async (req, res, next) => {
+  try {
+    const pollId = req.params.pollId;
+    const body = res.locals.body;
+    const poll = await patchPollService(pollId, body);
+    return res.status(200).json(poll);
   } catch (err) {
     next(err);
   }

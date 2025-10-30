@@ -1,6 +1,15 @@
 import prisma from '#core/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { createPollBodyDTO } from './dto/polls.dto';
+
+export const getApartment = async (userId: string) => {
+  return await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      apartment: true,
+    },
+  });
+};
 
 export const createPollRepo = async (data: createPollBodyDTO) => {
   await prisma.poll.create({
@@ -42,7 +51,7 @@ export const getPollListRepo = async (where: Prisma.PollWhereInput, pageSize: nu
         updatedAt: true,
         startDate: true,
         endDate: true,
-        //status: true,
+        status: true,
       },
     }),
     prisma.poll.count({
@@ -68,7 +77,7 @@ export const getPollRepo = async (pollId: string) => {
       updatedAt: true,
       startDate: true,
       endDate: true,
-      //status: true,
+      status: true,
       content: true,
       board: {
         select: { type: true },

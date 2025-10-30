@@ -1,21 +1,86 @@
 import ApiError from '#errors/ApiError';
-import { id } from 'zod/v4/locales';
-import { createPollBodyDTO } from './dto/polls.dto';
-import { createPollRepo, deletePollRepo, getPollListRepo, getPollRepo } from './polls.repo';
-import { updateNotice } from '#modules/notices/notices.controller';
+import { createPollBodyDTO, patchPollBodyDTO, pollListQueryDTO } from './dto/polls.dto';
+import { createPollRepo, deletePollRepo, getApartment, getPollListRepo, getPollRepo } from './polls.repo';
+import { Prisma } from '@prisma/client';
 
 export const createPollService = async (data: createPollBodyDTO) => {
   await createPollRepo(data);
   return 1;
 };
 
-export const getPollListService = async (page: number, pageSize: number, boardId: string) => {
-  const skip = (page - 1) * pageSize;
-  const where = {
-    boardId: boardId,
-  };
+export const getPollListService = async (userId: string, data: pollListQueryDTO, boardId: string) => {
+  const pageSize = data.pageSize;
+  const skip = (data.page - 1) * pageSize;
+  const search = data.search;
+  const status = data.votingStatus;
+  const apartment = Number(data.apartment);
+  let where: Prisma.PollWhereInput = { boardId: boardId }; // 입주민은 자신이 투표권자로 설정된 투표만 참여 가능하고, 투표권자와 투표 상태로 필터링 및 검색이 가능.
+  if (status === 'CLOSED') {
+    where = {
+      ...where,
+      status: status,
+      OR: [
+        {
+          title: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          content: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+      ],
+    };
+  } else if (status === 'IN_PROGRESS') {
+    where = {
+      ...where,
+      status: status,
+      OR: [
+        {
+          title: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          content: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+      ],
+    };
+  } else if (status === 'PENDING') {
+    where = {
+      ...where,
+      status: status,
+      OR: [
+        {
+          title: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+        {
+          content: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+      ],
+    };
+  }
+  if (apartment) {
+    where = {
+      ...where,
+      buildingPermission: apartment,
+    };
+  }
   const rawPollList = await getPollListRepo(where, pageSize, skip);
-  const pollList = rawPollList.data.map((poll) => ({
+  const polls = rawPollList.data.map((poll) => ({
     id: poll.id,
     userId: poll.user.id,
     title: poll.title,
@@ -25,8 +90,10 @@ export const getPollListService = async (page: number, pageSize: number, boardId
     updatedAt: poll.updatedAt.toISOString,
     startDate: poll.startDate.toISOString,
     endDate: poll.endDate.toISOString,
-    // status: poll.status
+    status: poll.status,
   }));
+  const totalCount = rawPollList.total;
+  return { polls, totalCount };
 };
 
 export const getPollService = async (pollId: string) => {
@@ -43,6 +110,8 @@ export const getPollService = async (pollId: string) => {
   };
   return poll;
 };
+
+export const patchPollService = async (pollId: string, data: patchPollBodyDTO) => {};
 
 export const deletePollService = async (pollId: string) => {
   await deletePollRepo(pollId);
