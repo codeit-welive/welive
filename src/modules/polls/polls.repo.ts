@@ -11,6 +11,15 @@ export const getApartment = async (userId: string) => {
   });
 };
 
+export const getPollStatusRepo = async (pollId: string) => {
+  return await prisma.poll.findUnique({
+    where: { id: pollId },
+    select: {
+      status: true,
+    },
+  });
+};
+
 export const createPollRepo = async (data: createPollBodyDTO) => {
   await prisma.poll.create({
     data: {

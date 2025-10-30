@@ -1,6 +1,6 @@
 import ApiError from '#errors/ApiError';
 import { createPollBodyDTO, patchPollBodyDTO, pollListQueryDTO } from './dto/polls.dto';
-import { createPollRepo, deletePollRepo, getApartment, getPollListRepo, getPollRepo } from './polls.repo';
+import { createPollRepo, deletePollRepo, getPollListRepo, getPollRepo, getPollStatusRepo } from './polls.repo';
 import { Prisma } from '@prisma/client';
 
 export const createPollService = async (data: createPollBodyDTO) => {
@@ -111,8 +111,23 @@ export const getPollService = async (pollId: string) => {
   return poll;
 };
 
-export const patchPollService = async (pollId: string, data: patchPollBodyDTO) => {};
+export const patchPollService = async (pollId: string, data: patchPollBodyDTO) => {
+  const status = await getPollStatusRepo(pollId);
+  if (!status) {
+    throw ApiError.badRequest;
+  }
+  if (status.status !== 'PENDING') {
+    throw ApiError.unprocessable('시작된 투표를 수정할 수 없습니다.');
+  }
+};
 
 export const deletePollService = async (pollId: string) => {
+  const status = await getPollStatusRepo(pollId);
+  if (!status) {
+    throw ApiError.badRequest;
+  }
+  if (status.status !== 'PENDING') {
+    throw ApiError.unprocessable('시작된 투표를 삭제할 수 없습니다.');
+  }
   await deletePollRepo(pollId);
 };
