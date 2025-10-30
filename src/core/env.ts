@@ -20,12 +20,13 @@ import { z } from 'zod';
 /**
  * dotenv 로드
  */
-if (process.env.SKIP_DOTENV !== 'true') {
+if (process.env.__DOTENV_LOADED__ !== 'true' && process.env.SKIP_DOTENV !== 'true') {
   if (process.env.NODE_ENV === 'test' && fs.existsSync('.env.test')) {
     load({ path: '.env.test', override: true, quiet: true });
   } else {
     load({ override: true, quiet: true });
   }
+  process.env.__DOTENV_LOADED__ = 'true';
 }
 
 /**
