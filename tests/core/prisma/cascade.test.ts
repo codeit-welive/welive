@@ -66,7 +66,7 @@ describe('[Prisma][Cascade] Apartment 삭제 시 종속 데이터 자동 삭제'
           content: '10월 29일 10~13시 승강기 점검이 있습니다.',
           category: 'COMMUNITY',
           board: { connect: { id: boardNotice.id } },
-          Apartment: { connect: { id: apartmentId } },
+          apartment: { connect: { id: apartmentId } },
           user: {
             create: {
               username: 'user_notice',
@@ -85,7 +85,7 @@ describe('[Prisma][Cascade] Apartment 삭제 시 종속 데이터 자동 삭제'
           title: '골반이 멈추지 않아요',
           content: '제 골반이 멈추지 않는 탓이 뭘까요? ㅜ.ㅜ',
           board: { connect: { id: boardComplaint.id } },
-          Apartment: { connect: { id: apartmentId } },
+          apartment: { connect: { id: apartmentId } },
           user: {
             create: {
               username: 'user_complaint',
