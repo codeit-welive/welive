@@ -1,13 +1,3 @@
-import dotenv from 'dotenv';
-import fs from 'fs';
-
-/**
- * 환경 변수 로드
- */
-const envPath = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
-if (fs.existsSync(envPath)) dotenv.config({ path: envPath });
-else dotenv.config();
-
 import express, { Application, Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp';
@@ -15,6 +5,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 
+import env from '#core/env';
 import routes from '#core/router';
 import { errorHandler } from '#middlewares/errorHandler';
 import corsMiddleware from '#core/middlewares/cors';
@@ -40,7 +31,7 @@ app.use(
         'default-src': ["'self'"],
         'script-src': ["'self'", "'unsafe-inline'"],
         'style-src': ["'self'", "'unsafe-inline'"],
-        'img-src': ["'self'", 'data:', 'https:', ...(process.env.NODE_ENV !== 'production' ? ['http:', 'blob:'] : [])],
+        'img-src': ["'self'", 'data:', 'https:', ...(env.NODE_ENV !== 'production' ? ['http:', 'blob:'] : [])],
         'object-src': ["'none'"],
         'frame-ancestors': ["'none'"],
       },
