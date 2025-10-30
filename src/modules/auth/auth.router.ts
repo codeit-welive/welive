@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   loginHandler,
   logoutHandler,
+  refreshTokenHandler,
   registSuperAdminHandler,
   registerAdminHandler,
   registerUserHandler,
@@ -17,5 +18,6 @@ authRouter.route('/signup/super-admin').post(validateSuperAdminCreate, registSup
 
 authRouter.route('/login').post(validateLogin, loginHandler);
 authRouter.route('/logout').post(authMiddleware, logoutHandler);
+authRouter.route('/refresh').post(refreshTokenHandler);
 
 export default authRouter;

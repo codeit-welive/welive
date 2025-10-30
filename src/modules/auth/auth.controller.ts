@@ -4,6 +4,7 @@ import ApiError from '#errors/ApiError';
 import { Prisma } from '@prisma/client';
 import { checkDuplicateData } from './utils/checkDuplicateData';
 import env from '#core/env';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from './utils/tokenUtils';
 
 export const registSuperAdminHandler: RequestHandler = async (req, res, next) => {
   try {
@@ -102,6 +103,38 @@ export const logoutHandler: RequestHandler = async (req, res, next) => {
     });
 
     return res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const refreshTokenHandler: RequestHandler = async (req, res, next) => {
+  try {
+    const cookies = req.cookies as Record<string, string>;
+    const refreshToken = cookies['refresh_token'];
+
+    const decoded = await verifyRefreshToken(refreshToken);
+
+    const newAccessToken = generateAccessToken({ id: decoded.id, role: decoded.role });
+    const newRefreshToken = generateRefreshToken({ id: decoded.id, role: decoded.role });
+
+    res.cookie('access_token', newAccessToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 1000, // 1 hour
+      path: '/',
+    });
+
+    res.cookie('refresh_token', newRefreshToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+      path: '/',
+    });
+
+    return res.status(200).json({ message: '작업이 성공적으로 완료되었습니다 ' });
   } catch (err) {
     next(err);
   }
