@@ -74,33 +74,20 @@ export const getNoticeRepo = async (noticeId: string) => {
     where: { id: noticeId },
     select: {
       id: true,
-      user: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
+      user: { select: { id: true, name: true } },
       category: true,
       title: true,
       createdAt: true,
       updatedAt: true,
       viewsCount: true,
-      _count: {
-        select: {
-          comments: true,
-        },
-      },
+      _count: { select: { comments: true } },
       isPinned: true,
       content: true,
+      board: { select: { type: true } },
       comments: {
         select: {
           id: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
+          user: { select: { id: true, name: true } },
           content: true,
           createdAt: true,
           updatedAt: true,
