@@ -2,7 +2,7 @@ import express from 'express';
 import requireRole from '#core/middlewares/requireRole';
 import authMiddleware from '#core/middlewares/authMiddleware';
 import { validateCreatePollBody, validatePatchPollBody } from './polls.validator';
-import { createPoll, getPoll, getPollList } from './polls.controller';
+import { createPoll, deletePoll, getPoll, getPollList } from './polls.controller';
 
 const poleRouter = express.Router();
 
@@ -14,7 +14,7 @@ poleRouter
 poleRouter
   .route('/:pollId')
   .get(authMiddleware, requireRole(['ADMIN', 'USER']), getPoll)
-  .patch(authMiddleware, requireRole(['ADMIN']), validatePatchPollBody)
-  .delete(authMiddleware, requireRole(['ADMIN']));
+  // .patch(authMiddleware, requireRole(['ADMIN']), validatePatchPollBody)
+  .delete(authMiddleware, requireRole(['ADMIN']), deletePoll);
 
 export default poleRouter;
