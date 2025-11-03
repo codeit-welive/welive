@@ -166,7 +166,6 @@ export const patchAdminStatusHandler: RequestHandler = async (req, res, next) =>
     await patchAdminStatus(adminId, data.status);
     return res.status(201).json({ message: '작업이 성공적으로 완료되었습니다 ' });
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
@@ -184,7 +183,6 @@ export const patchUserStatusHandler: RequestHandler = async (req, res, next) => 
     }
     return res.status(201).json({ message: '작업이 성공적으로 완료되었습니다 ' });
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };

@@ -71,7 +71,6 @@ export const login = async (data: LoginDto) => {
 };
 
 export const patchAdminStatus = async (adminId: string, status: JoinStatus) => {
-  console.log('adminId:', adminId, 'status:', status);
   if (adminId) {
     const targetRole = await getRoleById(adminId);
     if (targetRole?.role !== UserRole.ADMIN) {
@@ -92,7 +91,6 @@ export const patchUserStatus = async (residentId: string, status: JoinStatus, ad
   const adminApartment = await getApartmentNameByAdminId(adminId);
   const adminApartmentName = adminApartment?.apartment?.apartmentName as string;
 
-  console.log('userId:', userId, 'status:', status, 'adminApartmentName:', adminApartmentName);
   if (residentId) {
     if (targetRole !== UserRole.USER || resident?.apartment.apartmentName !== adminApartmentName) {
       throw ApiError.badRequest('잘못된 요청입니다', 'mismatch');
