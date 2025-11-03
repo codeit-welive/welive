@@ -7,6 +7,7 @@ import {
   getPollRepo,
   getPollStatusRepo,
   patchPollRepo,
+  //   pollNoticeRepo,
 } from './polls.repo';
 import { Prisma } from '@prisma/client';
 
@@ -15,55 +16,22 @@ export const createPollService = async (data: createPollBodyDTO) => {
   return 1;
 };
 
-export const getPollListService = async (userId: string, data: pollListQueryDTO, boardId: string) => {
+export const getPollListService = async (data: pollListQueryDTO, boardId: string) => {
   const pageSize = data.pageSize;
   const skip = (data.page - 1) * pageSize;
   const search = data.search;
   const status = data.votingStatus;
   const apartment = Number(data.apartment);
   let where: Prisma.PollWhereInput = { boardId: boardId }; // 입주민은 자신이 투표권자로 설정된 투표만 참여 가능하고, 투표권자와 투표 상태로 필터링 및 검색이 가능.
-  if (status === 'CLOSED') {
+  if (status) {
     where = {
       ...where,
-      status: status,
-      OR: [
-        {
-          title: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-        {
-          content: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-      ],
+      status,
     };
-  } else if (status === 'IN_PROGRESS') {
+  }
+  if (search) {
     where = {
       ...where,
-      status: status,
-      OR: [
-        {
-          title: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-        {
-          content: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-      ],
-    };
-  } else if (status === 'PENDING') {
-    where = {
-      ...where,
-      status: status,
       OR: [
         {
           title: {
@@ -140,3 +108,13 @@ export const deletePollService = async (pollId: string) => {
   }
   await deletePollRepo(pollId);
 };
+
+// export const closedPollService = async (pollId: string) => {
+//   const status = await getPollStatusRepo(pollId);
+//   if (!status) {
+//     throw ApiError.badRequest;
+//   }
+//   if (status.status === 'CLOSED') {
+//     const pollNotice = await pollNoticeRepo(pollId);
+//   }
+// };

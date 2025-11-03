@@ -38,7 +38,6 @@ export const createPoll: RequestHandler = async (req, res, next) => {
 export const getPollList: RequestHandler = async (req, res, next) => {
   try {
     const query = res.locals.query;
-    const userId = req.user.id;
     const boardId = res.locals.body.boardId;
     const { page, pageSize, votingStatus, apartment, search } = query;
     const dto: pollListQueryDTO = {
@@ -48,7 +47,7 @@ export const getPollList: RequestHandler = async (req, res, next) => {
       apartment: apartment,
       search: search,
     };
-    const { polls, totalCount } = await getPollListService(userId, dto, boardId);
+    const { polls, totalCount } = await getPollListService(dto, boardId);
     return res.status(200).json({ polls, totalCount });
   } catch (err) {
     next(err);
@@ -87,3 +86,13 @@ export const deletePoll: RequestHandler = async (req, res, next) => {
     next(err);
   }
 };
+
+// export const closedPoll: RequestHandler = async (req, res, next) => {
+//   try {
+//     const pollId = req.params.pollId;
+//     await closedPollService(pollId);
+//     // return res.status(200).json({ message: RESPONSE_MESSAGES.DELETE_SUCCESS });
+//   } catch (err) {
+//     next(err);
+//   }
+// };

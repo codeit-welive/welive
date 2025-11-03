@@ -2,15 +2,6 @@ import prisma from '#core/prisma';
 import { Prisma } from '@prisma/client';
 import { createPollBodyDTO, patchPollBodyDTO } from './dto/polls.dto';
 
-export const getApartment = async (userId: string) => {
-  return await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      apartment: true,
-    },
-  });
-};
-
 export const getPollStatusRepo = async (pollId: string) => {
   return await prisma.poll.findUnique({
     where: { id: pollId },
@@ -134,3 +125,14 @@ export const deletePollRepo = async (pollId: string) => {
     },
   });
 };
+
+// export const pollNoticeRepo = async (pollId: string) => {
+//   await prisma.poll.update({
+//     where: {
+//       id: pollId,
+//     },
+//     data: {
+
+//     }
+//   });
+// };
