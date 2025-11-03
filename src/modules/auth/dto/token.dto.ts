@@ -22,3 +22,10 @@ export interface TokenDto {
 export interface UpdateTokenDto extends TokenDto {
   userId: number;
 }
+
+export interface TokenPayload {
+  id: string;
+  role: string;
+  joinStatus: string;
+  isActive: boolean;
+}

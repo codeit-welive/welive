@@ -6,6 +6,7 @@ import {
   signupUserRequestDtoSchema,
 } from './dto/register.dto';
 import { LoginDtoSchema } from './dto/login.dto';
+import { patchStatusParamSchema, patchStatusBodySchema } from './dto/auth.dto';
 import { isValidateApartmentRange } from './utils/isValidateApartmentRange';
 import ApiError from '#errors/ApiError';
 
@@ -55,5 +56,25 @@ export const validateLogin: RequestHandler = async (req, res, next) => {
     next();
   } catch (err) {
     forwardZodError(err, '로그인', next);
+  }
+};
+
+export const validatePatchStatusParam: RequestHandler = async (req, res, next) => {
+  try {
+    const targetId = req.params;
+    patchStatusParamSchema.parse(targetId);
+    next();
+  } catch (err) {
+    forwardZodError(err, '상태 변경', next);
+  }
+};
+
+export const validatePatchStatusBody: RequestHandler = async (req, res, next) => {
+  try {
+    const validatedBody = patchStatusBodySchema.parse(req.body);
+    res.locals.validatedBody = validatedBody;
+    next();
+  } catch (err) {
+    forwardZodError(err, '상태 변경', next);
   }
 };

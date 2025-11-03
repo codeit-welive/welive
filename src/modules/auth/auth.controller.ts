@@ -1,5 +1,13 @@
 import { RequestHandler } from 'express';
-import { registSuperAdmin, registAdmin, registUser, login } from './auth.service';
+import {
+  registSuperAdmin,
+  registAdmin,
+  registUser,
+  login,
+  patchAdminStatus,
+  patchUserStatus,
+  patchUserListStatus,
+} from './auth.service';
 import ApiError from '#errors/ApiError';
 import { Prisma } from '@prisma/client';
 import { checkDuplicateData } from './utils/checkDuplicateData';
@@ -115,8 +123,18 @@ export const refreshTokenHandler: RequestHandler = async (req, res, next) => {
 
     const decoded = await verifyRefreshToken(refreshToken);
 
-    const newAccessToken = generateAccessToken({ id: decoded.id, role: decoded.role });
-    const newRefreshToken = generateRefreshToken({ id: decoded.id, role: decoded.role });
+    const newAccessToken = generateAccessToken({
+      id: decoded.id,
+      role: decoded.role,
+      joinStatus: decoded.joinStatus,
+      isActive: decoded.isActive,
+    });
+    const newRefreshToken = generateRefreshToken({
+      id: decoded.id,
+      role: decoded.role,
+      joinStatus: decoded.joinStatus,
+      isActive: decoded.isActive,
+    });
 
     res.cookie('access_token', newAccessToken, {
       httpOnly: true,
@@ -136,6 +154,37 @@ export const refreshTokenHandler: RequestHandler = async (req, res, next) => {
 
     return res.status(200).json({ message: '작업이 성공적으로 완료되었습니다 ' });
   } catch (err) {
+    next(err);
+  }
+};
+
+export const patchAdminStatusHandler: RequestHandler = async (req, res, next) => {
+  try {
+    const adminId = req.params.adminId;
+    const data = res.locals.validatedBody;
+
+    await patchAdminStatus(adminId, data.status);
+    return res.status(201).json({ message: '작업이 성공적으로 완료되었습니다 ' });
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
+
+export const patchUserStatusHandler: RequestHandler = async (req, res, next) => {
+  try {
+    const residentId = req.params.residentId;
+    const adminId = req.user.id;
+    const data = res.locals.validatedBody;
+
+    if (!residentId) {
+      await patchUserListStatus(data.status, adminId);
+    } else {
+      await patchUserStatus(residentId, data.status, adminId);
+    }
+    return res.status(201).json({ message: '작업이 성공적으로 완료되었습니다 ' });
+  } catch (err) {
+    console.log(err);
     next(err);
   }
 };

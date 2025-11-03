@@ -1,6 +1,6 @@
 import prisma from '#core/prisma';
 import { SignupSuperAdminRequestDto, UserDto, ApartmentDto, SignupUserRequestDto } from './dto/register.dto';
-import { BoardType, User, UserRole } from '@prisma/client';
+import { BoardType, JoinStatus, User, UserRole } from '@prisma/client';
 
 const UserSelectFields = {
   id: true,
@@ -140,6 +140,86 @@ export const getUserByUsername = async (username: string, role: UserRole) => {
       username: true,
       contact: true,
       avatar: true,
+    },
+  });
+};
+
+export const getRoleById = async (userId: string) => {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      role: true,
+    },
+  });
+};
+
+export const patchAdminStatusRepo = async (adminId: string, status: JoinStatus) => {
+  if (adminId) {
+    return prisma.user.update({
+      where: { id: adminId },
+      data: { joinStatus: status },
+    });
+  } else {
+    return prisma.user.updateMany({
+      where: {
+        role: UserRole.ADMIN,
+        joinStatus: JoinStatus.PENDING,
+      },
+      data: { joinStatus: status },
+    });
+  }
+};
+
+export const patchUserStatusRepo = async (status: JoinStatus, userId: string) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { joinStatus: status },
+  });
+};
+
+export const patchUserListStatusRepo = async (status: JoinStatus, adminApartmentName: string) => {
+  return prisma.user.updateMany({
+    where: {
+      role: UserRole.USER,
+      joinStatus: JoinStatus.PENDING,
+      resident: {
+        apartment: {
+          apartmentName: adminApartmentName,
+        },
+      },
+    },
+    data: { joinStatus: status },
+  });
+};
+
+export const getResidentById = async (residentId: string) => {
+  return await prisma.resident.findUnique({
+    where: { id: residentId },
+    select: {
+      user: {
+        select: {
+          id: true,
+          role: true,
+        },
+      },
+      apartment: {
+        select: {
+          apartmentName: true,
+        },
+      },
+    },
+  });
+};
+
+export const getApartmentNameByAdminId = async (adminId: string) => {
+  return prisma.user.findUnique({
+    where: { id: adminId },
+    select: {
+      apartment: {
+        select: {
+          apartmentName: true,
+        },
+      },
     },
   });
 };
