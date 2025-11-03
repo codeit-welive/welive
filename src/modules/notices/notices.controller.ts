@@ -56,8 +56,7 @@ export const getNoticeList: RequestHandler = async (req, res, next) => {
 export const getNotice: RequestHandler = async (req, res, next) => {
   try {
     const noticeId = req.params.noticeId;
-    const boardId = req.params.boardId;
-    const notice = await getNoticeService(noticeId, boardId);
+    const notice = await getNoticeService(noticeId);
     return res.status(200).json(notice);
   } catch (err) {
     next(err);
