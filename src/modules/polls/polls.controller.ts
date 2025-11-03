@@ -67,16 +67,16 @@ export const getPoll: RequestHandler = async (req, res, next) => {
   }
 };
 
-// export const patchPoll: RequestHandler = async (req, res, next) => {
-//   try {
-//     const pollId = req.params.pollId;
-//     const body = res.locals.body;
-//     const poll = await patchPollService(pollId, body);
-//     return res.status(200).json(poll);
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+export const patchPoll: RequestHandler = async (req, res, next) => {
+  try {
+    const pollId = req.params.pollId;
+    const body = res.locals.validatePatchPollBody;
+    const poll = await patchPollService(pollId, body);
+    return res.status(200).json(poll);
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const deletePoll: RequestHandler = async (req, res, next) => {
   try {
