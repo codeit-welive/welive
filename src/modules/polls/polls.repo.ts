@@ -1,6 +1,6 @@
 import prisma from '#core/prisma';
-import { Prisma, User } from '@prisma/client';
-import { createPollBodyDTO } from './dto/polls.dto';
+import { Prisma } from '@prisma/client';
+import { createPollBodyDTO, patchPollBodyDTO } from './dto/polls.dto';
 
 export const getApartment = async (userId: string) => {
   return await prisma.user.findUnique({
@@ -31,7 +31,7 @@ export const createPollRepo = async (data: createPollBodyDTO) => {
       startDate: data.startDate,
       endDate: data.endDate,
       options: {
-        create: data.options.map((opt: any) => ({
+        create: data.options.map((opt) => ({
           title: opt.title,
         })),
       },
@@ -101,6 +101,30 @@ export const getPollRepo = async (pollId: string) => {
     },
   });
   return poll;
+};
+
+export const patchPollRepo = async (pollId: string, data: patchPollBodyDTO) => {
+  await prisma.poll.update({
+    where: {
+      id: pollId,
+    },
+    data: {
+      title: data.title,
+      content: data.content,
+      buildingPermission: data.buildingPermission,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      status: data.status,
+      options: {
+        deleteMany: {},
+        createMany: {
+          data: data.options.map((opt) => ({
+            title: opt.title,
+          })),
+        },
+      },
+    },
+  });
 };
 
 export const deletePollRepo = async (pollId: string) => {

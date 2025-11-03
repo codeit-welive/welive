@@ -1,6 +1,13 @@
 import ApiError from '#errors/ApiError';
 import { createPollBodyDTO, patchPollBodyDTO, pollListQueryDTO } from './dto/polls.dto';
-import { createPollRepo, deletePollRepo, getPollListRepo, getPollRepo, getPollStatusRepo } from './polls.repo';
+import {
+  createPollRepo,
+  deletePollRepo,
+  getPollListRepo,
+  getPollRepo,
+  getPollStatusRepo,
+  patchPollRepo,
+} from './polls.repo';
 import { Prisma } from '@prisma/client';
 
 export const createPollService = async (data: createPollBodyDTO) => {
@@ -117,8 +124,10 @@ export const patchPollService = async (pollId: string, data: patchPollBodyDTO) =
     throw ApiError.badRequest;
   }
   if (status.status !== 'PENDING') {
-    throw ApiError.unprocessable('투표 진행 중에는 수정을 할 수 없습니다.');
+    throw ApiError.unprocessable('투표 시작 후에는 수정을 할 수 없습니다.');
   }
+  const poll = await patchPollRepo(pollId, data);
+  return poll;
 };
 
 export const deletePollService = async (pollId: string) => {
@@ -127,7 +136,7 @@ export const deletePollService = async (pollId: string) => {
     throw ApiError.badRequest;
   }
   if (status.status !== 'PENDING') {
-    throw ApiError.unprocessable('투표 진행 중에는 삭제를 할 수 없습니다.');
+    throw ApiError.unprocessable('투표 시작 후에는 삭제할 수 없습니다.');
   }
   await deletePollRepo(pollId);
 };
