@@ -14,7 +14,7 @@ poleRouter
 poleRouter
   .route('/:pollId')
   .get(authMiddleware, requireRole(['ADMIN', 'USER']), getPoll)
-  // .patch(authMiddleware, requireRole(['ADMIN']), validatePatchPollBody)
+  .patch(authMiddleware, requireRole(['ADMIN']), validatePatchPollBody)
   .delete(authMiddleware, requireRole(['ADMIN']), deletePoll);
 
 export default poleRouter;
