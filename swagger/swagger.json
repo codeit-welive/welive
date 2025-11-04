@@ -1,0 +1,341 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "위리브 API",
+    "description": "위리브 API 명세서",
+    "version": "1.0.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "AccessTokenCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "access_token",
+        "description": "로그인 시 발급되는 JWT 액세스 토큰 (쿠키 기반 인증)"
+      }
+    }
+  },
+  "security": [
+    {
+      "AccessTokenCookie": []
+    }
+  ],
+  "paths": {
+    "/api/auth/signup": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/signup/admin": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/signup/super-admin": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/complaints/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      },
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      }
+    },
+    "/api/complaints/{complaintId}": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      },
+      "delete": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      },
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      }
+    },
+    "/api/complaints/{complaintId}/status": {
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      }
+    },
+    "/api/notices/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notices"
+        ]
+      },
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notices"
+        ]
+      }
+    },
+    "/api/notices/{noticeId}": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notices"
+        ]
+      },
+      "delete": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notices"
+        ]
+      },
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notices"
+        ]
+      }
+    },
+    "/api/comments/": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Comments"
+        ]
+      }
+    },
+    "/api/comments/{commentId}": {
+      "delete": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Comments"
+        ]
+      },
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Comments"
+        ]
+      }
+    },
+    "/api/poll-scheduler/ping": {
+      "get": {
+        "tags": [
+          "Poll-scheduler"
+        ],
+        "summary": "Poll 스케줄러 상태 확인",
+        "description": "서버에 스케줄러가 정상 작동 중인지 확인하기 위한 개발/운영용 엔드포인트입니다. 프론트에서는 사용하지 않습니다.",
+        "responses": {
+          "200": {
+            "description": "정상적으로 동작하는 경우",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Poll scheduler is running."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "스케줄러 비정상 응답",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Scheduler not responding"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Api"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Auth 관련 API"
+    },
+    {
+      "name": "Complaints",
+      "description": "Complaints 관련 API"
+    },
+    {
+      "name": "Notices",
+      "description": "Notices 관련 API"
+    },
+    {
+      "name": "Comments",
+      "description": "Comments 관련 API"
+    },
+    {
+      "name": "Poll-scheduler",
+      "description": "Poll-scheduler 관련 API"
+    },
+    {
+      "name": "Api",
+      "description": "Api 관련 API"
+    }
+  ]
+}
