@@ -1,0 +1,59 @@
+/**
+ * @file uploadImageToS3.ts
+ * @description 이미지 파일을 AWS S3에 업로드하는 유틸리티
+ */
+
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { randomUUID } from 'crypto';
+import path from 'path';
+import env from '#core/env';
+import { logger } from '#core/logger';
+import ApiError from '#errors/ApiError';
+
+/**
+ * @function uploadImageToS3
+ * @description 처리된 이미지 버퍼를 S3에 업로드하고 URL을 반환합니다.
+ * @param {Buffer} buffer 업로드할 이미지 버퍼
+ * @param {string} originName 원본 파일명 (확장자 포함)
+ * @returns {Promise<string>} 업로드된 이미지의 공개 URL
+ */
+export const uploadImageToS3 = async (buffer: Buffer, originName: string): Promise<string> => {
+  if (!env.AWS_CONFIG.enabled) throw ApiError.internal('AWS S3 설정이 활성화되어 있지 않습니다.');
+
+  try {
+    // S3 클라이언트 생성
+    const s3 = new S3Client({
+      region: env.AWS_CONFIG.region!,
+      credentials: {
+        accessKeyId: env.AWS_CONFIG.accessKeyId!,
+        secretAccessKey: env.AWS_CONFIG.secretAccessKey!,
+      },
+    });
+
+    // 파일명 생성
+    const ext = path.extname(originName).toLowerCase() || '.webp';
+    const uuid = randomUUID();
+    const timestamp = Date.now();
+    const key = `avatars/${timestamp}-${uuid}${ext}`;
+
+    // 업로드
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: env.AWS_CONFIG.bucketName!,
+        Key: key,
+        Body: buffer,
+        ACL: 'public-read', // 1MB 미만 프로필 이미지기에 presigned 불필요할 것으로 판단함
+        ContentType: 'image/webp',
+      })
+    );
+
+    // URL 반환
+    const url = `${env.AWS_CONFIG.baseUrl}/${key}`;
+    logger.system.debug(`[S3] 업로드 성공: ${url}`);
+
+    return url;
+  } catch (err) {
+    logger.system.error(err as Error, '[S3] 업로드 실패');
+    throw ApiError.internal('S3 업로드 중 오류가 발생했습니다.', err);
+  }
+};
