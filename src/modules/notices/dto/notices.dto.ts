@@ -18,7 +18,9 @@ export const noticeParamsSchema = z.uuid({ message: '유효한 경로가 아닙�
 export const noticeListQuerySchema = z.object({
   page: z.number().gte(1).optional(),
   pageSize: z.number().gte(5).optional(),
-  category: z.enum(['MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'COMPLAINT', 'ETC']),
+  category: z
+    .enum(['MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'COMPLAINT', 'ETC'])
+    .optional(),
   search: z.string().optional().nullable(),
 });
 
