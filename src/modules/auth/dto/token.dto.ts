@@ -24,8 +24,8 @@ export interface UpdateTokenDto extends TokenDto {
 }
 
 export interface TokenPayload {
-  id: string;
-  role: string;
-  joinStatus: string;
+  id: User['id'];
+  role: User['role'];
+  joinStatus: User['joinStatus'];
   isActive: boolean;
 }
