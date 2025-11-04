@@ -24,7 +24,12 @@ export const noticeListQuerySchema = z.object({
   search: z.string().optional().nullable(),
 });
 
-export type NoticeListQueryDTO = z.infer<typeof noticeListQuerySchema>;
+export type NoticeListQueryDTO = {
+  page: number;
+  pageSize: number;
+  category: NoticeCategory;
+  search: string | null;
+};
 
 export const noticeCreateSchema = z.object({
   userId: z.uuid({ message: '유효한 사용자 ID가 아닙니다.' }),
