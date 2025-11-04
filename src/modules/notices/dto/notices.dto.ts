@@ -16,8 +16,8 @@ type CommentDTO = {
 export const noticeParamsSchema = z.uuid({ message: '유효한 경로가 아닙니다.' });
 
 export const noticeListQuerySchema = z.object({
-  page: z.number().gt(1),
-  pageSize: z.number().gt(5),
+  page: z.number().gte(1).optional(),
+  pageSize: z.number().gte(5).optional(),
   category: z.enum(['MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'COMPLAINT', 'ETC']),
   search: z.string().optional().nullable(),
 });

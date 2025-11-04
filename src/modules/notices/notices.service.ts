@@ -56,13 +56,15 @@ export const getNoticeListService = async (data: NoticeListQueryDTO) => {
   return { noticeList, total };
 };
 
-export const getNoticeService = async (noticeId: string, boardId: string) => {
+export const getNoticeService = async (noticeId: string) => {
   const rawNotice = await getNoticeRepo(noticeId);
-  const boardName = await getBoardTypeRepo(boardId);
+
   if (!rawNotice) {
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
-  const { user, comments, _count: commentsCount, ...rest } = rawNotice;
+
+  const { user, comments, _count, board, ...rest } = rawNotice;
+
   const commentList = comments.map((comment) => ({
     id: comment.id,
     userId: comment.user.id,
@@ -71,15 +73,15 @@ export const getNoticeService = async (noticeId: string, boardId: string) => {
     updatedAt: comment.updatedAt.toISOString(),
     writerName: comment.user.name,
   }));
-  const notice = {
+
+  return {
     ...rest,
     userId: user.id,
     writerName: user.name,
-    commentsCount: commentsCount.comments,
-    boardName,
+    commentsCount: _count.comments,
+    boardName: board?.type ?? null,
     comments: commentList,
   };
-  return notice;
 };
 
 export const updateNoticeService = async (noticeId: string, data: NoticeUpdateDTO) => {
