@@ -41,8 +41,8 @@ export const getNoticeList: RequestHandler = async (req, res, next) => {
     const query = res.locals.query as NoticeListQueryDTO;
     const { page, pageSize, category, search } = query;
     const dto: NoticeListQueryDTO = {
-      page: page ? Number(page) : PAGINATION.DEFAULT_PAGE,
-      pageSize: pageSize ? Number(pageSize) : PAGINATION.DEFAULT_LIMIT,
+      page: Number(page) ?? PAGINATION.DEFAULT_PAGE,
+      pageSize: Number(pageSize) ?? PAGINATION.DEFAULT_LIMIT,
       category: category as NoticeCategory,
       search: search ?? null,
     };
