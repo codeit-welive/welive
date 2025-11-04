@@ -1,6 +1,6 @@
 import prisma from '#core/prisma';
 import { SignupSuperAdminRequestDto, UserDto, ApartmentDto, SignupUserRequestDto } from './dto/register.dto';
-import { BoardType, JoinStatus, User, UserRole } from '@prisma/client';
+import { BoardType, JoinStatus, UserRole } from '@prisma/client';
 
 const UserSelectFields = {
   id: true,
