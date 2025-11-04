@@ -3,7 +3,7 @@
  * @description S3에서 이미지 파일을 삭제하는 유틸리티
  */
 
-import { S3Client, DeleteObjectCommand, S3 } from '@aws-sdk/client-s3';
+import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import env from '#core/env';
 import { logger } from '#core/logger';
 
