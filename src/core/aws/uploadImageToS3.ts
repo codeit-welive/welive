@@ -16,7 +16,7 @@ import ApiError from '#errors/ApiError';
  * @param {Buffer} buffer 업로드할 이미지 버퍼 (이미 webp로 변환된 상태)
  * @returns {Promise<{ url: string; key: string }>}
  */
-export const uploadImageToS3 = async (buffer: Buffer): Promise<{ url: string; key: string }> => {
+export const uploadImageToS3 = async (buffer: Buffer): Promise<string> => {
   if (!env.AWS_CONFIG.enabled) throw ApiError.internal('AWS S3 설정이 활성화되어 있지 않습니다.');
 
   try {
@@ -49,7 +49,7 @@ export const uploadImageToS3 = async (buffer: Buffer): Promise<{ url: string; ke
     const url = `${env.AWS_CONFIG.baseUrl}/${key}`;
     logger.system.debug(`[S3] 업로드 성공: ${url}`);
 
-    return { url, key };
+    return url;
   } catch (err) {
     logger.system.error(err as Error, '[S3] 업로드 실패');
     throw ApiError.internal('S3 업로드 중 오류가 발생했습니다.', err);
