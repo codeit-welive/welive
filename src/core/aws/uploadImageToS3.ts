@@ -12,12 +12,11 @@ import ApiError from '#errors/ApiError';
 
 /**
  * @function uploadImageToS3
- * @description 처리된 이미지 버퍼를 S3에 업로드하고 URL을 반환합니다.
- * @param {Buffer} buffer 업로드할 이미지 버퍼
- * @param {string} originName 원본 파일명 (확장자 포함)
- * @returns {Promise<string>} 업로드된 이미지의 공개 URL
+ * @description 처리된 이미지 버퍼를 S3에 업로드하고 URL과 key를 반환합니다.
+ * @param {Buffer} buffer 업로드할 이미지 버퍼 (이미 webp로 변환된 상태)
+ * @returns {Promise<{ url: string; key: string }>}
  */
-export const uploadImageToS3 = async (buffer: Buffer, originName: string): Promise<string> => {
+export const uploadImageToS3 = async (buffer: Buffer): Promise<{ url: string; key: string }> => {
   if (!env.AWS_CONFIG.enabled) throw ApiError.internal('AWS S3 설정이 활성화되어 있지 않습니다.');
 
   try {
@@ -31,10 +30,9 @@ export const uploadImageToS3 = async (buffer: Buffer, originName: string): Promi
     });
 
     // 파일명 생성
-    const ext = path.extname(originName).toLowerCase() || '.webp';
     const uuid = randomUUID();
     const timestamp = Date.now();
-    const key = `avatars/${timestamp}-${uuid}${ext}`;
+    const key = `avatars/${timestamp}-${uuid}.webp`;
 
     // 업로드
     await s3.send(
@@ -42,16 +40,16 @@ export const uploadImageToS3 = async (buffer: Buffer, originName: string): Promi
         Bucket: env.AWS_CONFIG.bucketName!,
         Key: key,
         Body: buffer,
-        ACL: 'public-read', // 1MB 미만 프로필 이미지기에 presigned 불필요할 것으로 판단함
+        ACL: 'public-read',
         ContentType: 'image/webp',
       })
     );
 
-    // URL 반환
+    // URL 생성
     const url = `${env.AWS_CONFIG.baseUrl}/${key}`;
     logger.system.debug(`[S3] 업로드 성공: ${url}`);
 
-    return url;
+    return { url, key };
   } catch (err) {
     logger.system.error(err as Error, '[S3] 업로드 실패');
     throw ApiError.internal('S3 업로드 중 오류가 발생했습니다.', err);
