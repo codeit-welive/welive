@@ -1,5 +1,5 @@
 import { PollStatus } from '@prisma/client';
-import { string, z } from 'zod';
+import { z } from 'zod';
 
 export const createPollBodySchema = z.object({
   boardId: z.uuid({ message: '유효한 경로가 아닙니다.' }),
@@ -16,11 +16,19 @@ export const createPollBodySchema = z.object({
 export type createPollBodyDTO = z.infer<typeof createPollBodySchema>;
 
 export const pollListQuerySchema = z.object({
-  page: z.number().gte(1),
-  pageSize: z.number().gte(5),
+  page: z.number().default(1),
+  pageSize: z.number().default(11),
   votingStatus: z.enum(PollStatus),
   apartment: z.stringFormat('투표권자', /^[1-9][0-9][1-9]동$/).or(z.string('전체')),
   search: z.string().optional(),
+});
+
+export const pollListQueryInputSchema = z.object({
+  page: z.string().default('1'),
+  limit: z.string().default('11'),
+  status: z.enum(PollStatus),
+  buildingPermission: z.stringFormat('투표권자', /^[1-9][0-9][1-9]동$/).or(z.string('전체')),
+  keyword: z.string().optional(),
 });
 
 export type pollListQueryDTO = z.infer<typeof pollListQuerySchema>;

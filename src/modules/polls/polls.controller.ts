@@ -38,24 +38,22 @@ export const createPoll: RequestHandler = async (req, res, next) => {
 export const getPollList: RequestHandler = async (req, res, next) => {
   try {
     const query = res.locals.query;
-    const boardId = res.locals.body.boardId;
-    const { page, pageSize, votingStatus, apartment, search } = query;
+    const userId = req.user.id;
+    const { page, limit, status, buildingPermission, keyword } = query;
     const dto: pollListQueryDTO = {
-      page: page ? Number(page) : PAGINATION.DEFAULT_PAGE,
-      pageSize: pageSize ? Number(page) : PAGINATION.DEFAULT_LIMIT,
-      votingStatus: votingStatus as PollStatus,
-      apartment: apartment,
-      search: search,
+      page: Number(page) ?? PAGINATION.DEFAULT_PAGE,
+      pageSize: Number(limit) ?? PAGINATION.DEFAULT_LIMIT,
+      votingStatus: status as PollStatus,
+      apartment: buildingPermission,
+      search: keyword,
     };
-    const { polls, totalCount } = await getPollListService(dto, boardId);
+    const { polls, totalCount } = await getPollListService(dto, userId);
     return res.status(200).json({ polls, totalCount });
   } catch (err) {
     next(err);
   }
 };
 
-//투표 마감 시 관리자와 입주민 모두 투표 결과 조회가 가능하며,
-//마감된 투표는 자동으로 공지사항에 등록됩니다.
 export const getPoll: RequestHandler = async (req, res, next) => {
   try {
     const pollId = req.params.pollId;
@@ -69,9 +67,9 @@ export const getPoll: RequestHandler = async (req, res, next) => {
 export const patchPoll: RequestHandler = async (req, res, next) => {
   try {
     const pollId = req.params.pollId;
-    const body = res.locals.validatePatchPollBody;
-    const poll = await patchPollService(pollId, body);
-    return res.status(200).json(poll);
+    const body = res.locals.validatedBody;
+    await patchPollService(pollId, body);
+    return res.sendStatus(200);
   } catch (err) {
     next(err);
   }
@@ -81,7 +79,7 @@ export const deletePoll: RequestHandler = async (req, res, next) => {
   try {
     const pollId = req.params.pollId;
     await deletePollService(pollId);
-    return res.status(200).json({ message: RESPONSE_MESSAGES.DELETE_SUCCESS });
+    return res.sendStatus(200);
   } catch (err) {
     next(err);
   }

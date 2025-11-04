@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import forwardZodError from '#utils/zod';
-import { createPollBodySchema, patchPollBodySchema, pollListQuerySchema } from './dto/polls.dto';
+import { createPollBodySchema, patchPollBodySchema, pollListQueryInputSchema } from './dto/polls.dto';
 
 export const validateCreatePollBody: RequestHandler = async (req, res, next) => {
   try {
@@ -17,7 +17,7 @@ export const validateCreatePollBody: RequestHandler = async (req, res, next) => 
 
 export const validatePollListQuery: RequestHandler = async (req, res, next) => {
   try {
-    const validatedQuery = await pollListQuerySchema.parseAsync({
+    const validatedQuery = await pollListQueryInputSchema.parseAsync({
       ...req.query,
     });
 
