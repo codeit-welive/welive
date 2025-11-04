@@ -1,15 +1,22 @@
 import jwt, { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import env from '#core/env';
-import type { DecodedToken } from '#modules/auth/dto/token.dto';
+import type { DecodedToken, TokenPayload } from '#modules/auth/dto/token.dto';
 import ApiError from '#errors/ApiError';
-import { UserRole } from '@prisma/client';
 
 /**
  * Access Token 생성
  */
-export const generateAccessToken = (user: { id: string; role: UserRole }): string => {
+export const generateAccessToken = (user: TokenPayload): string => {
   try {
-    return jwt.sign({ id: user.id, role: user.role }, env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+    const payload = {
+      id: user.id,
+      role: user.role,
+      joinStatus: user.joinStatus,
+      isActive: user.isActive,
+    };
+    return jwt.sign(payload, env.ACCESS_TOKEN_SECRET, {
+      expiresIn: '1h',
+    });
   } catch (err) {
     throw new ApiError(500, '❌ Access Token 생성에 실패했습니다.', 'INTERNAL_ERROR', err);
   }
@@ -33,9 +40,17 @@ export const verifyAccessToken = (token: string): DecodedToken => {
 /**
  * Refresh Token 생성
  */
-export const generateRefreshToken = (user: { id: string; role: UserRole }): string => {
+export const generateRefreshToken = (user: TokenPayload): string => {
   try {
-    return jwt.sign({ id: user.id, role: user.role }, env.REFRESH_TOKEN_SECRET, { expiresIn: '14d' });
+    const payload = {
+      id: user.id,
+      role: user.role,
+      joinStatus: user.joinStatus,
+      isActive: user.isActive,
+    };
+    return jwt.sign(payload, env.REFRESH_TOKEN_SECRET, {
+      expiresIn: '14d',
+    });
   } catch (err) {
     throw new ApiError(500, '❌ Refresh Token 생성에 실패했습니다.', 'INTERNAL_ERROR', err);
   }

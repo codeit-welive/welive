@@ -4,6 +4,8 @@ import type { User } from '@prisma/client';
 export interface DecodedToken extends JwtPayload {
   id: User['id'];
   role: User['role'];
+  joinStatus: User['joinStatus'];
+  isActive: boolean;
 }
 
 export interface RefreshDto {
@@ -19,6 +21,9 @@ export interface TokenDto {
   expiryDate?: Date;
 }
 
-export interface UpdateTokenDto extends TokenDto {
-  userId: number;
+export interface TokenPayload {
+  id: User['id'];
+  role: User['role'];
+  joinStatus: User['joinStatus'];
+  isActive: boolean;
 }
