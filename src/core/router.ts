@@ -16,6 +16,7 @@ import noticeRouter from '#modules/notices/notices.router';
 import pollSchedulerRouter from '#modules/poll-scheduler/poll-scheduler.router';
 import residentsRouter from '#modules/residents/residents.router';
 import usersRouter from '#modules/users/users.router';
+import optionRouter from '#modules/polls/options/options.router';
 
 const router = Router();
 
@@ -35,5 +36,6 @@ router.use('/notices', noticeRouter);
 router.use('/poll-scheduler', pollSchedulerRouter);
 router.use('/residents', residentsRouter);
 router.use('/users', usersRouter);
+router.use('/options', optionRouter);
 
 export default router;
