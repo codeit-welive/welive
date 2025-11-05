@@ -10,14 +10,14 @@ import {
   patchPollRepo,
   //   pollNoticeRepo,
 } from './polls.repo';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 
 export const createPollService = async (data: createPollBodyDTO) => {
   await createPollRepo(data);
   return 1;
 };
 
-export const getPollListService = async (data: pollListQueryDTO, userId: string) => {
+export const getPollListService = async (data: pollListQueryDTO, userId: string, role: UserRole) => {
   const pageSize = data.pageSize;
   const skip = (data.page - 1) * pageSize;
   const search = data.search;

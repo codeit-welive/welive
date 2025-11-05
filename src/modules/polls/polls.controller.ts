@@ -39,6 +39,7 @@ export const getPollList: RequestHandler = async (req, res, next) => {
   try {
     const query = res.locals.query;
     const userId = req.user.id;
+    const role = req.user.role;
     const { page, limit, status, buildingPermission, keyword } = query;
     const dto: pollListQueryDTO = {
       page: Number(page) ?? PAGINATION.DEFAULT_PAGE,
@@ -47,7 +48,7 @@ export const getPollList: RequestHandler = async (req, res, next) => {
       apartment: buildingPermission,
       search: keyword,
     };
-    const { polls, totalCount } = await getPollListService(dto, userId);
+    const { polls, totalCount } = await getPollListService(dto, userId, role);
     return res.status(200).json({ polls, totalCount });
   } catch (err) {
     next(err);
@@ -88,7 +89,15 @@ export const deletePoll: RequestHandler = async (req, res, next) => {
 // export const closedPoll: RequestHandler = async (req, res, next) => {
 //   try {
 //     const pollId = req.params.pollId;
-//     await closedPollService(pollId);
+//     // await closedPollService(pollId);
+//     broadcast({
+//       notificationId: pollId,
+//       content: `투표가 마감되었습니다.`,
+//       notificationType: 'POLL_CLOSED', // Prisma NotificationType
+//       notifiedAt: new Date().toISOString(),
+//       isChecked: false,
+//       pollId: pollId,
+//     });
 //     // return res.status(200).json({ message: RESPONSE_MESSAGES.DELETE_SUCCESS });
 //   } catch (err) {
 //     next(err);
