@@ -16,13 +16,20 @@ type CommentDTO = {
 export const noticeParamsSchema = z.uuid({ message: '유효한 경로가 아닙니다.' });
 
 export const noticeListQuerySchema = z.object({
-  page: z.number().gt(1),
-  pageSize: z.number().gt(5),
-  category: z.enum(['MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'COMPLAINT', 'ETC']),
+  page: z.string().default('1'),
+  pageSize: z.string().default('5'),
+  category: z
+    .enum(['MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'COMPLAINT', 'ETC'])
+    .optional(),
   search: z.string().optional().nullable(),
 });
 
-export type NoticeListQueryDTO = z.infer<typeof noticeListQuerySchema>;
+export type NoticeListQueryDTO = {
+  page: number;
+  pageSize: number;
+  category: NoticeCategory;
+  search: string | null;
+};
 
 export const noticeCreateSchema = z.object({
   userId: z.uuid({ message: '유효한 사용자 ID가 아닙니다.' }),
