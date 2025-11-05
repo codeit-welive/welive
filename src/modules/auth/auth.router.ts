@@ -55,4 +55,7 @@ authRouter
 authRouter
   .route('/residents/status')
   .patch(authMiddleware, requireRole(['ADMIN']), validatePatchStatusBody, patchUserStatusHandler);
+
+authRouter.route('/cleanup').post(authMiddleware, requireRole(['SUPER_ADMIN', 'ADMIN']));
+
 export default authRouter;

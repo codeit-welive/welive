@@ -10,6 +10,7 @@ import {
   patchUserStatusRepo,
   patchUserListStatusRepo,
   getApartmentNameByAdminId,
+  deleteRejectedUser,
 } from './auth.repo';
 import { SignupSuperAdminRequestDto, SignupAdminRequestDto, SignupUserRequestDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -105,4 +106,16 @@ export const patchUserListStatus = async (status: JoinStatus, adminId: string) =
   const adminApartmentName = adminApartment?.apartment?.apartmentName as string;
 
   await patchUserListStatusRepo(status, adminApartmentName);
+};
+
+export const cleanupRejectedUsers = async (role: UserRole) => {
+  const targetRole = role === UserRole.ADMIN ? UserRole.USER : UserRole.ADMIN;
+  if (
+    (role === UserRole.SUPER_ADMIN && targetRole === UserRole.USER) ||
+    (role === UserRole.ADMIN && targetRole === UserRole.ADMIN)
+  ) {
+    throw ApiError.forbidden('권한이 없습니다');
+  }
+
+  await deleteRejectedUser(targetRole);
 };
