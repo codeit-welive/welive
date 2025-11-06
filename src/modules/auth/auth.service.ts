@@ -109,13 +109,15 @@ export const patchUserListStatus = async (status: JoinStatus, adminId: string) =
 };
 
 export const cleanupRejectedUsers = async (role: UserRole) => {
-  const targetRole = role === UserRole.ADMIN ? UserRole.USER : UserRole.ADMIN;
-  if (
-    (role === UserRole.SUPER_ADMIN && targetRole === UserRole.USER) ||
-    (role === UserRole.ADMIN && targetRole === UserRole.ADMIN)
-  ) {
-    throw ApiError.forbidden('권한이 없습니다');
-  }
+  const ROLE_CLEANUP_MAP: Record<UserRole, UserRole | null> = {
+    SUPER_ADMIN: UserRole.ADMIN,
+    ADMIN: UserRole.USER,
+    USER: null, // 권한 X
+  };
+
+  const targetRole = ROLE_CLEANUP_MAP[role];
+
+  if (!targetRole) throw ApiError.forbidden('권한이 없습니다');
 
   await deleteRejectedUser(targetRole);
 };
