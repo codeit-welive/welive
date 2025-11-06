@@ -1,5 +1,30 @@
 import prisma from '#core/prisma';
 
+export const getApartmentByUserId = async (userId: string) => {
+  const apartment = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      resident: {
+        select: {
+          building: true,
+        },
+      },
+    },
+  });
+  return apartment;
+};
+
+export const getBuildingPermissionRepo = async (pollId: string) => {
+  return await prisma.poll.findUnique({
+    where: {
+      id: pollId,
+    },
+    select: {
+      buildingPermission: true,
+    },
+  });
+};
+
 export const createVoteRepo = async (pollId: string, optionId: string, userId: string) => {
   return await prisma.pollVote.create({
     data: {
