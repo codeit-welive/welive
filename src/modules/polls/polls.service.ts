@@ -3,6 +3,7 @@ import { createPollBodyDTO, patchPollBodyDTO, pollListQueryDTO } from './dto/pol
 import {
   createPollRepo,
   deletePollRepo,
+  getBoardIdByAdminId,
   getBoardIdByUserId,
   getPollListRepo,
   getPollRepo,
@@ -23,11 +24,16 @@ export const getPollListService = async (data: pollListQueryDTO, userId: string,
   const search = data.search;
   const status = data.votingStatus;
   const apartment = Number(data.apartment);
-  const boardId = await getBoardIdByUserId(userId);
+  let boardId;
+  if (role === UserRole.USER) {
+    boardId = await getBoardIdByUserId(userId);
+  } else if (role === UserRole.ADMIN) {
+    boardId = await getBoardIdByAdminId(userId);
+  }
   if (!boardId || !boardId.id) {
     throw ApiError.forbidden;
   }
-  let where: Prisma.PollWhereInput = { boardId: boardId.id }; // 입주민은 자신이 투표권자로 설정된 투표만 참여 가능하고, 투표권자와 투표 상태로 필터링 및 검색이 가능.
+  let where: Prisma.PollWhereInput = { boardId: boardId.id };
   if (status) {
     where = {
       ...where,

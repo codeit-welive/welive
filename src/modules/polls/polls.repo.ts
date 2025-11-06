@@ -24,6 +24,21 @@ export const getBoardIdByUserId = async (userId: string) => {
   return board;
 };
 
+export const getBoardIdByAdminId = async (adminId: string) => {
+  const board = await prisma.board.findFirst({
+    where: {
+      type: BoardType.COMPLAINT,
+      apartment: {
+        adminId,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+  return board;
+};
+
 export const getPollStatusRepo = async (pollId: string) => {
   return await prisma.poll.findUnique({
     where: { id: pollId },
