@@ -40,7 +40,7 @@ export const getNoticeListService = async (data: NoticeListQueryDTO) => {
     };
   }
   const rawNoticeList = await getNoticeListRepo(where, pageSize, skip);
-  const noticeList = rawNoticeList.data.map((notice) => ({
+  const notices = rawNoticeList.data.map((notice) => ({
     id: notice.id,
     userId: notice.user.id,
     category: notice.category,
@@ -52,8 +52,8 @@ export const getNoticeListService = async (data: NoticeListQueryDTO) => {
     commentsCount: notice._count.comments,
     isPinned: notice.isPinned,
   }));
-  const total = rawNoticeList.total;
-  return { noticeList, total };
+  const totalCount = rawNoticeList.total;
+  return { notices, totalCount };
 };
 
 export const getNoticeService = async (noticeId: string) => {
