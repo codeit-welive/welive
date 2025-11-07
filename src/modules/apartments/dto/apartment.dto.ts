@@ -1,11 +1,14 @@
 import { z } from 'zod';
 import { PAGINATION } from '#constants/pagination.constant';
+import { JoinStatus } from '@prisma/client';
 
 export const apartmentRequestQuerySchema = z.object({
-  name: z.string(),
-  address: z.string(),
-  limit: z.number().min(1).default(PAGINATION.DEFAULT_LIMIT),
-  page: z.number().min(1).default(PAGINATION.DEFAULT_PAGE),
+  name: z.string().optional(),
+  address: z.string().optional(),
+  searchKeyword: z.string().default(''),
+  apartmentStatus: z.enum(JoinStatus).optional(),
+  limit: z.coerce.number().min(1).default(PAGINATION.DEFAULT_LIMIT),
+  page: z.coerce.number().min(1).default(PAGINATION.DEFAULT_PAGE),
 });
 
 export type ApartmentRequestQueryDto = z.infer<typeof apartmentRequestQuerySchema>;

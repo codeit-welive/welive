@@ -1,12 +1,12 @@
 import { UserRole } from '@prisma/client';
-import { getById, getList } from './apartments.repo';
+import { getById, getCount, getList } from './apartments.repo';
 import { ApartmentRequestQueryDto } from './dto/apartment.dto';
 import ApiError from '#errors/ApiError';
 
 export const getApartmentList = async (query: ApartmentRequestQueryDto, userRole: UserRole) => {
-  const apartments = await getList(query, userRole);
+  const [apartments, totalCount] = await Promise.all([await getList(query, userRole), await getCount(query, userRole)]);
 
-  return apartments;
+  return { apartments, totalCount };
 };
 
 export const getApartment = async (apartmentId: string, userRole: UserRole) => {

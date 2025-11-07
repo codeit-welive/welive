@@ -1,23 +1,25 @@
 import prisma from '#core/prisma';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { ApartmentRequestQueryDto } from './dto/apartment.dto';
 
 export const getList = async (query: ApartmentRequestQueryDto, userRole: UserRole) => {
+  const OR = [];
+  const mode = 'insensitive' as Prisma.QueryMode;
+
+  if (userRole !== UserRole.USER) {
+    OR.push({ apartmentName: { contains: query.searchKeyword, mode } });
+    OR.push({ apartmentAddress: { contains: query.searchKeyword, mode } });
+    OR.push({ admin: { name: { contains: query.searchKeyword, mode } } });
+    OR.push({ admin: { email: { contains: query.searchKeyword, mode } } });
+  } else {
+    OR.push({ apartmentName: { contains: query.name, mode } });
+  }
+
   return prisma.apartment.findMany({
     where: {
-      OR: [
-        { apartmentName: { contains: query.name, mode: 'insensitive' } },
-        { apartmentAddress: { contains: query.address, mode: 'insensitive' } },
-        {
-          admin: {
-            name: { contains: query.name, mode: 'insensitive' },
-            email: { contains: query.name, mode: 'insensitive' },
-          },
-        },
-      ],
+      OR,
+      ...(query.apartmentStatus && { admin: { joinStatus: query.apartmentStatus } }),
     },
-    skip: (query.page - 1) * query.limit,
-    take: query.limit,
     select: {
       id: true,
       apartmentName: true,
@@ -43,6 +45,10 @@ export const getList = async (query: ApartmentRequestQueryDto, userRole: UserRol
         },
       }),
     },
+    ...(userRole !== UserRole.USER && {
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+    }),
   });
 };
 
@@ -73,6 +79,27 @@ export const getById = async (id: string, userRole: UserRole) => {
           },
         },
       }),
+    },
+  });
+};
+
+export const getCount = async (query: ApartmentRequestQueryDto, userRole: UserRole) => {
+  const OR = [];
+  const mode = 'insensitive' as Prisma.QueryMode;
+
+  if (userRole !== UserRole.USER) {
+    OR.push({ apartmentName: { contains: query.searchKeyword, mode } });
+    OR.push({ apartmentAddress: { contains: query.searchKeyword, mode } });
+    OR.push({ admin: { name: { contains: query.searchKeyword, mode } } });
+    OR.push({ admin: { email: { contains: query.searchKeyword, mode } } });
+  } else {
+    OR.push({ apartmentName: { contains: query.name, mode } });
+  }
+
+  return prisma.apartment.count({
+    where: {
+      OR,
+      ...(query.apartmentStatus && { admin: { joinStatus: query.apartmentStatus } }),
     },
   });
 };

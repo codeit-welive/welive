@@ -16,3 +16,5 @@ apartmentRouter
   );
 
 apartmentRouter.route('/:id').get(authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN', 'USER']), getApartmentHandler);
+
+export default apartmentRouter;
