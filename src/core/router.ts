@@ -13,7 +13,10 @@ import authRouter from '#modules/auth/auth.router';
 import commentRouter from '#modules/comments/comments.router';
 import complaintRouter from '#modules/complaints/complaints.router';
 import noticeRouter from '#modules/notices/notices.router';
-import pollSchedulerRouter from '#modules/pollScheduler/pollScheduler.router';
+import pollSchedulerRouter from '#modules/poll-scheduler/poll-scheduler.router';
+import residentsRouter from '#modules/residents/residents.router';
+import usersRouter from '#modules/users/users.router';
+import pollRouter from '#modules/polls/polls.router';
 
 const router = Router();
 
@@ -31,5 +34,8 @@ router.use('/comments', commentRouter);
 router.use('/complaints', complaintRouter);
 router.use('/notices', noticeRouter);
 router.use('/poll-scheduler', pollSchedulerRouter);
+router.use('/residents', residentsRouter);
+router.use('/users', usersRouter);
+router.use('/polls', pollRouter);
 
 export default router;
