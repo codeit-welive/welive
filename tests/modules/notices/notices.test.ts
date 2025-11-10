@@ -2,7 +2,7 @@ import request from 'supertest';
 import app from '#core/app';
 import prisma from '#core/prisma';
 import { generateAccessToken } from '#modules/auth/utils/tokenUtils';
-import { UserRole, NoticeCategory } from '@prisma/client';
+import { UserRole, NoticeCategory, JoinStatus } from '@prisma/client';
 
 process.env.__SKIP_GLOBAL_DB_CLEANUP__ = 'true';
 
@@ -96,8 +96,18 @@ describe('[Notices] 통합 테스트', () => {
       },
     });
 
-    adminToken = generateAccessToken({ id: admin.id, role: UserRole.ADMIN });
-    userToken = generateAccessToken({ id: user.id, role: UserRole.USER });
+    adminToken = generateAccessToken({
+      id: admin.id,
+      role: UserRole.ADMIN,
+      joinStatus: JoinStatus.APPROVED,
+      isActive: true,
+    });
+    userToken = generateAccessToken({
+      id: user.id,
+      role: UserRole.USER,
+      joinStatus: JoinStatus.APPROVED,
+      isActive: true,
+    });
   });
 
   /**
