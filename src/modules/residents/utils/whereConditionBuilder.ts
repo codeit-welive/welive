@@ -1,7 +1,7 @@
 import { ResidentListRequestQueryDto } from '../dto/resident.dto';
 
 export const buildWhereCondition = (query: ResidentListRequestQueryDto) => {
-  let whereCondition = {
+  const whereCondition = {
     ...(query.building && { building: query.building }),
     ...(query.unitNumber && { unitNumber: query.unitNumber }),
     ...(query.residenceStatus && { residenceStatus: query.residenceStatus }),
