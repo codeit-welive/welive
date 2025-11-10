@@ -20,18 +20,18 @@ const selectResidentFields = {
   },
 };
 
-export const getList = async (query: ResidentListRequestQueryDto) => {
+export const getList = async (query: ResidentListRequestQueryDto, adminId: string) => {
   return await prisma.resident.findMany({
-    where: buildWhereCondition(query),
+    where: buildWhereCondition(query, adminId),
     select: selectResidentFields,
     skip: (query.page - 1) * query.limit,
     take: query.limit,
   });
 };
 
-export const getCount = async (query: ResidentListRequestQueryDto) => {
+export const getCount = async (query: ResidentListRequestQueryDto, adminId: string) => {
   return await prisma.resident.count({
-    where: buildWhereCondition(query),
+    where: buildWhereCondition(query, adminId),
   });
 };
 

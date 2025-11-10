@@ -3,8 +3,8 @@ import { ResidentListRequestQueryDto } from './dto/resident.dto';
 import { getCount, getList, getById } from './residents.repo';
 import { residentDataMapper } from './utils/dataMapper';
 
-export const getResidentList = async (query: ResidentListRequestQueryDto) => {
-  const [residents, count] = await Promise.all([getList(query), getCount(query)]);
+export const getResidentList = async (query: ResidentListRequestQueryDto, adminId: string) => {
+  const [residents, count] = await Promise.all([getList(query, adminId), getCount(query, adminId)]);
   const mappedResidents = residentDataMapper(residents);
   return {
     residents: mappedResidents,
