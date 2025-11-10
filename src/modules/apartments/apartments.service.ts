@@ -15,7 +15,7 @@ export const getApartmentList = async (query: ApartmentRequestQueryDto, userRole
 };
 
 /**
- *
+ * 아파트 상세 조회
  * @param apartmentId 조회할 아파트 ID
  * @param userRole 요청한 사용자의 역할
  * @returns 아파트 상세 정보
