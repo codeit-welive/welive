@@ -9,7 +9,7 @@ import ApiError from '#errors/ApiError';
  * @returns 아파트 목록과 총 개수
  */
 export const getApartmentList = async (query: ApartmentRequestQueryDto, userRole: UserRole) => {
-  const [apartments, totalCount] = await Promise.all([await getList(query, userRole), await getCount(query, userRole)]);
+  const [apartments, totalCount] = await Promise.all([getList(query, userRole), getCount(query, userRole)]);
 
   return { apartments, totalCount };
 };
