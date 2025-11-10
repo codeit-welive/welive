@@ -1,9 +1,11 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { validateUserUpdate } from './users.validator';
 import { updateUserController } from './users.controller';
 import authMiddleware from '#core/middlewares/authMiddleware';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * PATCH /api/users/me
@@ -22,6 +24,7 @@ router.patch(
   //#swagger.responses[404] = { description: '사용자를 찾을 수 없음' }
   //#swagger.responses[500] = { description: '서버 내부 오류' }
   authMiddleware,
+  upload.single('file'),
   validateUserUpdate,
   updateUserController
 );
