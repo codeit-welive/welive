@@ -90,9 +90,10 @@ export const updateNoticeService = async (noticeId: string, data: NoticeUpdateDT
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
   const notice = await updateNoticeRepo(noticeId, data);
-  const { user, _count: commentsCount, ...rest } = notice;
+  const { id, user, _count: commentsCount, ...rest } = notice;
   const updatedNotice = {
     ...rest,
+    noticeId: id,
     userId: user.id,
     writerName: user.name,
     commentsCount,
