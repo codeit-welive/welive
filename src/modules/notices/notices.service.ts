@@ -41,7 +41,7 @@ export const getNoticeListService = async (data: NoticeListQueryDTO) => {
   }
   const rawNoticeList = await getNoticeListRepo(where, pageSize, skip);
   const notices = rawNoticeList.data.map((notice) => ({
-    id: notice.id,
+    noticeId: notice.id,
     userId: notice.user.id,
     category: notice.category,
     title: notice.title,
