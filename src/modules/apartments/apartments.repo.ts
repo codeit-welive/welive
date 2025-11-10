@@ -1,6 +1,7 @@
 import prisma from '#core/prisma';
 import { Prisma, UserRole } from '@prisma/client';
 import { ApartmentRequestQueryDto } from './dto/apartment.dto';
+import { buildSearchFilter } from './utils/buildSearchFilter';
 
 /**
  * @description 아파트 목록 조회
@@ -11,17 +12,7 @@ import { ApartmentRequestQueryDto } from './dto/apartment.dto';
  *  - ADMIN, SUPER_ADMIN: 추가 정보 포함
  */
 export const getList = async (query: ApartmentRequestQueryDto, userRole: UserRole) => {
-  const OR = [];
-  const mode = 'insensitive' as Prisma.QueryMode;
-
-  if (userRole !== UserRole.USER) {
-    OR.push({ apartmentName: { contains: query.searchKeyword, mode } });
-    OR.push({ apartmentAddress: { contains: query.searchKeyword, mode } });
-    OR.push({ admin: { name: { contains: query.searchKeyword, mode } } });
-    OR.push({ admin: { email: { contains: query.searchKeyword, mode } } });
-  } else {
-    OR.push({ apartmentName: { contains: query.name, mode } });
-  }
+  const OR = buildSearchFilter(query, userRole);
 
   return prisma.apartment.findMany({
     where: {
