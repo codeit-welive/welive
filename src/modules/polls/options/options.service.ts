@@ -8,6 +8,7 @@ import {
   getOptionIdList,
   getOptionListRepo,
   getOptionRepo,
+  getPollByIdRepo,
   getPollIdByOptionId,
 } from './options.repo';
 
@@ -34,6 +35,20 @@ export const getBuildingPermission = async (userId: string, pollId: string) => {
 };
 
 export const postVoteService = async (optionId: string, userId: string, pollId: string) => {
+  const poll = await getPollByIdRepo(pollId);
+  if (!poll) throw ApiError.notFound('투표 정보를 찾을 수 없습니다.');
+
+  // 기간 검증
+  const now = new Date();
+  if (now < poll.startDate || now > poll.endDate) {
+    throw ApiError.forbidden('현재 투표 기간이 아닙니다.');
+  }
+
+  // 상태 검증
+  if (poll.status !== 'IN_PROGRESS') {
+    throw ApiError.forbidden('현재 투표가 진행 중이 아닙니다.');
+  }
+
   //투표 데이터 생성(pollVote 생성)
   await createVoteRepo(pollId, optionId, userId);
 

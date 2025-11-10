@@ -1,5 +1,17 @@
 import prisma from '#core/prisma';
 
+export const getPollByIdRepo = async (pollId: string) => {
+  return await prisma.poll.findUnique({
+    where: { id: pollId },
+    select: {
+      id: true,
+      status: true,
+      startDate: true,
+      endDate: true,
+    },
+  });
+};
+
 export const getApartmentByUserId = async (userId: string) => {
   const apartment = await prisma.user.findUnique({
     where: { id: userId },
