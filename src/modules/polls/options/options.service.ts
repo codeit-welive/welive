@@ -69,6 +69,9 @@ export const postVoteService = async (optionId: string, userId: string, pollId: 
   const optionIdList = await getOptionIdList(pollId);
   const optionIds = optionIdList.map((o) => o.id);
   const voteCounts = await compareVoteCountRepo(optionIds);
+  if (voteCounts.length === 0) {
+    throw ApiError.notFound('투표 데이터가 없습니다.');
+  }
   const max = voteCounts.reduce((prev, curr) => (curr._count.optionId > prev._count.optionId ? curr : prev));
   if (!max || !max.optionId) {
     throw ApiError.notFound();
