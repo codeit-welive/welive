@@ -79,12 +79,7 @@ export const getChatRoomById = async (userId: string, role: 'ADMIN' | 'USER', ch
     }
   } else if (role === 'ADMIN') {
     // 관리자: 관리 아파트의 채팅방만
-    const adminChatRooms = await ChatRepo.getListByAdminId(userId, {
-      page: 1,
-      limit: 9999,
-    });
-
-    const hasAccess = adminChatRooms.some((room) => room.id === chatRoomId);
+    const hasAccess = await ChatRepo.checkAdminAccessToChatRoom(userId, chatRoomId);
 
     if (!hasAccess) {
       throw ApiError.forbidden(CHAT_ERROR_MESSAGES.NO_CHAT_ROOM_ACCESS);

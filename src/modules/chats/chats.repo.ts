@@ -50,6 +50,24 @@ export const getByUserId = async (userId: string) => {
 };
 
 /**
+ * Admin이 특정 채팅방에 접근 권한이 있는지 확인합니다.
+ * @param adminUserId - Admin의 userId
+ * @param chatRoomId - 채팅방 ID
+ * @returns 접근 권한이 있으면 true, 없으면 false
+ */
+export const checkAdminAccessToChatRoom = async (adminUserId: string, chatRoomId: string) => {
+  const chatRoom = await prisma.chatRoom.findFirst({
+    where: {
+      id: chatRoomId,
+      apartment: {
+        adminId: adminUserId,
+      },
+    },
+  });
+  return !!chatRoom;
+};
+
+/**
  * 채팅방 ID로 조회
  * @description 채팅방 상세 정보 조회
  * @param chatRoomId - 채팅방 ID
