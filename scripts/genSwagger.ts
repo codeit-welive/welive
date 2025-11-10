@@ -30,6 +30,7 @@ const baseDoc = {
 // prettier-ignore
 const domains = [
   'auth',
+  'users',
   'complaints',
   'notices',
   'comments',
