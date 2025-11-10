@@ -67,7 +67,7 @@ export const getPollListService = async (data: pollListQueryDTO, userId: string,
   }
   const rawPollList = await getPollListRepo(where, pageSize, skip);
   const polls = rawPollList.data.map((poll) => ({
-    id: poll.id,
+    pollId: poll.id,
     userId: poll.user.id,
     title: poll.title,
     writerName: poll.user.name,
@@ -87,9 +87,10 @@ export const getPollService = async (pollId: string) => {
   if (!rawPoll) {
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
-  const { user, board, ...rest } = rawPoll;
+  const { id, user, board, ...rest } = rawPoll;
   const poll = {
     ...rest,
+    pollId: id,
     userId: user.id,
     writerName: user.name,
     boardName: board.type,
