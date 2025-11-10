@@ -4,7 +4,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import authMiddleware from '#core/middlewares/authMiddleware';
 import { generateAccessToken } from '#modules/auth/utils/tokenUtils';
-import { UserRole } from '@prisma/client';
+import { UserRole, JoinStatus } from '@prisma/client';
 import { errorHandler } from '#core/middlewares/errorHandler';
 
 describe('[Auth] authMiddleware', () => {
@@ -22,7 +22,12 @@ describe('[Auth] authMiddleware', () => {
   });
 
   it('유효한 토큰이면 접근 가능해야 함', async () => {
-    const token = generateAccessToken({ id: 'user-1', role: UserRole.USER });
+    const token = generateAccessToken({
+      id: 'user-1',
+      role: UserRole.USER,
+      joinStatus: JoinStatus.APPROVED,
+      isActive: true,
+    });
     const res = await request(app)
       .get('/protected')
       .set('Cookie', [`access_token=${token}`]);

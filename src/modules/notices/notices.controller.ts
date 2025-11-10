@@ -46,8 +46,8 @@ export const getNoticeList: RequestHandler = async (req, res, next) => {
       category: category as NoticeCategory,
       search: search ?? null,
     };
-    const { noticeList, total } = await getNoticeListService(dto);
-    return res.status(200).json({ noticeList, total });
+    const { notices, totalCount } = await getNoticeListService(dto);
+    return res.status(200).json({ notices, totalCount });
   } catch (err) {
     next(err);
   }

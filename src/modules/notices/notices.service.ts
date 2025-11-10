@@ -40,8 +40,8 @@ export const getNoticeListService = async (data: NoticeListQueryDTO) => {
     };
   }
   const rawNoticeList = await getNoticeListRepo(where, pageSize, skip);
-  const noticeList = rawNoticeList.data.map((notice) => ({
-    id: notice.id,
+  const notices = rawNoticeList.data.map((notice) => ({
+    noticeId: notice.id,
     userId: notice.user.id,
     category: notice.category,
     title: notice.title,
@@ -52,8 +52,8 @@ export const getNoticeListService = async (data: NoticeListQueryDTO) => {
     commentsCount: notice._count.comments,
     isPinned: notice.isPinned,
   }));
-  const total = rawNoticeList.total;
-  return { noticeList, total };
+  const totalCount = rawNoticeList.total;
+  return { notices, totalCount };
 };
 
 export const getNoticeService = async (noticeId: string) => {
@@ -90,9 +90,10 @@ export const updateNoticeService = async (noticeId: string, data: NoticeUpdateDT
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
   const notice = await updateNoticeRepo(noticeId, data);
-  const { user, _count: commentsCount, ...rest } = notice;
+  const { id, user, _count: commentsCount, ...rest } = notice;
   const updatedNotice = {
     ...rest,
+    noticeId: id,
     userId: user.id,
     writerName: user.name,
     commentsCount,
