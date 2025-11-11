@@ -7,6 +7,7 @@ import {
   patchAdminStatus,
   patchUserStatus,
   patchUserListStatus,
+  cleanupRejectedUsers,
 } from './auth.service';
 import ApiError from '#errors/ApiError';
 import { Prisma } from '@prisma/client';
@@ -182,6 +183,17 @@ export const patchUserStatusHandler: RequestHandler = async (req, res, next) => 
       await patchUserStatus(residentId, data.status, adminId);
     }
     return res.status(200).json({ message: '작업이 성공적으로 완료되었습니다 ' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const cleanupHandler: RequestHandler = async (req, res, next) => {
+  try {
+    const role = req.user.role;
+
+    await cleanupRejectedUsers(role);
+    return res.status(200).json({ message: '작업이 성공적으로 완료되었습니다' });
   } catch (err) {
     next(err);
   }
