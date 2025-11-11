@@ -1,6 +1,85 @@
 import prisma from '#core/prisma';
 import { GetChatRoomListDto, GetMessageListDto, ChatUserRole } from './dto/chats.dto';
 
+// ==================== Select 상수 ====================
+
+/**
+ * 채팅방 기본 필드 Select
+ */
+const CHAT_ROOM_BASE_SELECT = {
+  id: true,
+  apartmentId: true,
+  residentId: true,
+  lastMessage: true,
+  lastMessageAt: true,
+  unreadCountAdmin: true,
+  unreadCountResident: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+/**
+ * 입주민 정보 Select
+ */
+const RESIDENT_SELECT = {
+  select: {
+    name: true,
+    building: true,
+    unitNumber: true,
+  },
+} as const;
+
+/**
+ * 아파트 정보 Select (관리자 정보 포함)
+ */
+const APARTMENT_SELECT = {
+  select: {
+    apartmentName: true,
+    admin: {
+      select: {
+        name: true,
+      },
+    },
+  },
+} as const;
+
+/**
+ * 채팅방 전체 정보 Select (관계 포함)
+ */
+const CHAT_ROOM_WITH_RELATIONS_SELECT = {
+  ...CHAT_ROOM_BASE_SELECT,
+  resident: RESIDENT_SELECT,
+  apartment: APARTMENT_SELECT,
+} as const;
+
+/**
+ * 채팅방 목록용 Select (아파트 정보 제외)
+ */
+const CHAT_ROOM_LIST_SELECT = {
+  ...CHAT_ROOM_BASE_SELECT,
+  resident: RESIDENT_SELECT,
+} as const;
+
+/**
+ * 메시지 Select
+ */
+const MESSAGE_SELECT = {
+  id: true,
+  chatRoomId: true,
+  senderId: true,
+  content: true,
+  isReadByAdmin: true,
+  isReadByResident: true,
+  createdAt: true,
+  sender: {
+    select: {
+      id: true,
+      name: true,
+      role: true,
+    },
+  },
+} as const;
+
 // ==================== 채팅방 조회 ====================
 
 /**
@@ -18,34 +97,7 @@ export const getByUserId = async (userId: string) => {
         },
       },
     },
-    select: {
-      id: true,
-      apartmentId: true,
-      residentId: true,
-      lastMessage: true,
-      lastMessageAt: true,
-      unreadCountAdmin: true,
-      unreadCountResident: true,
-      createdAt: true,
-      updatedAt: true,
-      resident: {
-        select: {
-          name: true,
-          building: true,
-          unitNumber: true,
-        },
-      },
-      apartment: {
-        select: {
-          apartmentName: true,
-          admin: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      },
-    },
+    select: CHAT_ROOM_WITH_RELATIONS_SELECT,
   });
 };
 
@@ -57,7 +109,7 @@ export const getByUserId = async (userId: string) => {
  * @returns 권한이 있으면 채팅방 정보, 없거나 존재하지 않으면 null
  */
 export const getByIdWithUserAuth = async (chatRoomId: string, userId: string) => {
-  const chatRoom = await prisma.chatRoom.findFirst({
+  return await prisma.chatRoom.findFirst({
     where: {
       id: chatRoomId,
       resident: {
@@ -66,36 +118,8 @@ export const getByIdWithUserAuth = async (chatRoomId: string, userId: string) =>
         },
       },
     },
-    select: {
-      id: true,
-      apartmentId: true,
-      residentId: true,
-      lastMessage: true,
-      lastMessageAt: true,
-      unreadCountAdmin: true,
-      unreadCountResident: true,
-      createdAt: true,
-      updatedAt: true,
-      resident: {
-        select: {
-          name: true,
-          building: true,
-          unitNumber: true,
-        },
-      },
-      apartment: {
-        select: {
-          apartmentName: true,
-          admin: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      },
-    },
+    select: CHAT_ROOM_WITH_RELATIONS_SELECT,
   });
-  return chatRoom;
 };
 
 /**
@@ -106,43 +130,15 @@ export const getByIdWithUserAuth = async (chatRoomId: string, userId: string) =>
  * @returns 권한이 있으면 채팅방 정보, 없거나 존재하지 않으면 null
  */
 export const getByIdWithAdminAuth = async (chatRoomId: string, adminId: string) => {
-  const chatRoom = await prisma.chatRoom.findFirst({
+  return await prisma.chatRoom.findFirst({
     where: {
       id: chatRoomId,
       apartment: {
         adminId,
       },
     },
-    select: {
-      id: true,
-      apartmentId: true,
-      residentId: true,
-      lastMessage: true,
-      lastMessageAt: true,
-      unreadCountAdmin: true,
-      unreadCountResident: true,
-      createdAt: true,
-      updatedAt: true,
-      resident: {
-        select: {
-          name: true,
-          building: true,
-          unitNumber: true,
-        },
-      },
-      apartment: {
-        select: {
-          apartmentName: true,
-          admin: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      },
-    },
+    select: CHAT_ROOM_WITH_RELATIONS_SELECT,
   });
-  return chatRoom;
 };
 
 /**
@@ -159,24 +155,7 @@ export const getListByAdminId = async (data: GetChatRoomListDto) => {
       },
       ...(data.unreadOnly && { unreadCountAdmin: { gt: 0 } }),
     },
-    select: {
-      id: true,
-      apartmentId: true,
-      residentId: true,
-      lastMessage: true,
-      lastMessageAt: true,
-      unreadCountAdmin: true,
-      unreadCountResident: true,
-      createdAt: true,
-      updatedAt: true,
-      resident: {
-        select: {
-          name: true,
-          building: true,
-          unitNumber: true,
-        },
-      },
-    },
+    select: CHAT_ROOM_LIST_SELECT,
     skip: (data.page - 1) * data.limit,
     take: data.limit,
     orderBy: { lastMessageAt: 'desc' },
@@ -232,22 +211,7 @@ export const createChatRoom = async (apartmentId: string, residentId: string) =>
 export const getMessageListByChatRoomId = async (data: GetMessageListDto) => {
   return await prisma.chatMessage.findMany({
     where: { chatRoomId: data.chatRoomId },
-    select: {
-      id: true,
-      chatRoomId: true,
-      senderId: true,
-      content: true,
-      isReadByAdmin: true,
-      isReadByResident: true,
-      createdAt: true,
-      sender: {
-        select: {
-          id: true,
-          name: true,
-          role: true,
-        },
-      },
-    },
+    select: MESSAGE_SELECT,
     skip: (data.page - 1) * data.limit,
     take: data.limit,
     orderBy: { createdAt: 'desc' },
@@ -289,20 +253,7 @@ export const createMessage = async (data: {
   return await prisma.$transaction(async (tx) => {
     const message = await tx.chatMessage.create({
       data,
-      select: {
-        id: true,
-        chatRoomId: true,
-        senderId: true,
-        content: true,
-        isReadByAdmin: true,
-        isReadByResident: true,
-        createdAt: true,
-        sender: {
-          select: {
-            name: true,
-          },
-        },
-      },
+      select: MESSAGE_SELECT,
     });
 
     await tx.chatRoom.update({
