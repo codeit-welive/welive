@@ -1,6 +1,6 @@
 import ApiError from '#errors/ApiError';
 import { ResidentListRequestQueryDto, ResidentPatchRequestBodyDto } from './dto/resident.dto';
-import { getCount, getList, getById, update } from './residents.repo';
+import { getCount, getList, getById, update, remove } from './residents.repo';
 import { residentDataMapper } from './utils/dataMapper';
 
 export const getResidentList = async (query: ResidentListRequestQueryDto, adminId: string) => {
@@ -31,4 +31,8 @@ export const patchResident = async (residentId: string, data: ResidentPatchReque
 
   const [mappedResident] = residentDataMapper([updatedResident]);
   return mappedResident;
+};
+
+export const removeResident = async (residentId: string) => {
+  await remove(residentId);
 };

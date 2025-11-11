@@ -64,3 +64,9 @@ export const update = async (residnetId: string, data: ResidentPatchRequestBodyD
     },
   });
 };
+
+export const remove = async (residentId: string) => {
+  return await prisma.resident.delete({
+    where: { id: residentId },
+  });
+};

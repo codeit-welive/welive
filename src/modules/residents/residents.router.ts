@@ -7,7 +7,12 @@ import {
   validateResidentListRequestQuery,
   validateResidentRequestParam,
 } from './residents.validator';
-import { getResidentListHandler, getResidentHandler, patchResidentHandler } from './residents.controller';
+import {
+  getResidentListHandler,
+  getResidentHandler,
+  patchResidentHandler,
+  deleteResidentHandler,
+} from './residents.controller';
 
 const router = Router();
 
@@ -19,6 +24,13 @@ router.get('/', authMiddleware, requireRole(['ADMIN']), validateResidentListRequ
 router
   .route('/:id')
   .get(authMiddleware, requireRole(['ADMIN']), validateResidentRequestParam, getResidentHandler)
-  .patch(authMiddleware, requireRole(['ADMIN']), validatePatchResidentRequestBody, patchResidentHandler);
+  .patch(
+    authMiddleware,
+    requireRole(['ADMIN']),
+    validateResidentRequestParam,
+    validatePatchResidentRequestBody,
+    patchResidentHandler
+  )
+  .delete(authMiddleware, requireRole(['ADMIN']), validateResidentRequestParam, deleteResidentHandler);
 
 export default router;
