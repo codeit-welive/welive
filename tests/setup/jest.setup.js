@@ -3,7 +3,11 @@ const fs = require('fs');
 const { Writable } = require('stream');
 
 // env.test.ts에서는 Prisma를 로드하지 않도록 처리
+const testPath = (expect.getState && expect.getState().testPath) || '';
+const isEnvTest = /\benv\.test\.ts$/.test(testPath);
+
 if (process.env.JEST_WORKER_ID && process.env.TEST_ENV_ONLY === 'true') return;
+if (isEnvTest) return;
 
 if (!global.__FS_PATCHED__) {
   global.__FS_PATCHED__ = true;

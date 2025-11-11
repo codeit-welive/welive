@@ -1,5 +1,4 @@
 import { describe, it, expect } from '@jest/globals';
-process.env.TEST_ENV_ONLY = 'true';
 
 describe('[Core] 환경 변수 검증', () => {
   it('환경 변수 누락 시 예외를 발생시켜야 함', async () => {

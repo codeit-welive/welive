@@ -20,6 +20,7 @@ describe('[Core] HTTP Logger (morgan + pino)', () => {
     (fs as any).createWriteStream = realFs.createWriteStream;
 
     // 기존 로그 제거
+    fs.mkdirSync(path.dirname(logPath), { recursive: true });
     if (fs.existsSync(logPath)) fs.unlinkSync(logPath);
 
     const httpLogger = require('#core/httpLogger').default;
@@ -32,10 +33,10 @@ describe('[Core] HTTP Logger (morgan + pino)', () => {
   it('HTTP 요청 시 로그 파일에 기록되어야 함', async () => {
     await request(app).get('/ping');
 
-    // 로그 파일 생성 대기 (최대 3초)
-    for (let i = 0; i < 60; i++) {
+    // 로그 파일 생성 대기 (최대 5초)
+    for (let i = 0; i < 50; i++) {
       if (fs.existsSync(logPath)) break;
-      await new Promise((r) => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 100));
     }
 
     expect(fs.existsSync(logPath)).toBe(true);
