@@ -1,5 +1,5 @@
 import prisma from '#core/prisma';
-import { ChatRoomListQueryDto, ChatMessageListQueryDto } from './dto/querys.dto';
+import { GetChatRoomListDto, GetMessagesDto, ChatUserRole } from './dto/chats.dto';
 
 // ==================== 채팅방 조회 ====================
 
@@ -148,17 +148,16 @@ export const getByIdWithAdminAuth = async (chatRoomId: string, adminId: string) 
 /**
  * 관리자 ID로 채팅방 목록 조회
  * @description 관리자가 관리하는 아파트의 모든 채팅방 목록 (페이지네이션 + 필터링)
- * @param adminId - 관리자 ID
- * @param query - 목록 조회 쿼리 (page, limit, unreadOnly)
+ * @param data - 채팅방 목록 조회 DTO
  * @returns 채팅방 목록
  */
-export const getListByAdminId = async (adminId: string, query: ChatRoomListQueryDto) => {
+export const getListByAdminId = async (data: GetChatRoomListDto) => {
   return await prisma.chatRoom.findMany({
     where: {
       apartment: {
-        adminId,
+        adminId: data.adminId,
       },
-      ...(query.unreadOnly && { unreadCountAdmin: { gt: 0 } }),
+      ...(data.unreadOnly && { unreadCountAdmin: { gt: 0 } }),
     },
     select: {
       id: true,
@@ -178,8 +177,8 @@ export const getListByAdminId = async (adminId: string, query: ChatRoomListQuery
         },
       },
     },
-    skip: (query.page - 1) * query.limit,
-    take: query.limit,
+    skip: (data.page - 1) * data.limit,
+    take: data.limit,
     orderBy: { lastMessageAt: 'desc' },
   });
 };
@@ -187,17 +186,16 @@ export const getListByAdminId = async (adminId: string, query: ChatRoomListQuery
 /**
  * 관리자의 채팅방 총 개수 조회 (필터링 적용)
  * @description 관리자가 관리하는 아파트의 채팅방 총 개수 (unreadOnly 필터 적용)
- * @param adminId - 관리자 ID
- * @param query - 목록 조회 쿼리 (unreadOnly)
+ * @param data - 채팅방 목록 조회 DTO
  * @returns 필터링된 채팅방 총 개수
  */
-export const getCountByAdminId = async (adminId: string, query: ChatRoomListQueryDto) => {
+export const getCountByAdminId = async (data: GetChatRoomListDto) => {
   return await prisma.chatRoom.count({
     where: {
       apartment: {
-        adminId,
+        adminId: data.adminId,
       },
-      ...(query.unreadOnly && { unreadCountAdmin: { gt: 0 } }),
+      ...(data.unreadOnly && { unreadCountAdmin: { gt: 0 } }),
     },
   });
 };
@@ -228,13 +226,12 @@ export const createChatRoom = async (apartmentId: string, residentId: string) =>
 /**
  * 채팅방의 메시지 목록 조회
  * @description 채팅방의 메시지 목록을 페이지네이션하여 조회 (최신순)
- * @param chatRoomId - 채팅방 ID
- * @param query - 목록 조회 쿼리 (page, limit)
+ * @param data - 메시지 목록 조회 DTO
  * @returns 메시지 목록
  */
-export const getMessagesByChatRoomId = async (chatRoomId: string, query: ChatMessageListQueryDto) => {
+export const getMessagesByChatRoomId = async (data: GetMessagesDto) => {
   return await prisma.chatMessage.findMany({
-    where: { chatRoomId },
+    where: { chatRoomId: data.chatRoomId },
     select: {
       id: true,
       chatRoomId: true,
@@ -251,8 +248,8 @@ export const getMessagesByChatRoomId = async (chatRoomId: string, query: ChatMes
         },
       },
     },
-    skip: (query.page - 1) * query.limit,
-    take: query.limit,
+    skip: (data.page - 1) * data.limit,
+    take: data.limit,
     orderBy: { createdAt: 'desc' },
   });
 };
@@ -331,7 +328,7 @@ export const createMessage = async (data: {
  * @param role - 사용자 역할 ("ADMIN" | "USER")
  * @returns 읽음 처리된 메시지 개수
  */
-export const patchMessagesAsRead = async (chatRoomId: string, role: 'ADMIN' | 'USER') => {
+export const patchMessagesAsRead = async (chatRoomId: string, role: ChatUserRole) => {
   return await prisma.$transaction(async (tx) => {
     const result = await tx.chatMessage.updateMany({
       where: {
