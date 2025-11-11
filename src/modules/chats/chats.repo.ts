@@ -50,32 +50,22 @@ export const getByUserId = async (userId: string) => {
 };
 
 /**
- * Admin이 특정 채팅방에 접근 권한이 있는지 확인합니다.
- * @param adminUserId - Admin의 userId
+ * 채팅방 ID + 사용자 권한으로 조회 (USER용)
+ * @description 입주민이 자신의 채팅방만 조회할 수 있도록 권한 체크 포함
  * @param chatRoomId - 채팅방 ID
- * @returns 접근 권한이 있으면 true, 없으면 false
+ * @param userId - 사용자 ID
+ * @returns 권한이 있으면 채팅방 정보, 없거나 존재하지 않으면 null
  */
-export const checkAdminAccessToChatRoom = async (adminUserId: string, chatRoomId: string) => {
+export const getByIdWithUserAuth = async (chatRoomId: string, userId: string) => {
   const chatRoom = await prisma.chatRoom.findFirst({
     where: {
       id: chatRoomId,
-      apartment: {
-        adminId: adminUserId,
+      resident: {
+        user: {
+          id: userId,
+        },
       },
     },
-  });
-  return !!chatRoom;
-};
-
-/**
- * 채팅방 ID로 조회
- * @description 채팅방 상세 정보 조회
- * @param chatRoomId - 채팅방 ID
- * @returns 채팅방 정보 또는 null
- */
-export const getById = async (chatRoomId: string) => {
-  return await prisma.chatRoom.findUnique({
-    where: { id: chatRoomId },
     select: {
       id: true,
       apartmentId: true,
@@ -105,6 +95,54 @@ export const getById = async (chatRoomId: string) => {
       },
     },
   });
+  return chatRoom;
+};
+
+/**
+ * 채팅방 ID + 관리자 권한으로 조회 (ADMIN용)
+ * @description 관리자가 자신이 관리하는 아파트의 채팅방만 조회
+ * @param chatRoomId - 채팅방 ID
+ * @param adminId - 관리자 ID
+ * @returns 권한이 있으면 채팅방 정보, 없거나 존재하지 않으면 null
+ */
+export const getByIdWithAdminAuth = async (chatRoomId: string, adminId: string) => {
+  const chatRoom = await prisma.chatRoom.findFirst({
+    where: {
+      id: chatRoomId,
+      apartment: {
+        adminId,
+      },
+    },
+    select: {
+      id: true,
+      apartmentId: true,
+      residentId: true,
+      lastMessage: true,
+      lastMessageAt: true,
+      unreadCountAdmin: true,
+      unreadCountResident: true,
+      createdAt: true,
+      updatedAt: true,
+      resident: {
+        select: {
+          name: true,
+          building: true,
+          unitNumber: true,
+        },
+      },
+      apartment: {
+        select: {
+          apartmentName: true,
+          admin: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  return chatRoom;
 };
 
 /**

@@ -59,34 +59,20 @@ export const getChatRoomList = async (adminId: string, query: ChatRoomListQueryD
  * @param role - 사용자 역할
  * @param chatRoomId - 채팅방 ID
  * @returns 채팅방 상세 정보
- * @throws ApiError.notFound - 채팅방이 없을 때
- * @throws ApiError.forbidden - 권한이 없을 때
+ * @throws ApiError.notFound - 채팅방을 찾을 수 없거나 권한이 없을 때
  */
 export const getChatRoomById = async (userId: string, role: 'ADMIN' | 'USER', chatRoomId: string) => {
-  // 1. 채팅방 조회
-  const chatRoom = await ChatRepo.getById(chatRoomId);
+  // 권한 포함 조회 (1번 쿼리)
+  const chatRoom =
+    role === 'USER'
+      ? await ChatRepo.getByIdWithUserAuth(chatRoomId, userId)
+      : await ChatRepo.getByIdWithAdminAuth(chatRoomId, userId);
 
+  // 찾을 수 없음
   if (!chatRoom) {
     throw ApiError.notFound(CHAT_ERROR_MESSAGES.CHAT_ROOM_NOT_FOUND);
   }
 
-  // 2. 권한 검증 (역할별)
-  if (role === 'USER') {
-    // 입주민: 본인 채팅방만
-    const myChatRoom = await ChatRepo.getByUserId(userId);
-    if (!myChatRoom || myChatRoom.id !== chatRoomId) {
-      throw ApiError.forbidden(CHAT_ERROR_MESSAGES.NO_CHAT_ROOM_ACCESS);
-    }
-  } else if (role === 'ADMIN') {
-    // 관리자: 관리 아파트의 채팅방만
-    const hasAccess = await ChatRepo.checkAdminAccessToChatRoom(userId, chatRoomId);
-
-    if (!hasAccess) {
-      throw ApiError.forbidden(CHAT_ERROR_MESSAGES.NO_CHAT_ROOM_ACCESS);
-    }
-  }
-
-  // 3. 반환
   return chatRoom;
 };
 
@@ -143,6 +129,8 @@ export const getMessages = async (chatRoomId: string, query: ChatMessageListQuer
 
   // 2. 페이지네이션 계산
   const totalPages = Math.ceil(totalCount / query.limit);
+  const hasNext = query.page < totalPages;
+  const nextCursor = messages.length > 0 ? messages[messages.length - 1].id : null;
 
   // 3. 응답 포맷
   return {
@@ -152,8 +140,8 @@ export const getMessages = async (chatRoomId: string, query: ChatMessageListQuer
       limit: query.limit,
       totalCount,
       totalPages,
-      hasNext: query.page < totalPages,
-      nextCursor: messages.length > 0 ? messages[messages.length - 1].id : null,
+      hasNext,
+      nextCursor,
     },
   };
 };
