@@ -56,13 +56,13 @@ export const getChatRoomList = async (data: GetChatRoomListDto) => {
 };
 
 /**
- * 채팅방 상세 조회
- * @description 특정 채팅방의 상세 정보 조회 (권한 검증 포함 + 자동 읽음 처리)
+ * 채팅방 상세 조회 (초기 로드)
+ * @description 특정 채팅방의 상세 정보 + 최신 메시지 50개 조회 (권한 검증 포함 + 자동 읽음 처리)
  * @param data - 채팅방 조회 DTO
  * @param data.userId - 사용자 ID
  * @param data.role - 사용자 역할
  * @param data.chatRoomId - 채팅방 ID
- * @returns 채팅방 상세 정보
+ * @returns 채팅방 상세 정보 + 최신 메시지 목록
  * @throws ApiError.notFound - 채팅방을 찾을 수 없거나 권한이 없을 때
  */
 export const getChatRoomById = async (data: GetChatRoomByIdDto) => {
@@ -80,8 +80,18 @@ export const getChatRoomById = async (data: GetChatRoomByIdDto) => {
     throw ApiError.notFound(CHAT_ERROR_MESSAGES.CHAT_ROOM_NOT_FOUND);
   }
 
-  // 4. 반환
-  return chatRoom;
+  // 4. 최신 메시지 50개 조회
+  const recentMessages = await ChatRepo.getMessagesByChatRoomId({
+    chatRoomId: data.chatRoomId,
+    page: 1,
+    limit: 50,
+  });
+
+  // 5. 합쳐서 반환
+  return {
+    ...chatRoom,
+    recentMessages,
+  };
 };
 
 /**
@@ -113,15 +123,13 @@ export const createMessage = async (data: CreateMessageDto) => {
 };
 
 /**
- * 메시지 목록 조회
- * @description 채팅방의 과거 메시지 목록 조회 (페이지네이션)
+ * 메시지 목록 조회 (과거 메시지 로드용)
+ * @description 채팅방의 과거 메시지 목록 조회 (페이지네이션, 무한 스크롤용)
  * @param data - 메시지 목록 조회 DTO
  * @param data.chatRoomId - 채팅방 ID
- * @param data.page - 페이지 번호
+ * @param data.page - 페이지 번호 (2부터 시작, 1은 getChatRoomById에서 제공)
  * @param data.limit - 페이지당 항목 수
  * @returns 메시지 목록 + 페이지네이션 정보
- * @throws ApiError.notFound - 채팅방이 없을 때
- * @throws ApiError.forbidden - 권한이 없을 때
  */
 export const getMessages = async (data: GetMessagesDto) => {
   // 1. 메시지 목록 + 개수 병렬 조회
