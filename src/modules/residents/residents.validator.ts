@@ -1,6 +1,10 @@
 import { RequestHandler } from 'express';
 import forwardZodError from '#core/utils/zod';
-import { residentListRequestQuerySchema, residentRequestParamSchema } from './dto/resident.dto';
+import {
+  residentListRequestQuerySchema,
+  residentPatchRequestBodyShema,
+  residentRequestParamSchema,
+} from './dto/resident.dto';
 
 export const validateResidentListRequestQuery: RequestHandler = (req, res, next) => {
   try {
@@ -20,5 +24,16 @@ export const validateResidentRequestParam: RequestHandler = (req, res, next) => 
     next();
   } catch (err) {
     forwardZodError(err, '입주민 조회 요청 파라미터', next);
+  }
+};
+
+export const validatePatchResidentRequestBody: RequestHandler = (req, res, next) => {
+  try {
+    const validatedBody = residentPatchRequestBodyShema.parse(req.body);
+    res.locals.validatedBody = validatedBody;
+
+    next();
+  } catch (err) {
+    forwardZodError(err, '입주민 수정 요청 바디', next);
   }
 };

@@ -33,3 +33,13 @@ export interface ResidentResponseDto {
 export const residentRequestParamSchema = z.object({
   id: z.uuid(),
 });
+
+export const residentPatchRequestBodyShema = z.object({
+  building: z.string(),
+  unitNumber: z.string(),
+  contact: z.string(),
+  name: z.string(),
+  isHouseholder: z.enum(IsHouseholder),
+});
+
+export type ResidentPatchRequestBodyDto = z.infer<typeof residentPatchRequestBodyShema>;

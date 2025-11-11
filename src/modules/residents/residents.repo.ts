@@ -1,5 +1,5 @@
 import prisma from '#core/prisma';
-import { ResidentListRequestQueryDto } from './dto/resident.dto';
+import { ResidentListRequestQueryDto, ResidentPatchRequestBodyDto } from './dto/resident.dto';
 import { buildWhereCondition } from './utils/whereConditionBuilder';
 
 const selectResidentFields = {
@@ -39,5 +39,28 @@ export const getById = async (residentId: string) => {
   return await prisma.resident.findUnique({
     where: { id: residentId },
     select: selectResidentFields,
+  });
+};
+
+export const update = async (residnetId: string, data: ResidentPatchRequestBodyDto) => {
+  return await prisma.resident.update({
+    where: { id: residnetId },
+    data,
+    select: {
+      id: true,
+      building: true,
+      unitNumber: true,
+      contact: true,
+      name: true,
+      residenceStatus: true,
+      isHouseholder: true,
+      isRegistered: true,
+      user: {
+        select: {
+          id: true,
+          email: true,
+        },
+      },
+    },
   });
 };
