@@ -13,6 +13,8 @@ export const updateUserController: RequestHandler = async (req, res, next) => {
     const result = await updateUserService(id, { body, file });
     res.json({ success: true, ...result });
   } catch (err) {
-    next(ApiError.internal(MSG.INTERNAL_SERVER_ERROR, err));
+    if (err instanceof ApiError) return next(err);
+
+    return next(ApiError.internal(MSG.INTERNAL_SERVER_ERROR, err));
   }
 };
