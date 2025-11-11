@@ -56,8 +56,8 @@ afterEach(async () => {
     prisma.notice.deleteMany(),
     prisma.board.deleteMany(),
     prisma.resident.deleteMany(),
-    prisma.apartment.deleteMany(),
     prisma.user.deleteMany(),
+    prisma.apartment.deleteMany(),
   ]);
 });
 

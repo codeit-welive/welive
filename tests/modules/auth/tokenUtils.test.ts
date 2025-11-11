@@ -7,10 +7,10 @@ import {
   verifyRefreshToken,
 } from '#modules/auth/utils/tokenUtils';
 import env from '#core/env';
-import { UserRole } from '@prisma/client';
+import { UserRole, JoinStatus } from '@prisma/client';
 
 describe('[Auth] tokenUtils', () => {
-  const user = { id: 'user-123', role: UserRole.USER };
+  const user = { id: '1', role: UserRole.USER, joinStatus: JoinStatus.APPROVED, isActive: true };
 
   it('Access Token을 정상적으로 생성해야 함', () => {
     const token = generateAccessToken(user);

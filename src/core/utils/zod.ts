@@ -32,7 +32,7 @@ import ApiError from '#errors/ApiError';
 const forwardZodError = (err: unknown, context: string, next: NextFunction) => {
   if (err instanceof ZodError) {
     const messages = err.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
-    return next(new ApiError(400, `${context} 유효성 검사 실패: ${messages}`));
+    return next(ApiError.badRequest(`${context} 유효성 검사 실패: ${messages}`));
   }
   return next(err as Error);
 };

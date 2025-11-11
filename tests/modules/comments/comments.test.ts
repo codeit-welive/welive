@@ -2,7 +2,7 @@ import request from 'supertest';
 import app from '#core/app';
 import prisma from '#core/prisma';
 import { generateAccessToken } from '#modules/auth/utils/tokenUtils';
-import { UserRole } from '@prisma/client';
+import { UserRole, JoinStatus } from '@prisma/client';
 
 process.env.__SKIP_GLOBAL_DB_CLEANUP__ = 'true';
 
@@ -144,8 +144,18 @@ describe('[Comments] 통합 테스트', () => {
     noticeId = notice.id;
 
     // 토큰
-    userToken = generateAccessToken({ id: user.id, role: UserRole.USER });
-    adminToken = generateAccessToken({ id: admin.id, role: UserRole.ADMIN });
+    userToken = generateAccessToken({
+      id: user.id,
+      role: UserRole.USER,
+      joinStatus: JoinStatus.APPROVED,
+      isActive: true,
+    });
+    adminToken = generateAccessToken({
+      id: admin.id,
+      role: UserRole.ADMIN,
+      joinStatus: JoinStatus.APPROVED,
+      isActive: true,
+    });
   });
 
   /**
