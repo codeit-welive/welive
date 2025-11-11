@@ -120,6 +120,7 @@ model User {
   pollVotes     PollVote[]
   notices       Notice[]
   polls         Poll[]
+  chatMessages  ChatMessage[]  @relation("ChatMessageSender")
 }
 
 model Apartment {
@@ -149,6 +150,7 @@ model Apartment {
   polls      Poll[]
   events     Event[]
   boards     Board[]
+  chatRooms  ChatRoom[]
 }
 
 // User랑 별개로 존재
@@ -168,6 +170,8 @@ model Resident {
 
   apartmentId String
   apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  chatRoom ChatRoom?
 }
 
 // ------------------------------
@@ -357,4 +361,51 @@ model Event {
 
   pollId String? @unique
   poll   Poll?   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+}
+
+// ------------------------------
+// CHAT
+// ------------------------------
+
+model ChatRoom {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  residentId String   @unique
+  resident   Resident @relation(fields: [residentId], references: [id], onDelete: Cascade)
+
+  messages ChatMessage[]
+
+  lastMessageAt DateTime?
+  lastMessage   String?   @db.Text
+
+  unreadCountAdmin    Int @default(0)
+  unreadCountResident Int @default(0)
+
+  @@index([apartmentId])
+  @@index([residentId])
+  @@index([lastMessageAt])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chatRoomId String
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  isReadByAdmin    Boolean @default(false)
+  isReadByResident Boolean @default(false)
+
+  @@index([chatRoomId, createdAt])
+  @@index([senderId])
 }

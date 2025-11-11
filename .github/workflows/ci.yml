@@ -35,11 +35,46 @@ jobs:
 
       - run: npm ci
 
+      - name: Create .env.test
+        run: |
+          cat > .env.test <<'ENV'
+          # DATABASE
+          DATABASE_URL=postgresql://app:app@localhost:5432/welive_test
+
+          # PORT
+          PORT=3001
+
+          # BASE URL (API 오리진)
+          BASE_URL=http://localhost:3001
+
+          # FRONT (프론트엔드 오리진)
+          FRONT_URL=http://localhost:5173
+
+          # RUNTIME
+          CORS_ORIGIN=http://localhost:3001,http://127.0.0.1:3001,https://your.domain.com
+          ACCESS_TOKEN_SECRET=1234567890_secret
+          REFRESH_TOKEN_SECRET=0987654321_secret
+          PASSWORD_PEPPER=abcdefghij_pepper
+          DEFAULT_AVATAR_URL=https://your_bucket_name.s3.ap-northeast-2.amazonaws.com/default_avatar.png
+
+          # AWS S3
+          AWS_ACCESS_KEY_ID=your_aws_access_key
+          AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+          AWS_REGION=ap-northeast-2
+          AWS_S3_BUCKET_NAME=your_bucket_name
+          AWS_S3_BASE_URL=https://your_bucket_name.s3.ap-northeast-2.amazonaws.com
+
+          # FILE URL
+          FILE_BASE_URL=https://your_bucket_name.s3.ap-northeast-2.amazonaws.com
+          ENV
+
       - name: Prisma generate & migrate
         run: |
           npx prisma generate --schema=prisma/schema.prisma
           npx prisma migrate deploy --schema=prisma/schema.prisma
 
-      - name: Test
-        run: echo "⚙️ Skipping tests (no test files yet)"
-        # run: CI=true npm test
+      - name: Test (Jest)
+        run: npm test
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgres://app:app@localhost:5432/welive_test

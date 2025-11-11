@@ -1,0 +1,166 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+env:
+  IMAGE_NAME: ghcr.io/codeit-welive/welive-backend
+  IMAGE_TAG: sha-${{ github.sha }}
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # --- Backend: Build & Push to GHCR ---
+      - name: Set up Node (for docker build cache steps if needed)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Log in to GHCR
+        run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build backend image
+        run: |
+          docker build \
+            -f infra/docker/Dockerfile \
+            -t $IMAGE_NAME:$IMAGE_TAG \
+            .
+
+      - name: Push backend image
+        run: docker push $IMAGE_NAME:$IMAGE_TAG
+
+      # --- Frontend: Next.js Build & Pack ---
+      - name: Setup Node for frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: Create .env.production
+        working-directory: frontend
+        run: |
+          cat > .env.production <<'ENV'
+          NEXT_PUBLIC_API_URL=http://localhost:3001/api
+          ENV
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Pack frontend build
+        working-directory: frontend
+        run: tar -czf ../frontend.tar.gz .next public package.json package-lock.json
+
+      # --- Ship to EC2 ---
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Copy frontend bundle to EC2
+        run: scp -o StrictHostKeyChecking=no frontend.tar.gz ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/frontend.tar.gz
+
+      - name: Deploy on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} <<'EOF'
+            set -e
+
+            echo ""
+            echo "=== Prepare directories ==="
+            mkdir -p ~/app ~/frontend
+            cd ~/app
+
+            echo ""
+            echo "=== Write docker-compose.prod.yaml (backend only) ==="
+            cat > docker-compose.prod.yaml <<'YML'
+            version: "3.9"
+            services:
+              web:
+                image: ghcr.io/codeit-welive/welive-backend:sha-${GITHUB_SHA}
+                env_file:
+                  - .env.prod
+                ports:
+                  - "3001:3001"
+                restart: unless-stopped
+            YML
+
+            echo ""
+            echo "=== Write .env.prod ==="
+            cat > .env.prod <<'ENV'
+            # DATABASE
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+
+            # PORT
+            PORT=3001
+
+            # BASE URL
+            BASE_URL=${{ secrets.BASE_URL }}
+
+            # FRONT URL
+            FRONT_URL=${{ secrets.FRONT_URL }}
+
+            # RUNTIME
+            CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
+            ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}
+            REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}
+            PASSWORD_PEPPER=${{ secrets.PASSWORD_PEPPER }}
+
+            # AWS S3
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION=${{ secrets.AWS_REGION }}
+            AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
+            AWS_S3_BASE_URL=${{ secrets.AWS_S3_BASE_URL }}
+
+            # FILE URL
+            FILE_BASE_URL=${{ secrets.AWS_S3_BASE_URL }}
+
+            # ENV
+            NODE_ENV=production
+            UPLOAD_STRATEGY=s3
+            ENV
+
+            echo ""
+            echo "=== Backend: pull & up ==="
+            export GITHUB_SHA=${GITHUB_SHA}
+            docker compose -f docker-compose.prod.yaml down || true
+            docker compose -f docker-compose.prod.yaml pull
+            docker compose -f docker-compose.prod.yaml up -d
+
+            echo ""
+            echo "=== Frontend: deploy Next.js (SSR) ==="
+            cd ~
+            tar -xzf frontend.tar.gz -C ~/frontend
+            cd ~/frontend
+
+            # 최초 1회 또는 변경 시 설치
+            if [ ! -d node_modules ]; then
+              npm ci --omit=dev
+            fi
+
+            # PM2 설치가 없다면 설치
+            command -v pm2 >/dev/null 2>&1 || sudo npm i -g pm2
+
+            # 앱 시작/재시작 (포트 3000)
+            pm2 start "npm run start --prefix ~/frontend" --name welive-fe || pm2 restart welive-fe
+
+            echo ""
+            echo "=== Cleanup ==="
+            rm -f ~/frontend.tar.gz
+            docker image prune -af || true
+
+            echo "✅ Deployment done."
+          EOF
+        env:
+          GITHUB_SHA: ${{ github.sha }}
