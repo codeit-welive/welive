@@ -229,7 +229,7 @@ export const createChatRoom = async (apartmentId: string, residentId: string) =>
  * @param data - 메시지 목록 조회 DTO
  * @returns 메시지 목록
  */
-export const getMessagesByChatRoomId = async (data: GetMessagesDto) => {
+export const getMessageListByChatRoomId = async (data: GetMessagesDto) => {
   return await prisma.chatMessage.findMany({
     where: { chatRoomId: data.chatRoomId },
     select: {
@@ -328,7 +328,7 @@ export const createMessage = async (data: {
  * @param role - 사용자 역할 ("ADMIN" | "USER")
  * @returns 읽음 처리된 메시지 개수
  */
-export const patchMessagesAsRead = async (chatRoomId: string, role: ChatUserRole) => {
+export const patchMessageListAsRead = async (chatRoomId: string, role: ChatUserRole) => {
   return await prisma.$transaction(async (tx) => {
     const result = await tx.chatMessage.updateMany({
       where: {

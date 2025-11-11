@@ -65,9 +65,9 @@ export const getChatRoomList = async (data: GetChatRoomListDto) => {
  * @returns 채팅방 상세 정보 + 최신 메시지 목록
  * @throws ApiError.notFound - 채팅방을 찾을 수 없거나 권한이 없을 때
  */
-export const getChatRoomById = async (data: GetChatRoomByIdDto) => {
+export const getChatRoom = async (data: GetChatRoomByIdDto) => {
   // 1. 읽음 처리 먼저 수행
-  await ChatRepo.patchMessagesAsRead(data.chatRoomId, data.role);
+  await ChatRepo.patchMessageListAsRead(data.chatRoomId, data.role);
 
   // 2. 권한 포함 조회 (최신 unreadCount 반영)
   const chatRoom =
@@ -81,7 +81,7 @@ export const getChatRoomById = async (data: GetChatRoomByIdDto) => {
   }
 
   // 4. 최신 메시지 50개 조회
-  const recentMessages = await ChatRepo.getMessagesByChatRoomId({
+  const recentMessages = await ChatRepo.getMessageListByChatRoomId({
     chatRoomId: data.chatRoomId,
     page: 1,
     limit: 50,
@@ -131,10 +131,10 @@ export const createMessage = async (data: CreateMessageDto) => {
  * @param data.limit - 페이지당 항목 수
  * @returns 메시지 목록 + 페이지네이션 정보
  */
-export const getMessages = async (data: GetMessagesDto) => {
+export const getMessageList = async (data: GetMessagesDto) => {
   // 1. 메시지 목록 + 개수 병렬 조회
   const [messages, totalCount] = await Promise.all([
-    ChatRepo.getMessagesByChatRoomId(data),
+    ChatRepo.getMessageListByChatRoomId(data),
     ChatRepo.getMessageCountByChatRoomId(data.chatRoomId),
   ]);
 
