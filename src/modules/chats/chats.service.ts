@@ -1,7 +1,7 @@
 import * as ChatRepo from './chats.repo';
 import ApiError from '#errors/ApiError';
 import { CHAT_ERROR_MESSAGES } from '#constants/chat.constant';
-import { GetChatRoomListDto, GetChatRoomByIdDto, GetMessagesDto, CreateMessageDto } from './dto/chats.dto';
+import { GetChatRoomListDto, GetChatRoomByIdDto, GetMessageListDto, CreateMessageDto } from './dto/chats.dto';
 
 /**
  * 내 채팅방 조회 (입주민)
@@ -131,7 +131,7 @@ export const createMessage = async (data: CreateMessageDto) => {
  * @param data.limit - 페이지당 항목 수
  * @returns 메시지 목록 + 페이지네이션 정보
  */
-export const getMessageList = async (data: GetMessagesDto) => {
+export const getMessageList = async (data: GetMessageListDto) => {
   // 1. 메시지 목록 + 개수 병렬 조회
   const [messages, totalCount] = await Promise.all([
     ChatRepo.getMessageListByChatRoomId(data),

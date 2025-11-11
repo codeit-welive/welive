@@ -1,5 +1,5 @@
 import prisma from '#core/prisma';
-import { GetChatRoomListDto, GetMessagesDto, ChatUserRole } from './dto/chats.dto';
+import { GetChatRoomListDto, GetMessageListDto, ChatUserRole } from './dto/chats.dto';
 
 // ==================== 채팅방 조회 ====================
 
@@ -229,7 +229,7 @@ export const createChatRoom = async (apartmentId: string, residentId: string) =>
  * @param data - 메시지 목록 조회 DTO
  * @returns 메시지 목록
  */
-export const getMessageListByChatRoomId = async (data: GetMessagesDto) => {
+export const getMessageListByChatRoomId = async (data: GetMessageListDto) => {
   return await prisma.chatMessage.findMany({
     where: { chatRoomId: data.chatRoomId },
     select: {

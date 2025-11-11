@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import * as ChatService from './chats.service';
-import type { GetChatRoomListDto, GetChatRoomByIdDto, GetMessagesDto } from './dto/chats.dto';
+import type { GetChatRoomListDto, GetChatRoomByIdDto, GetMessageListDto } from './dto/chats.dto';
 
 /**
  * 내 채팅방 조회 (입주민)
@@ -57,7 +57,7 @@ export const getChatRoomHandler = async (_req: Request, res: Response, next: Nex
  */
 export const getMessageListHandler = async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const validatedData = res.locals.validatedData as GetMessagesDto;
+    const validatedData = res.locals.validatedData as GetMessageListDto;
 
     const result = await ChatService.getMessageList(validatedData);
     res.status(200).json(result);

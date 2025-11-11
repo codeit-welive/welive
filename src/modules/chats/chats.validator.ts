@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import forwardZodError from '#utils/zod';
-import { getChatRoomListSchema, getChatRoomByIdSchema, getMessagesSchema } from './dto/chats.dto';
+import { getChatRoomListSchema, getChatRoomByIdSchema, getMessageListSchema } from './dto/chats.dto';
 
 /**
  * 채팅방 목록 조회 검증 (관리자용)
@@ -43,10 +43,10 @@ export const validateGetChatRoomById = async (req: Request, res: Response, next:
  * 메시지 목록 조회 검증
  * @description GET /api/chats/rooms/:roomId/messages - 전체 요청 검증
  */
-export const validateGetMessages = async (req: Request, res: Response, next: NextFunction) => {
+export const validateGetMessageList = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { roomId } = req.params;
-    const validatedData = await getMessagesSchema.parseAsync({
+    const validatedData = await getMessageListSchema.parseAsync({
       chatRoomId: roomId,
       ...req.query,
     });

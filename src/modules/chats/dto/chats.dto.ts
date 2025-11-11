@@ -30,7 +30,7 @@ export const getChatRoomByIdSchema = z.object({
  * 메시지 목록 조회 스키마
  * @description GET /api/chats/rooms/:roomId/messages - Validator에서 사용
  */
-export const getMessagesSchema = z.object({
+export const getMessageListSchema = z.object({
   chatRoomId: z.uuid({ message: '유효한 채팅방 ID가 아닙니다.' }),
   page: z.coerce.number().int().positive().default(PAGINATION.DEFAULT_PAGE),
   limit: z.coerce.number().int().positive().max(PAGINATION.MAX_LIMIT).default(50),
@@ -62,5 +62,5 @@ export type ChatUserRole = Extract<UserRole, 'ADMIN' | 'USER'>;
 
 export type GetChatRoomListDto = z.infer<typeof getChatRoomListSchema>;
 export type GetChatRoomByIdDto = z.infer<typeof getChatRoomByIdSchema>;
-export type GetMessagesDto = z.infer<typeof getMessagesSchema>;
+export type GetMessageListDto = z.infer<typeof getMessageListSchema>;
 export type CreateMessageDto = z.infer<typeof createMessageSchema>;
