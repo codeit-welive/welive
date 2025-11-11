@@ -2,7 +2,7 @@ import request from 'supertest';
 import app from '#core/app';
 import prisma from '#core/prisma';
 import { generateAccessToken } from '#modules/auth/utils/tokenUtils';
-import { UserRole, ComplaintStatus } from '@prisma/client';
+import { UserRole, ComplaintStatus, JoinStatus } from '@prisma/client';
 process.env.__SKIP_GLOBAL_DB_CLEANUP__ = 'true';
 
 describe('[Complaints] 통합 테스트', () => {
@@ -13,6 +13,21 @@ describe('[Complaints] 통합 테스트', () => {
   let complaintId: string;
 
   beforeAll(async () => {
+    await prisma.$transaction([
+      prisma.event.deleteMany(),
+      prisma.notification.deleteMany(),
+      prisma.comment.deleteMany(),
+      prisma.pollVote.deleteMany(),
+      prisma.pollOption.deleteMany(),
+      prisma.poll.deleteMany(),
+      prisma.complaint.deleteMany(),
+      prisma.notice.deleteMany(),
+      prisma.board.deleteMany(),
+      prisma.resident.deleteMany(),
+      prisma.user.deleteMany(),
+      prisma.apartment.deleteMany(),
+    ]);
+
     const apt = await prisma.apartment.create({
       data: {
         apartmentName: 'ComplaintTest',
@@ -84,8 +99,18 @@ describe('[Complaints] 통합 테스트', () => {
     });
 
     // 토큰
-    adminToken = generateAccessToken({ id: admin.id, role: UserRole.ADMIN });
-    userToken = generateAccessToken({ id: user.id, role: UserRole.USER });
+    adminToken = generateAccessToken({
+      id: admin.id,
+      role: UserRole.ADMIN,
+      joinStatus: JoinStatus.APPROVED,
+      isActive: true,
+    });
+    userToken = generateAccessToken({
+      id: user.id,
+      role: UserRole.USER,
+      joinStatus: JoinStatus.APPROVED,
+      isActive: true,
+    });
   });
 
   /**
