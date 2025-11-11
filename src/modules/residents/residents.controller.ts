@@ -1,5 +1,8 @@
 import { RequestHandler } from 'express';
-import { getResident, getResidentList, patchResident, removeResident } from './residents.service';
+import { createResident, getResident, getResidentList, patchResident, removeResident } from './residents.service';
+import { Prisma } from '@prisma/client';
+import ApiError from '#errors/ApiError';
+import { mapUniqueConstraintError } from '#helpers/mapPrismaError';
 
 export const getResidentListHandler: RequestHandler = async (req, res, next) => {
   try {
@@ -43,6 +46,24 @@ export const deleteResidentHandler: RequestHandler = async (req, res, next) => {
 
     res.status(204).send({ message: '작업이 성공적으로 완료되었습니다' });
   } catch (err) {
+    next(err);
+  }
+};
+
+export const createResidentHandler: RequestHandler = async (req, res, next) => {
+  try {
+    const data = res.locals.validatedBody;
+    const adminId = req.user.id;
+    const result = await createResident(data, adminId);
+
+    res.status(201).json(result);
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === 'P2002') {
+        const errorFields = err.meta?.target as string[];
+        next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
+      }
+    }
     next(err);
   }
 };

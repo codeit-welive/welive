@@ -1,5 +1,9 @@
 import prisma from '#core/prisma';
-import { ResidentListRequestQueryDto, ResidentPatchRequestBodyDto } from './dto/resident.dto';
+import {
+  ResidentCreateRequestBodyDto,
+  ResidentListRequestQueryDto,
+  ResidentPatchRequestBodyDto,
+} from './dto/resident.dto';
 import { buildWhereCondition } from './utils/whereConditionBuilder';
 
 const selectResidentFields = {
@@ -46,27 +50,29 @@ export const update = async (residnetId: string, data: ResidentPatchRequestBodyD
   return await prisma.resident.update({
     where: { id: residnetId },
     data,
-    select: {
-      id: true,
-      building: true,
-      unitNumber: true,
-      contact: true,
-      name: true,
-      residenceStatus: true,
-      isHouseholder: true,
-      isRegistered: true,
-      user: {
-        select: {
-          id: true,
-          email: true,
-        },
-      },
-    },
+    select: selectResidentFields,
   });
 };
 
 export const remove = async (residentId: string) => {
   return await prisma.resident.delete({
     where: { id: residentId },
+  });
+};
+
+export const create = async (data: ResidentCreateRequestBodyDto, apartmentId: string) => {
+  return await prisma.resident.create({
+    data: {
+      ...data,
+      apartmentId,
+    },
+    select: selectResidentFields,
+  });
+};
+
+export const getApartmentIdByAdminId = async (adminId: string) => {
+  return await prisma.apartment.findUnique({
+    where: { adminId },
+    select: { id: true },
   });
 };

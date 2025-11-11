@@ -1,8 +1,9 @@
 import { RequestHandler } from 'express';
 import forwardZodError from '#core/utils/zod';
 import {
+  residentCreateRequestBodySchema,
   residentListRequestQuerySchema,
-  residentPatchRequestBodyShema,
+  residentPatchRequestBodySchema,
   residentRequestParamSchema,
 } from './dto/resident.dto';
 
@@ -29,11 +30,22 @@ export const validateResidentRequestParam: RequestHandler = (req, res, next) => 
 
 export const validatePatchResidentRequestBody: RequestHandler = (req, res, next) => {
   try {
-    const validatedBody = residentPatchRequestBodyShema.parse(req.body);
+    const validatedBody = residentPatchRequestBodySchema.parse(req.body);
     res.locals.validatedBody = validatedBody;
 
     next();
   } catch (err) {
     forwardZodError(err, '입주민 수정 요청 바디', next);
+  }
+};
+
+export const validateCreateResidentRequestBody: RequestHandler = (req, res, next) => {
+  try {
+    const validatedBody = residentCreateRequestBodySchema.parse(req.body);
+    res.locals.validatedBody = validatedBody;
+
+    next();
+  } catch (err) {
+    forwardZodError(err, '입주민 생성 요청 바디', next);
   }
 };

@@ -3,6 +3,7 @@ import { downloadResidentTemplate } from './residents.file.controller';
 import authMiddleware from '#core/middlewares/authMiddleware';
 import requireRole from '#core/middlewares/requireRole';
 import {
+  validateCreateResidentRequestBody,
   validatePatchResidentRequestBody,
   validateResidentListRequestQuery,
   validateResidentRequestParam,
@@ -12,6 +13,7 @@ import {
   getResidentHandler,
   patchResidentHandler,
   deleteResidentHandler,
+  createResidentHandler,
 } from './residents.controller';
 
 const router = Router();
@@ -19,7 +21,10 @@ const router = Router();
 // 입주민 업로드 템플릿 다운로드
 router.get('/file/template', downloadResidentTemplate);
 
-router.get('/', authMiddleware, requireRole(['ADMIN']), validateResidentListRequestQuery, getResidentListHandler);
+router
+  .route('/')
+  .get(authMiddleware, requireRole(['ADMIN']), validateResidentListRequestQuery, getResidentListHandler)
+  .post(authMiddleware, requireRole(['ADMIN']), validateCreateResidentRequestBody, createResidentHandler);
 
 router
   .route('/:id')

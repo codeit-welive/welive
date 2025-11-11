@@ -1,6 +1,10 @@
 import ApiError from '#errors/ApiError';
-import { ResidentListRequestQueryDto, ResidentPatchRequestBodyDto } from './dto/resident.dto';
-import { getCount, getList, getById, update, remove } from './residents.repo';
+import {
+  ResidentCreateRequestBodyDto,
+  ResidentListRequestQueryDto,
+  ResidentPatchRequestBodyDto,
+} from './dto/resident.dto';
+import { getCount, getList, getById, update, remove, getApartmentIdByAdminId, create } from './residents.repo';
 import { residentDataMapper } from './utils/dataMapper';
 
 export const getResidentList = async (query: ResidentListRequestQueryDto, adminId: string) => {
@@ -35,4 +39,15 @@ export const patchResident = async (residentId: string, data: ResidentPatchReque
 
 export const removeResident = async (residentId: string) => {
   await remove(residentId);
+};
+
+export const createResident = async (data: ResidentCreateRequestBodyDto, adminId: string) => {
+  const apartmentId = await getApartmentIdByAdminId(adminId);
+  if (!apartmentId) {
+    throw ApiError.notFound('아파트를 찾을 수 없습니다');
+  }
+
+  const resident = await create(data, apartmentId.id);
+  const [mappedResident] = residentDataMapper([resident]);
+  return mappedResident;
 };

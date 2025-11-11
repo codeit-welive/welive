@@ -34,7 +34,7 @@ export const residentRequestParamSchema = z.object({
   id: z.uuid(),
 });
 
-export const residentPatchRequestBodyShema = z.object({
+export const residentPatchRequestBodySchema = z.object({
   building: z.string(),
   unitNumber: z.string(),
   contact: z.string(),
@@ -42,4 +42,14 @@ export const residentPatchRequestBodyShema = z.object({
   isHouseholder: z.enum(IsHouseholder),
 });
 
-export type ResidentPatchRequestBodyDto = z.infer<typeof residentPatchRequestBodyShema>;
+export type ResidentPatchRequestBodyDto = z.infer<typeof residentPatchRequestBodySchema>;
+
+export const residentCreateRequestBodySchema = z.object({
+  building: z.string(),
+  unitNumber: z.string(),
+  contact: z.string(),
+  name: z.string(),
+  isHouseholder: z.enum(IsHouseholder),
+});
+
+export type ResidentCreateRequestBodyDto = z.infer<typeof residentCreateRequestBodySchema>;
