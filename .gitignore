@@ -6,4 +6,3 @@ dist
 .DS_Store
 coverage
 logs/access.log
-test-logs
