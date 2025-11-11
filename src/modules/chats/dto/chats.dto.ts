@@ -29,10 +29,11 @@ export const getChatRoomByIdSchema = z.object({
 /**
  * 메시지 목록 조회 스키마
  * @description GET /api/chats/rooms/:roomId/messages - Validator에서 사용
+ * @note page는 2부터 시작 (1은 getChatRoom의 recentMessages에서 제공)
  */
 export const getMessageListSchema = z.object({
   chatRoomId: z.uuid({ message: '유효한 채팅방 ID가 아닙니다.' }),
-  page: z.coerce.number().int().positive().default(PAGINATION.DEFAULT_PAGE),
+  page: z.coerce.number().int().min(2, { message: '페이지는 2 이상이어야 합니다.' }).default(2),
   limit: z.coerce.number().int().positive().max(PAGINATION.MAX_LIMIT).default(50),
 });
 
