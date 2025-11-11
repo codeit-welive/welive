@@ -10,7 +10,7 @@ import {
 } from './auth.service';
 import ApiError from '#errors/ApiError';
 import { Prisma } from '@prisma/client';
-import { checkDuplicateData } from './utils/checkDuplicateData';
+import { mapUniqueConstraintError } from '#helpers/mapPrismaError';
 import env from '#core/env';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from './utils/tokenUtils';
 
@@ -23,7 +23,7 @@ export const registSuperAdminHandler: RequestHandler = async (req, res, next) =>
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       const errorFields = err.meta?.target as string[];
-      throw ApiError.conflict(checkDuplicateData(errorFields).message);
+      next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
     }
     next(err);
   }
@@ -38,7 +38,7 @@ export const registerAdminHandler: RequestHandler = async (req, res, next) => {
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       const errorFields = err.meta?.target as string[];
-      throw ApiError.conflict(checkDuplicateData(errorFields).message);
+      next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
     }
     next(err);
   }
@@ -54,9 +54,9 @@ export const registerUserHandler: RequestHandler = async (req, res, next) => {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === 'P2002') {
         const errorFields = err.meta?.target as string[];
-        throw ApiError.conflict(checkDuplicateData(errorFields).message);
+        next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
       } else if (err.code === 'P2025') {
-        throw ApiError.notFound('해당 아파트가 존재하지 않습니다.');
+        next(new ApiError(404, '해당 아파트가 존재하지 않습니다.'));
       }
     }
     next(err);
@@ -88,7 +88,7 @@ export const loginHandler: RequestHandler = async (req, res, next) => {
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === 'P2025') {
-        throw ApiError.notFound('사용자를 찾을 수 없습니다');
+        next(new ApiError(404, '사용자를 찾을 수 없습니다'));
       }
     }
     next(err);
