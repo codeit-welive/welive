@@ -2,8 +2,12 @@ import { Router } from 'express';
 import { downloadResidentTemplate } from './residents.file.controller';
 import authMiddleware from '#core/middlewares/authMiddleware';
 import requireRole from '#core/middlewares/requireRole';
-import { validateResidentListRequestQuery, validateResidentRequestParam } from './residents.validator';
-import { getResidentListHandler, getResidentHandler } from './residents.controller';
+import {
+  validatePatchResidentRequestBody,
+  validateResidentListRequestQuery,
+  validateResidentRequestParam,
+} from './residents.validator';
+import { getResidentListHandler, getResidentHandler, patchResidentHandler } from './residents.controller';
 
 const router = Router();
 
@@ -11,6 +15,10 @@ const router = Router();
 router.get('/file/template', downloadResidentTemplate);
 
 router.get('/', authMiddleware, requireRole(['ADMIN']), validateResidentListRequestQuery, getResidentListHandler);
-router.get('/:id', authMiddleware, requireRole(['ADMIN']), validateResidentRequestParam, getResidentHandler);
+
+router
+  .route('/:id')
+  .get(authMiddleware, requireRole(['ADMIN']), validateResidentRequestParam, getResidentHandler)
+  .patch(authMiddleware, requireRole(['ADMIN']), validatePatchResidentRequestBody, patchResidentHandler);
 
 export default router;
