@@ -144,9 +144,9 @@ describe('[Notices] 통합 테스트', () => {
 
     expect([200, 400]).toContain(res.status);
     if (res.status === 200) {
-      expect(res.body).toHaveProperty('noticeList');
-      expect(Array.isArray(res.body.noticeList)).toBe(true);
-      expect(res.body).toHaveProperty('total');
+      expect(res.body).toHaveProperty('notices');
+      expect(Array.isArray(res.body.notices)).toBe(true);
+      expect(res.body).toHaveProperty('totalCount');
     }
   });
 

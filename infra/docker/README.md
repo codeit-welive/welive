@@ -2,7 +2,7 @@
 
 ## 이미지 빌드
 
-docker build -f infra/Dockerfile -t welive-backend .
+docker build -f infra/docker/Dockerfile -t welive-backend .
 
 ## 실행
 

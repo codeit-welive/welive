@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import morgan from 'morgan';
 import { logger } from '#core/logger';
+import env from '#core/env';
 
 /**
  * 로그 파일 경로 설정
@@ -27,6 +28,9 @@ const format = ':date[iso] [HTTP] :method :url :status :response-time ms - :res[
  * - 콘솔: Pino logger와 함께 출력
  * - 파일: logs/access.log에 저장
  */
+
+const isTest = env.NODE_ENV === 'test';
+
 const httpLogger = morgan(format, {
   stream: {
     write: (message: string) => {
@@ -34,7 +38,7 @@ const httpLogger = morgan(format, {
       logger.http.info(message.trim());
 
       // 파일
-      accessLogStream.write(message);
+      if (!isTest) accessLogStream.write(message);
     },
   },
 });
