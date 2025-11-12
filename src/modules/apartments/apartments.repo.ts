@@ -1,7 +1,7 @@
 import prisma from '#core/prisma';
-import { Prisma, UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 import { ApartmentRequestQueryDto } from './dto/apartment.dto';
-import { buildSearchFilter } from './utils/buildSearchFilter';
+import { buildWhereCondition } from './utils/buildSearchFilter';
 
 /**
  * @description 아파트 목록 조회
@@ -11,19 +11,16 @@ import { buildSearchFilter } from './utils/buildSearchFilter';
  *  - USER: 아파트id, 이름, 주소만 반환
  *  - ADMIN, SUPER_ADMIN: 추가 정보 포함
  */
-export const getList = async (query: ApartmentRequestQueryDto, userRole: UserRole) => {
-  const OR = buildSearchFilter(query, userRole);
+export const getList = async (query: ApartmentRequestQueryDto, userRole: UserRole | undefined) => {
+  const where = buildWhereCondition(query, userRole);
 
   return prisma.apartment.findMany({
-    where: {
-      OR,
-      ...(query.apartmentStatus && { admin: { joinStatus: query.apartmentStatus } }),
-    },
+    where,
     select: {
       id: true,
       apartmentName: true,
       apartmentAddress: true,
-      ...(userRole !== UserRole.USER && {
+      ...(userRole && {
         apartmentManagementNumber: true,
         startComplexNumber: true,
         endComplexNumber: true,
@@ -44,7 +41,7 @@ export const getList = async (query: ApartmentRequestQueryDto, userRole: UserRol
         },
       }),
     },
-    ...(userRole !== UserRole.USER && {
+    ...(userRole && {
       skip: (query.page - 1) * query.limit,
       take: query.limit,
     }),
@@ -59,23 +56,23 @@ export const getList = async (query: ApartmentRequestQueryDto, userRole: UserRol
  *  - USER: 아파트id, 이름, 주소만 반환
  *  - ADMIN, SUPER_ADMIN: 추가 정보 포함
  */
-export const getById = async (id: string, userRole: UserRole) => {
+export const getById = async (id: string, userRole: UserRole | undefined) => {
   return prisma.apartment.findUnique({
     where: { id },
     select: {
       id: true,
       apartmentName: true,
       apartmentAddress: true,
-      ...(userRole !== UserRole.USER && {
-        apartmentManagementNumber: true,
-        startComplexNumber: true,
-        endComplexNumber: true,
-        startDongNumber: true,
-        endDongNumber: true,
-        startFloorNumber: true,
-        endFloorNumber: true,
-        startHoNumber: true,
-        endHoNumber: true,
+      apartmentManagementNumber: true,
+      startComplexNumber: true,
+      endComplexNumber: true,
+      startDongNumber: true,
+      endDongNumber: true,
+      startFloorNumber: true,
+      endFloorNumber: true,
+      startHoNumber: true,
+      endHoNumber: true,
+      ...(userRole && {
         admin: {
           select: {
             id: true,
@@ -90,23 +87,10 @@ export const getById = async (id: string, userRole: UserRole) => {
   });
 };
 
-export const getCount = async (query: ApartmentRequestQueryDto, userRole: UserRole) => {
-  const OR = [];
-  const mode = 'insensitive' as Prisma.QueryMode;
-
-  if (userRole !== UserRole.USER) {
-    OR.push({ apartmentName: { contains: query.searchKeyword, mode } });
-    OR.push({ apartmentAddress: { contains: query.searchKeyword, mode } });
-    OR.push({ admin: { name: { contains: query.searchKeyword, mode } } });
-    OR.push({ admin: { email: { contains: query.searchKeyword, mode } } });
-  } else {
-    OR.push({ apartmentName: { contains: query.name, mode } });
-  }
+export const getCount = async (query: ApartmentRequestQueryDto, userRole: UserRole | undefined) => {
+  const where = buildWhereCondition(query, userRole);
 
   return prisma.apartment.count({
-    where: {
-      OR,
-      ...(query.apartmentStatus && { admin: { joinStatus: query.apartmentStatus } }),
-    },
+    where,
   });
 };

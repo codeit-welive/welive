@@ -5,7 +5,7 @@ import { JoinStatus } from '@prisma/client';
 export const apartmentRequestQuerySchema = z.object({
   name: z.string().optional(),
   address: z.string().optional(),
-  searchKeyword: z.string().default(''),
+  searchKeyword: z.string().optional(),
   apartmentStatus: z.enum(JoinStatus).optional(),
   limit: z.coerce.number().min(1).default(PAGINATION.DEFAULT_LIMIT),
   page: z.coerce.number().min(1).default(PAGINATION.DEFAULT_PAGE),
@@ -13,26 +13,28 @@ export const apartmentRequestQuerySchema = z.object({
 
 export type ApartmentRequestQueryDto = z.infer<typeof apartmentRequestQuerySchema>;
 
-export interface UserApartmentResponseDto {
+export interface ApartmentResponseDto {
   id: string;
   apartmentName: string;
   apartmentAddress: string;
-}
-export interface AdminApartmentResponseDto extends UserApartmentResponseDto {
-  apartmentManagementNumber: string;
-  startComplexNumber: string;
-  endComplexNumber: string;
-  startDongNumber: string;
-  endDongNumber: string;
-  startFloorNumber: string;
-  endFloorNumber: string;
-  startHoNumber: string;
-  endHoNumber: string;
+  apartmentManagementNumber: string | null;
+  startComplexNumber: string | null;
+  endComplexNumber: string | null;
+  startDongNumber: string | null;
+  endDongNumber: string | null;
+  startFloorNumber: string | null;
+  endFloorNumber: string | null;
+  startHoNumber: string | null;
+  endHoNumber: string | null;
   admin: {
     id: string;
     name: string;
     contact: string;
     email: string;
     joinStatus: string;
-  };
+  } | null;
 }
+
+export const apartmentRequestParamsSchema = z.object({
+  id: z.uuid(),
+});
