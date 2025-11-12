@@ -20,7 +20,7 @@ const config: Config = {
     '^#utils/(.*)$': '<rootDir>/src/core/utils/$1',
   },
 
-  setupFilesAfterEnv: ['<rootDir>/tests/setup/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup/jest.logger-mock.ts', '<rootDir>/tests/setup/jest.setup.js'],
 
   collectCoverage: true,
   collectCoverageFrom: ['src/**/*.{ts,js}'],

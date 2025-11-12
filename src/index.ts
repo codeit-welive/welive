@@ -1,4 +1,5 @@
 import http from 'http';
+import { execSync } from 'child_process';
 import app from '#core/app';
 import env from '#core/env';
 import prisma from '#core/prisma';
@@ -7,6 +8,17 @@ import { startAllJobs } from '#jobs/index';
 
 const PORT = env.PORT || 3000;
 const server = http.createServer(app);
+
+/**
+ * Windows 환경에서만 UTF-8 코드페이지 설정
+ */
+if (process.platform === 'win32') {
+  try {
+    execSync('chcp 65001 >NUL', { stdio: 'ignore' });
+  } catch (err) {
+    console.warn('[WARN] Failed to set code page 65001:', (err as Error).message);
+  }
+}
 
 /**
  * 유틸
