@@ -3,8 +3,8 @@ import { z } from 'zod';
 
 export const eventListQueryInputSchema = z.object({
   apartmentId: z.uuid({ message: '아파트 아이디가 존재하지 않습니다.' }),
-  year: z.number().int().min(1980).max(2500),
-  month: z.number().int().min(1).max(12),
+  year: z.string(),
+  month: z.string(),
 });
 
 export type eventListQueryInputDTO = z.infer<typeof eventListQueryInputSchema>;

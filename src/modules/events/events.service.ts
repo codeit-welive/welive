@@ -13,8 +13,8 @@ import ApiError from '#errors/ApiError';
 import prisma from '#core/prisma';
 
 export const getEventListService = async (query: eventListQueryInputDTO) => {
-  const startOfMonth = new Date(query.year, query.month - 1, 1); // 1일 00:00
-  const endOfMonth = new Date(query.year, query.month, 0, 23, 59, 59, 999); // 말일 23:59
+  const startOfMonth = new Date(Number(query.year), Number(query.month) - 1, 1); // 1일 00:00
+  const endOfMonth = new Date(Number(query.year), Number(query.month), 0, 23, 59, 59, 999); // 말일 23:59
   const apartmentId = query.apartmentId;
   const where: Prisma.EventWhereInput = {
     apartmentId,
