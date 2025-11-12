@@ -4,15 +4,19 @@ import {
   createNoticeRepo,
   deleteNoticeRepo,
   existNoticeRepo,
-  getBoardTypeRepo,
+  getApartmentIdByAdminId,
   getNoticeListRepo,
   getNoticeRepo,
   updateNoticeRepo,
 } from './notices.repo';
 import ApiError from '#errors/ApiError';
 
-export const createNoticeService = async (data: NoticeCreateDTO) => {
-  return await createNoticeRepo(data);
+export const createNoticeService = async (userId: string, data: NoticeCreateDTO) => {
+  const apartmentId = await getApartmentIdByAdminId(userId);
+  if (!apartmentId) {
+    throw ApiError.badRequest();
+  }
+  return await createNoticeRepo(data, apartmentId.id);
 };
 
 export const getNoticeListService = async (data: NoticeListQueryDTO) => {

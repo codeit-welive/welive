@@ -10,6 +10,17 @@ export const getBoardTypeRepo = async (boardId: string) => {
   return boardType;
 };
 
+export const getApartmentIdByAdminId = async (adminId: string) => {
+  return await prisma.apartment.findUnique({
+    where: {
+      adminId,
+    },
+    select: {
+      id: true,
+    },
+  });
+};
+
 export const existNoticeRepo = async (noticeId: string) => {
   const exists = await prisma.notice.count({
     where: {
@@ -19,7 +30,7 @@ export const existNoticeRepo = async (noticeId: string) => {
   return exists > 0;
 };
 
-export const createNoticeRepo = async (data: NoticeCreateDTO) => {
+export const createNoticeRepo = async (data: NoticeCreateDTO, apartmentId: string) => {
   const notice = await prisma.notice.create({
     data: {
       title: data.title,
@@ -30,6 +41,11 @@ export const createNoticeRepo = async (data: NoticeCreateDTO) => {
       startDate: data.startDate ?? null,
       endDate: data.endDate ?? null,
       isPinned: data.isPinned ?? false,
+      apartment: {
+        connect: {
+          id: apartmentId,
+        },
+      },
     },
   });
   return notice;

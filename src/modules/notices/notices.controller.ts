@@ -29,7 +29,8 @@ import { RESPONSE_MESSAGES } from '#constants/response.constant';
 export const createNotice: RequestHandler = async (req, res, next) => {
   try {
     const data = res.locals.validatedBody as NoticeCreateDTO;
-    await createNoticeService(data);
+    const userId = req.user.id;
+    await createNoticeService(userId, data);
     return res.status(201).json({ message: RESPONSE_MESSAGES.CREATE_SUCCESS });
   } catch (err) {
     next(err);
