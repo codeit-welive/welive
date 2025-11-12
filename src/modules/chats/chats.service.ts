@@ -1,5 +1,6 @@
 import * as ChatRepo from './chats.repo';
 import ApiError from '#errors/ApiError';
+import { verifyChatRoomAccess } from './chats.util';
 import { CHAT_ERROR_MESSAGES } from '#constants/chat.constant';
 import { GetChatRoomListDto, GetChatRoomByIdDto, GetMessageListDto, CreateMessageDto } from './dto/chats.dto';
 
@@ -70,15 +71,7 @@ export const getChatRoom = async (data: GetChatRoomByIdDto) => {
   await ChatRepo.patchMessageListAsRead(data.chatRoomId, data.role);
 
   // 2. 권한 포함 조회 (최신 unreadCount 반영)
-  const chatRoom =
-    data.role === 'USER'
-      ? await ChatRepo.getByIdWithUserAuth(data.chatRoomId, data.userId)
-      : await ChatRepo.getByIdWithAdminAuth(data.chatRoomId, data.userId);
-
-  // 3. 찾을 수 없음
-  if (!chatRoom) {
-    throw ApiError.notFound(CHAT_ERROR_MESSAGES.CHAT_ROOM_NOT_FOUND);
-  }
+  const chatRoom = await verifyChatRoomAccess(data.chatRoomId, data.userId, data.role);
 
   // 4. 최신 메시지 50개 조회
   const recentMessages = await ChatRepo.getMessageListByChatRoomId({
