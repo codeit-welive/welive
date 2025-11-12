@@ -18,6 +18,7 @@ import residentsRouter from '#modules/residents/residents.router';
 import usersRouter from '#modules/users/users.router';
 import pollRouter from '#modules/polls/polls.router';
 import optionRouter from '#modules/polls/options/options.router';
+import eventRouter from '#modules/events/events.router';
 
 const router = Router();
 
@@ -39,5 +40,6 @@ router.use('/residents', residentsRouter);
 router.use('/users', usersRouter);
 router.use('/polls', pollRouter);
 router.use('/options', optionRouter);
+router.use('/event', eventRouter);
 
 export default router;
