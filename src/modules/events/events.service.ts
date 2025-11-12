@@ -18,8 +18,7 @@ export const getEventListService = async (query: eventListQueryInputDTO) => {
   const apartmentId = query.apartmentId;
   const where: Prisma.EventWhereInput = {
     apartmentId,
-    startDate: { lte: startOfMonth },
-    endDate: { gte: endOfMonth },
+    AND: [{ startDate: { lte: endOfMonth } }, { endDate: { gte: startOfMonth } }],
   };
   const rawEvents = await getEventListRepo(where);
   return rawEvents.map((e) => ({
