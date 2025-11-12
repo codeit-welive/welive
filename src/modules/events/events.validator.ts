@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { eventDeleteQueryInputSchema, eventListQueryInputSchema, eventUpdateQueryInputSchema } from './dto/events.dto';
+import { eventDeleteParamsInputSchema, eventListQueryInputSchema, eventUpdateQueryInputSchema } from './dto/events.dto';
 import forwardZodError from '#core/utils/zod';
 
 export const validateEventListQuery: RequestHandler = async (req, res, next) => {
@@ -28,13 +28,13 @@ export const validateEventUpdateQuery: RequestHandler = async (req, res, next) =
   }
 };
 
-export const validateEventDeleteQuery: RequestHandler = async (req, res, next) => {
+export const validateEventDeleteParams: RequestHandler = async (req, res, next) => {
   try {
-    const validatedQuery = await eventDeleteQueryInputSchema.parseAsync({
+    const validatedParams = await eventDeleteParamsInputSchema.parseAsync({
       ...req.query,
     });
 
-    res.locals.query = validatedQuery;
+    res.locals.params = validatedParams;
     next();
   } catch (err) {
     forwardZodError(err, '이벤트 삭제', next);

@@ -18,8 +18,8 @@ export const eventUpdateQueryInputSchema = z.object({
 
 export type eventUpdateQueryInputDTO = z.infer<typeof eventUpdateQueryInputSchema>;
 
-export const eventDeleteQueryInputSchema = z.object({
+export const eventDeleteParamsInputSchema = z.object({
   eventId: z.uuid(),
 });
 
-export type eventDeleteQueryInputDTO = z.infer<typeof eventDeleteQueryInputSchema>;
+export type eventDeleteParamsInputDTO = z.infer<typeof eventDeleteParamsInputSchema>;

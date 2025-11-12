@@ -145,3 +145,19 @@ export const upsertEventByPollId = async (
     },
   });
 };
+
+export const deleteEventRepo = async (eventId: string) => {
+  return await prisma.event.delete({
+    where: {
+      id: eventId,
+    },
+    select: {
+      id: true,
+      startDate: true,
+      endDate: true,
+      boardType: true,
+      noticeId: true,
+      pollId: true,
+    },
+  });
+};

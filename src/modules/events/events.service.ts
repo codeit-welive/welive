@@ -1,5 +1,6 @@
 import { BoardType, EventCategory, NoticeCategory, Prisma } from '@prisma/client';
 import {
+  deleteEventRepo,
   getEventListRepo,
   getNoticeDataByBoardId,
   getPollDataByBoardId,
@@ -76,4 +77,8 @@ export const updateCreateEventService = async (query: eventUpdateQueryInputDTO) 
       await upsertEventByPollId(boardId, boardType.type, category, title, apartmentId, startDate, endDate);
     });
   }
+};
+
+export const deleteEventService = async (eventId: string) => {
+  return deleteEventRepo(eventId);
 };
