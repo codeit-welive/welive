@@ -8,6 +8,7 @@ import { createMessage } from '#modules/chats/chats.service';
 import { patchMessageListAsRead } from '#modules/chats/chats.repo';
 import ApiError from '#errors/ApiError';
 import { CHAT_ERROR_MESSAGES } from '#constants/chat.constant';
+import { SOCKET_EVENTS_RECEIVE, SOCKET_EVENTS_SEND, SOCKET_EVENTS_DEFAULT } from '#constants/socket.constant';
 
 /**
  * Socket.io 서버 초기화 함수
@@ -44,7 +45,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
    * @description 새로운 클라이언트가 Socket.io 서버에 접속할 때 실행
    * @param socket - 연결된 클라이언트의 Socket 인스턴스
    */
-  io.on('connection', (socket) => {
+  io.on(SOCKET_EVENTS_DEFAULT.CONNECTION, (socket) => {
     logger.system.info(`✅ 새로운 클라이언트 연결: ${socket.id}`);
 
     /**
@@ -52,7 +53,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
      * @event disconnect
      * @description
      */
-    socket.on('disconnect', () => {
+    socket.on(SOCKET_EVENTS_DEFAULT.DISCONNECT, () => {
       logger.system.info(`❌ 클라이언트 연결 해제: ${socket.id}`);
     });
 
@@ -61,7 +62,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
      * @event join_room
      * @description 클라이언트가 특정 채팅방에 입장할 때 실행
      */
-    socket.on('join_room', async (data: { chatRoomId: string }) => {
+    socket.on(SOCKET_EVENTS_RECEIVE.JOIN_ROOM, async (data: { chatRoomId: string }) => {
       try {
         const { chatRoomId } = data;
         const { user } = socket as AuthenticatedSocket;
@@ -76,14 +77,14 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         logger.system.info(`✅ 채팅방 입장: User ${user.id} (${user.role}) → Room ${chatRoomId}`);
 
         // 4. 클라이언트에게 입장 성공 알림
-        socket.emit('join_room_success', {
+        socket.emit(SOCKET_EVENTS_SEND.JOIN_ROOM_SUCCESS, {
           chatRoomId,
           message: '채팅방에 입장했습니다.',
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
         logger.system.error(`❌ 채팅방 입장 에러: ${errorMessage}`);
-        socket.emit('error_event', { message: errorMessage });
+        socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
 
@@ -92,7 +93,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
      * @event leave_room
      * @description 클라이언트가 채팅방에서 퇴장할 때 실행
      */
-    socket.on('leave_room', async (data: { chatRoomId: string }) => {
+    socket.on(SOCKET_EVENTS_RECEIVE.LEAVE_ROOM, async (data: { chatRoomId: string }) => {
       try {
         const { chatRoomId } = data;
         const { user } = socket as AuthenticatedSocket;
@@ -104,14 +105,14 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         logger.system.info(`👋 채팅방 퇴장: User ${user.id} (${user.role}) → Room ${chatRoomId}`);
 
         // 3. 클라이언트에게 퇴장 성공 알림
-        socket.emit('leave_room_success', {
+        socket.emit(SOCKET_EVENTS_SEND.LEAVE_ROOM_SUCCESS, {
           chatRoomId,
           message: '채팅방에서 퇴장했습니다.',
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
         logger.system.error(`❌ 채팅방 퇴장 에러: ${errorMessage}`);
-        socket.emit('error_event', { message: errorMessage });
+        socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
 
@@ -120,7 +121,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
      * @event send_message
      * @description 클라이언트가 메시지를 전송할 때 실행
      */
-    socket.on('send_message', async (data: { chatRoomId: string; content: string }) => {
+    socket.on(SOCKET_EVENTS_RECEIVE.SEND_MESSAGE, async (data: { chatRoomId: string; content: string }) => {
       try {
         // 1. 데이터 추출
         const { chatRoomId, content } = data;
@@ -140,14 +141,14 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         });
 
         // 4. 브로드캐스팅
-        io.to(chatRoomId).emit('new_message', savedMessage);
+        io.to(chatRoomId).emit(SOCKET_EVENTS_SEND.NEW_MESSAGE, savedMessage);
 
         // 5. 로깅
         logger.system.info(`💬 메시지 전송: User ${user.id} (${user.role}) → Room ${chatRoomId}`);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
         logger.system.error(`❌ 메시지 전송 에러: ${errorMessage}`);
-        socket.emit('error_event', { message: errorMessage });
+        socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
 
@@ -156,7 +157,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
      * @event mark_as_read
      * @description 클라이언트가 메시지를 읽었을 때 실행
      */
-    socket.on('mark_as_read', async (data: { chatRoomId: string }) => {
+    socket.on(SOCKET_EVENTS_RECEIVE.MARK_AS_READ, async (data: { chatRoomId: string }) => {
       try {
         // 1. 데이터 추출
         const { chatRoomId } = data;
@@ -171,7 +172,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         const updatedCount = await patchMessageListAsRead(chatRoomId, user.role as any);
 
         // 4. 브로드캐스팅
-        io.to(chatRoomId).emit('messages_read', {
+        io.to(chatRoomId).emit(SOCKET_EVENTS_SEND.MESSAGES_READ, {
           chatRoomId,
           role: user.role,
           updatedCount,
@@ -182,7 +183,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
         logger.system.error(`❌ 읽음 처리 에러: ${errorMessage}`);
-        socket.emit('error_event', { message: errorMessage });
+        socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
   });
