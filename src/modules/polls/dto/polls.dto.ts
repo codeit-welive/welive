@@ -16,17 +16,17 @@ export const createPollBodySchema = z.object({
 export type createPollBodyDTO = z.infer<typeof createPollBodySchema>;
 
 export const pollListQuerySchema = z.object({
-  page: z.number().default(1),
-  pageSize: z.number().default(11),
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().positive().default(11),
   votingStatus: z.enum(PollStatus),
   apartment: z.stringFormat('투표권자', /^[1-9][0-9][1-9]동$/).or(z.string('전체')),
   search: z.string().optional(),
 });
 
 export const pollListQueryInputSchema = z.object({
-  page: z.string().default('1'),
-  limit: z.string().default('11'),
-  status: z.enum(PollStatus),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().default(11),
+  status: z.enum(PollStatus).optional(),
   buildingPermission: z.stringFormat('투표권자', /^[1-9][0-9][1-9]동$/).or(z.string('전체')),
   keyword: z.string().optional(),
 });

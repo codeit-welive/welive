@@ -22,6 +22,7 @@ export const validatePollListQuery: RequestHandler = async (req, res, next) => {
     });
 
     res.locals.query = validatedQuery;
+    console.log('리스트 검사');
     next();
   } catch (err) {
     forwardZodError(err, '투표 목록 조회', next);
