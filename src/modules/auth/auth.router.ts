@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  cleanupHandler,
   loginHandler,
   logoutHandler,
   patchAdminStatusHandler,
@@ -55,4 +56,7 @@ authRouter
 authRouter
   .route('/residents/status')
   .patch(authMiddleware, requireRole(['ADMIN']), validatePatchStatusBody, patchUserStatusHandler);
+
+authRouter.route('/cleanup').post(authMiddleware, requireRole(['SUPER_ADMIN', 'ADMIN']), cleanupHandler);
+
 export default authRouter;

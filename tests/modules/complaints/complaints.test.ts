@@ -13,6 +13,21 @@ describe('[Complaints] 통합 테스트', () => {
   let complaintId: string;
 
   beforeAll(async () => {
+    await prisma.$transaction([
+      prisma.event.deleteMany(),
+      prisma.notification.deleteMany(),
+      prisma.comment.deleteMany(),
+      prisma.pollVote.deleteMany(),
+      prisma.pollOption.deleteMany(),
+      prisma.poll.deleteMany(),
+      prisma.complaint.deleteMany(),
+      prisma.notice.deleteMany(),
+      prisma.board.deleteMany(),
+      prisma.resident.deleteMany(),
+      prisma.user.deleteMany(),
+      prisma.apartment.deleteMany(),
+    ]);
+
     const apt = await prisma.apartment.create({
       data: {
         apartmentName: 'ComplaintTest',
