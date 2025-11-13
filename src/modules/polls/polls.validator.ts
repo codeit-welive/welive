@@ -17,13 +17,11 @@ export const validateCreatePollBody: RequestHandler = async (req, res, next) => 
 
 export const validatePollListQuery: RequestHandler = async (req, res, next) => {
   try {
-    console.log('목록 조회 검사 시작');
     const validatedQuery = await pollListQueryInputSchema.parseAsync({
       ...req.query,
     });
 
     res.locals.query = validatedQuery;
-    console.log('리스트 검사');
     next();
   } catch (err) {
     forwardZodError(err, '투표 목록 조회', next);

@@ -27,7 +27,7 @@ export const getBoardIdByUserId = async (userId: string) => {
 export const getBoardIdByAdminId = async (adminId: string) => {
   const board = await prisma.board.findFirst({
     where: {
-      type: BoardType.COMPLAINT,
+      type: BoardType.POLL,
       apartment: {
         adminId,
       },
