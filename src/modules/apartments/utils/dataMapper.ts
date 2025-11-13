@@ -43,14 +43,15 @@ export const mapApartmentDetailData = (data: ApartmentResponseDto, userRole: Use
     endFloorNumber: data.endFloorNumber,
     startHoNumber,
     endHoNumber,
-    ...(userRole && {
-      officeNumber: data.apartmentManagementNumber,
-      apartmentStatus: data.admin?.joinStatus,
-      adminID: data.admin?.id,
-      adminName: data.admin?.name,
-      adminContact: data.admin?.contact,
-      adminEmail: data.admin?.email,
-    }),
+    ...(userRole &&
+      userRole !== UserRole.USER && {
+        officeNumber: data.apartmentManagementNumber,
+        apartmentStatus: data.admin?.joinStatus,
+        adminID: data.admin?.id,
+        adminName: data.admin?.name,
+        adminContact: data.admin?.contact,
+        adminEmail: data.admin?.email,
+      }),
     dongRange: {
       start: data.startComplexNumber + startDongNumber,
       end: data.endComplexNumber + endDongNumber,
