@@ -7,5 +7,5 @@ export const patchStatusParamSchema = z.object({
 });
 
 export const patchStatusBodySchema = z.object({
-  status: z.enum(JoinStatus),
+  status: z.enum([JoinStatus.APPROVED, JoinStatus.REJECTED]),
 });
