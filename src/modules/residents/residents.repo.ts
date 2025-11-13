@@ -46,9 +46,9 @@ export const getById = async (residentId: string) => {
   });
 };
 
-export const update = async (residnetId: string, data: ResidentPatchRequestBodyDto) => {
+export const update = async (residentId: string, data: ResidentPatchRequestBodyDto) => {
   return await prisma.resident.update({
-    where: { id: residnetId },
+    where: { id: residentId },
     data,
     select: selectResidentFields,
   });
