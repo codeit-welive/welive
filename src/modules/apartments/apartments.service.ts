@@ -25,7 +25,7 @@ export const getApartmentList = async (query: ApartmentRequestQueryDto, userRole
  *  - ADMIN, SUPER_ADMIN: 아파트 관리자 정보 포함
  *  - PUBLIC: 아파트 정보만 반환
  */
-export const getApartment = async (apartmentId: string, userRole: UserRole) => {
+export const getApartment = async (apartmentId: string, userRole: UserRole | undefined) => {
   const apartment = await getById(apartmentId, userRole);
   if (!apartment) {
     throw ApiError.notFound('아파트를 찾을 수 없습니다.');
