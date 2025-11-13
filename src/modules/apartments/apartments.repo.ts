@@ -75,18 +75,19 @@ export const getById = async (id: string, userRole: UserRole | undefined) => {
       endFloorNumber: true,
       startHoNumber: true,
       endHoNumber: true,
-      ...(userRole && {
-        apartmentManagementNumber: true,
-        admin: {
-          select: {
-            id: true,
-            name: true,
-            contact: true,
-            email: true,
-            joinStatus: true,
+      ...(userRole &&
+        userRole !== UserRole.USER && {
+          apartmentManagementNumber: true,
+          admin: {
+            select: {
+              id: true,
+              name: true,
+              contact: true,
+              email: true,
+              joinStatus: true,
+            },
           },
-        },
-      }),
+        }),
     },
   });
 };
