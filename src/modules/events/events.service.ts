@@ -50,8 +50,8 @@ export const updateCreateEventService = async (query: eventUpdateQueryInputDTO) 
     throw ApiError.notFound();
   }
   if (boardType.type === BoardType.NOTICE) {
-    prisma.$transaction(async (tx) => {
-      const data = await getNoticeDataByBoardId(boardId);
+    await prisma.$transaction(async (tx) => {
+      const data = await getNoticeDataByBoardId(tx, boardId);
       if (!data || !data.apartmentId) {
         throw ApiError.notFound();
       }
@@ -59,12 +59,12 @@ export const updateCreateEventService = async (query: eventUpdateQueryInputDTO) 
         throw ApiError.unprocessable('기간 설정이 필요합니다.');
       }
       const { title, apartmentId, startDate, endDate } = data;
-      const category = await mapNoticeToEventCategory(data.category);
-      await upsertEventByNoticeId(boardId, boardType.type, category, title, apartmentId, startDate, endDate);
+      const category = mapNoticeToEventCategory(data.category);
+      await upsertEventByNoticeId(tx, boardId, boardType.type, category, title, apartmentId, startDate, endDate);
     });
   } else if (boardType?.type === BoardType.POLL) {
-    prisma.$transaction(async (tx) => {
-      const data = await getPollDataByBoardId(boardId);
+    await prisma.$transaction(async (tx) => {
+      const data = await getPollDataByBoardId(tx, boardId);
       if (!data || !data.apartmentId) {
         throw ApiError.notFound();
       }
@@ -73,7 +73,7 @@ export const updateCreateEventService = async (query: eventUpdateQueryInputDTO) 
       }
       const { title, apartmentId, startDate, endDate } = data;
       const category = EventCategory.RESIDENT_VOTE;
-      await upsertEventByPollId(boardId, boardType.type, category, title, apartmentId, startDate, endDate);
+      await upsertEventByPollId(tx, boardId, boardType.type, category, title, apartmentId, startDate, endDate);
     });
   }
 };

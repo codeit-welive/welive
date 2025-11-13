@@ -4,19 +4,19 @@ import { eventDeleteParamsInputDTO, eventListQueryInputDTO, eventUpdateQueryInpu
 
 export const getEventList: RequestHandler = async (req, res, next) => {
   const query = res.locals.query as eventListQueryInputDTO;
-  await getEventListService(query);
-  res.status(200);
+  const events = await getEventListService(query);
+  return res.status(200).json(events);
 };
 
 export const createEvent: RequestHandler = async (req, res, next) => {
   const query = res.locals.query as eventUpdateQueryInputDTO;
   await updateCreateEventService(query);
-  res.status(204);
+  return res.sendStatus(204);
 };
 
 export const deleteEvent: RequestHandler = async (req, res, next) => {
   const params = res.locals.params as eventDeleteParamsInputDTO;
   const eventId = params.eventId;
   const deltedEvent = await deleteEventService(eventId);
-  res.status(200).json(deltedEvent);
+  return res.sendStatus(200).json(deltedEvent);
 };

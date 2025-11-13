@@ -1,5 +1,5 @@
 import prisma from '#core/prisma';
-import { BoardType, EventCategory } from '@prisma/client';
+import { BoardType, EventCategory, Prisma } from '@prisma/client';
 
 export const getEventListRepo = async (where: object) => {
   return prisma.event.findMany({
@@ -15,8 +15,8 @@ export const getEventListRepo = async (where: object) => {
   });
 };
 
-export const getNoticeDataByBoardId = async (boardId: string) => {
-  const data = await prisma.notice.findUnique({
+export const getNoticeDataByBoardId = async (tx: Prisma.TransactionClient, boardId: string) => {
+  const data = await tx.notice.findUnique({
     where: {
       id: boardId,
     },
@@ -31,8 +31,8 @@ export const getNoticeDataByBoardId = async (boardId: string) => {
   return data;
 };
 
-export const getPollDataByBoardId = async (boardId: string) => {
-  const data = await prisma.poll.findUnique({
+export const getPollDataByBoardId = async (tx: Prisma.TransactionClient, boardId: string) => {
+  const data = await tx.poll.findUnique({
     where: {
       id: boardId,
     },
@@ -47,6 +47,7 @@ export const getPollDataByBoardId = async (boardId: string) => {
 };
 
 export const upsertEventByNoticeId = async (
+  tx: Prisma.TransactionClient,
   boardId: string,
   boardType: BoardType,
   category: EventCategory,
@@ -55,7 +56,7 @@ export const upsertEventByNoticeId = async (
   startDate: Date,
   endDate: Date
 ) => {
-  await prisma.event.upsert({
+  await tx.event.upsert({
     where: {
       noticeId: boardId,
     },
@@ -97,6 +98,7 @@ export const upsertEventByNoticeId = async (
 };
 
 export const upsertEventByPollId = async (
+  tx: Prisma.TransactionClient,
   boardId: string,
   boardType: BoardType,
   category: EventCategory,
@@ -105,7 +107,7 @@ export const upsertEventByPollId = async (
   startDate: Date,
   endDate: Date
 ) => {
-  await prisma.event.upsert({
+  await tx.event.upsert({
     where: {
       noticeId: boardId,
     },
