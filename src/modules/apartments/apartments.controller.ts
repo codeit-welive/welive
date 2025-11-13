@@ -3,6 +3,7 @@ import { getApartment, getApartmentList } from './apartments.service';
 
 /**
  * @description 아파트 목록 조회 핸들러
+ * @param userRole 요청한 사용자의 역할
  * @query 검증된 쿼리 파라미터
  *  - page: 페이지 번호
  *  - limit: 페이지당 항목 수
