@@ -47,16 +47,17 @@ export const getPollDataByBoardId = async (tx: Prisma.TransactionClient, boardId
 };
 
 export const upsertEventByNoticeId = async (
-  tx: Prisma.TransactionClient,
   boardId: string,
   boardType: BoardType,
   category: EventCategory,
   title: string,
   apartmentId: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  tx?: Prisma.TransactionClient
 ) => {
-  await tx.event.upsert({
+  const client = tx ?? prisma;
+  await client.event.upsert({
     where: {
       noticeId: boardId,
     },
@@ -98,18 +99,19 @@ export const upsertEventByNoticeId = async (
 };
 
 export const upsertEventByPollId = async (
-  tx: Prisma.TransactionClient,
   boardId: string,
   boardType: BoardType,
   category: EventCategory,
   title: string,
   apartmentId: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  tx?: Prisma.TransactionClient
 ) => {
-  await tx.event.upsert({
+  const client = tx ?? prisma;
+  await client.event.upsert({
     where: {
-      noticeId: boardId,
+      pollId: boardId,
     },
     update: {
       title,

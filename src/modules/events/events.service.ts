@@ -12,6 +12,73 @@ import { getBoardTypeRepo } from '#modules/notices/notices.repo';
 import ApiError from '#errors/ApiError';
 import prisma from '#core/prisma';
 
+export const syncEventsForMonthService = async (query: eventListQueryInputDTO) => {
+  const year = Number(query.year);
+  const month = Number(query.month);
+  const apartmentId = query.apartmentId;
+
+  // 해당 월의 시작/끝 (로컬 기준 그대로 사용)
+  const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0);
+  const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+
+  // 1) 이 달과 겹치는 공지(Notice) 조회
+  const notices = await prisma.notice.findMany({
+    where: {
+      apartmentId,
+      startDate: { not: null, lte: endOfMonth },
+      endDate: { not: null, gte: startOfMonth },
+    },
+    select: {
+      id: true,
+      title: true,
+      category: true,
+      startDate: true,
+      endDate: true,
+      apartmentId: true,
+    },
+  });
+
+  // 2) 이 달과 겹치는 투표(Poll) 조회
+  const polls = await prisma.poll.findMany({
+    where: {
+      apartmentId,
+      startDate: { lte: endOfMonth },
+      endDate: { gte: startOfMonth },
+    },
+    select: {
+      id: true,
+      title: true,
+      startDate: true,
+      endDate: true,
+      apartmentId: true,
+    },
+  });
+
+  // 3) Notice → Event upsert
+  for (const n of notices) {
+    if (!n.startDate || !n.endDate || !n.apartmentId) continue;
+
+    const eventCategory = mapNoticeToEventCategory(n.category);
+
+    await upsertEventByNoticeId(n.id, BoardType.NOTICE, eventCategory, n.title, n.apartmentId, n.startDate, n.endDate);
+  }
+
+  // 4) Poll → Event upsert
+  for (const p of polls) {
+    if (!p.startDate || !p.endDate || !p.apartmentId) continue;
+
+    await upsertEventByPollId(
+      p.id,
+      BoardType.POLL,
+      EventCategory.RESIDENT_VOTE, // Poll은 일정 카테고리를 투표로 고정
+      p.title,
+      p.apartmentId,
+      p.startDate,
+      p.endDate
+    );
+  }
+};
+
 export const getEventListService = async (query: eventListQueryInputDTO) => {
   const startOfMonth = new Date(Number(query.year), Number(query.month) - 1, 1); // 1일 00:00
   const endOfMonth = new Date(Number(query.year), Number(query.month), 0, 23, 59, 59, 999); // 말일 23:59
@@ -60,7 +127,7 @@ export const updateCreateEventService = async (query: eventUpdateQueryInputDTO) 
       }
       const { title, apartmentId, startDate, endDate } = data;
       const category = mapNoticeToEventCategory(data.category);
-      await upsertEventByNoticeId(tx, boardId, boardType.type, category, title, apartmentId, startDate, endDate);
+      await upsertEventByNoticeId(boardId, boardType.type, category, title, apartmentId, startDate, endDate, tx);
     });
   } else if (boardType?.type === BoardType.POLL) {
     await prisma.$transaction(async (tx) => {
@@ -73,7 +140,7 @@ export const updateCreateEventService = async (query: eventUpdateQueryInputDTO) 
       }
       const { title, apartmentId, startDate, endDate } = data;
       const category = EventCategory.RESIDENT_VOTE;
-      await upsertEventByPollId(tx, boardId, boardType.type, category, title, apartmentId, startDate, endDate);
+      await upsertEventByPollId(boardId, boardType.type, category, title, apartmentId, startDate, endDate, tx);
     });
   }
 };
