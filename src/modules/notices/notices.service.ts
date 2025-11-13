@@ -1,27 +1,41 @@
 import { NoticeCreateDTO, NoticeListQueryDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import {
   createNoticeRepo,
   deleteNoticeRepo,
   existNoticeRepo,
-  getBoardTypeRepo,
+  getApartmentIdByAdminId,
+  getBoardIdByAdminId,
+  getBoardIdByUserId,
   getNoticeListRepo,
   getNoticeRepo,
   updateNoticeRepo,
 } from './notices.repo';
 import ApiError from '#errors/ApiError';
 
-export const createNoticeService = async (data: NoticeCreateDTO) => {
-  return await createNoticeRepo(data);
+export const createNoticeService = async (userId: string, data: NoticeCreateDTO) => {
+  const apartmentId = await getApartmentIdByAdminId(userId);
+  if (!apartmentId) {
+    throw ApiError.badRequest();
+  }
+  return await createNoticeRepo(data, apartmentId.id);
 };
 
-export const getNoticeListService = async (data: NoticeListQueryDTO) => {
+export const getNoticeListService = async (data: NoticeListQueryDTO, role: UserRole, userId: string) => {
   const page = data.page;
   const pageSize = data.pageSize;
   const skip = (page - 1) * pageSize;
-
+  let boardId;
+  if (role === UserRole.USER) {
+    boardId = await getBoardIdByUserId(userId);
+  } else if (role === UserRole.ADMIN) {
+    boardId = await getBoardIdByAdminId(userId);
+  }
+  if (!boardId || !boardId.id) {
+    throw ApiError.forbidden();
+  }
   const search = data.search;
-  let where: Prisma.NoticeWhereInput = { category: data.category };
+  let where: Prisma.NoticeWhereInput = { boardId: boardId.id };
   if (search !== null) {
     where = {
       ...where,
@@ -37,6 +51,12 @@ export const getNoticeListService = async (data: NoticeListQueryDTO) => {
           },
         },
       ],
+    };
+  }
+  if (data.category) {
+    where = {
+      ...where,
+      category: data.category,
     };
   }
   const rawNoticeList = await getNoticeListRepo(where, pageSize, skip);
