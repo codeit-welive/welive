@@ -27,7 +27,7 @@ export const getBuildingPermission = async (userId: string, pollId: string) => {
   }
   const apartment = Number(residentBuilding.resident.building);
   const buildingPermission = await getBuildingPermissionRepo(pollId);
-  if (!buildingPermission) {
+  if (!buildingPermission || buildingPermission.buildingPermission === 0) {
     return;
   } else if (buildingPermission.buildingPermission !== apartment) {
     throw ApiError.forbidden('투표 권한이 없습니다.');
