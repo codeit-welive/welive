@@ -2,7 +2,13 @@ import * as ChatRepo from './chats.repo';
 import ApiError from '#errors/ApiError';
 import { verifyChatRoomAccess } from './chats.util';
 import { CHAT_ERROR_MESSAGES } from '#constants/chat.constant';
-import { GetChatRoomListDto, GetChatRoomByIdDto, GetMessageListDto, CreateMessageDto } from './dto/chats.dto';
+import {
+  GetChatRoomListDto,
+  GetChatRoomByIdDto,
+  GetMessageListDto,
+  CreateMessageDto,
+  CreateChatRoomByAdminDto,
+} from './dto/chats.dto';
 
 /**
  * 채팅방 생성 (입주민용)
@@ -25,6 +31,33 @@ export const createChatRoomByUser = async (userId: string) => {
   // 3. 채팅방 생성 및 반환
   const newChatroom = await ChatRepo.createChatRoom(resident.apartmentId, resident.id);
   return newChatroom;
+};
+
+/**
+ * 채팅방 생성 (관리자용)
+ * @description 관리자가 특정 입주민과 1:1 채팅방 생성 (멱등성 보장 + 권한 검증)
+ * @param adminId - 관리자 ID
+ * @param residentId - 입주민 ID
+ * @returns 채팅방 정보 (기존 또는 신규)
+ * @throws ApiError.notFound - 입주민을 찾을 수 없을 때
+ * @throws ApiError.forbidden - 해당 입주민에 대한 권한이 없을 때
+ */
+export const createChatRoomByAdmin = async (data: CreateChatRoomByAdminDto) => {
+  // 1. 입주민이 관리자의 아파트 소속인지 검증
+  const resident = await ChatRepo.getResidentByIdWithApartmentCheck(data.residentId, data.userId);
+  if (!resident) {
+    throw ApiError.forbidden(CHAT_ERROR_MESSAGES.NO_CHAT_ROOM_ACCESS);
+  }
+
+  // 2. 이미 채팅방이 있는지 확인 (멱등성)
+  const existingChatRoom = await ChatRepo.getByResidentId(data.residentId);
+  if (existingChatRoom) {
+    return existingChatRoom;
+  }
+
+  // 3. 채팅방 생성 및 반환
+  const newChatRoom = await ChatRepo.createChatRoom(resident.apartmentId, resident.id);
+  return newChatRoom;
 };
 
 /**
