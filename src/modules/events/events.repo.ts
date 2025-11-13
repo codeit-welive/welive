@@ -1,6 +1,41 @@
 import prisma from '#core/prisma';
 import { BoardType, EventCategory, Prisma } from '@prisma/client';
 
+export const getMonthlyNoticeList = async (apartmentId: string, startOfMonth: Date, endOfMonth: Date) => {
+  return await prisma.notice.findMany({
+    where: {
+      apartmentId,
+      startDate: { not: null, lte: endOfMonth },
+      endDate: { not: null, gte: startOfMonth },
+    },
+    select: {
+      id: true,
+      title: true,
+      category: true,
+      startDate: true,
+      endDate: true,
+      apartmentId: true,
+    },
+  });
+};
+
+export const getMonthlyPollList = async (apartmentId: string, startOfMonth: Date, endOfMonth: Date) => {
+  return await prisma.poll.findMany({
+    where: {
+      apartmentId,
+      startDate: { lte: endOfMonth },
+      endDate: { gte: startOfMonth },
+    },
+    select: {
+      id: true,
+      title: true,
+      startDate: true,
+      endDate: true,
+      apartmentId: true,
+    },
+  });
+};
+
 export const getEventListRepo = async (where: object) => {
   return prisma.event.findMany({
     where,

@@ -2,6 +2,8 @@ import { BoardType, EventCategory, NoticeCategory, Prisma } from '@prisma/client
 import {
   deleteEventRepo,
   getEventListRepo,
+  getMonthlyNoticeList,
+  getMonthlyPollList,
   getNoticeDataByBoardId,
   getPollDataByBoardId,
   upsertEventByNoticeId,
@@ -22,37 +24,10 @@ export const syncEventsForMonthService = async (query: eventListQueryInputDTO) =
   const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
 
   // 1) 이 달과 겹치는 공지(Notice) 조회
-  const notices = await prisma.notice.findMany({
-    where: {
-      apartmentId,
-      startDate: { not: null, lte: endOfMonth },
-      endDate: { not: null, gte: startOfMonth },
-    },
-    select: {
-      id: true,
-      title: true,
-      category: true,
-      startDate: true,
-      endDate: true,
-      apartmentId: true,
-    },
-  });
+  const notices = await getMonthlyNoticeList(apartmentId, startOfMonth, endOfMonth);
 
   // 2) 이 달과 겹치는 투표(Poll) 조회
-  const polls = await prisma.poll.findMany({
-    where: {
-      apartmentId,
-      startDate: { lte: endOfMonth },
-      endDate: { gte: startOfMonth },
-    },
-    select: {
-      id: true,
-      title: true,
-      startDate: true,
-      endDate: true,
-      apartmentId: true,
-    },
-  });
+  const polls = await getMonthlyPollList(apartmentId, startOfMonth, endOfMonth);
 
   // 3) Notice → Event upsert
   for (const n of notices) {
