@@ -123,7 +123,7 @@ export const getPollRepo = async (pollId: string) => {
         select: {
           id: true,
           title: true,
-          //voteCount: true,
+          _count: true,
         },
       },
     },

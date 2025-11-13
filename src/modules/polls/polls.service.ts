@@ -91,13 +91,19 @@ export const getPollService = async (pollId: string) => {
   if (!rawPoll) {
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
-  const { id, user, board, ...rest } = rawPoll;
+  const { id, user, board, options, ...rest } = rawPoll;
+  const mappedOptions = options.map((o) => ({
+    id: o.id,
+    title: o.title,
+    voteCount: o._count.votes,
+  }));
   const poll = {
     ...rest,
     pollId: id,
     userId: user.id,
     writerName: user.name,
     boardName: board.type,
+    options: mappedOptions,
   };
   return poll;
 };
@@ -124,13 +130,3 @@ export const deletePollService = async (pollId: string) => {
   }
   await deletePollRepo(pollId);
 };
-
-// export const closedPollService = async (pollId: string) => {
-//   const status = await getPollStatusRepo(pollId);
-//   if (!status) {
-//     throw ApiError.badRequest();
-//   }
-//   if (status.status === 'CLOSED') {
-//     const pollNotice = await pollNoticeRepo(pollId);
-//   }
-// };
