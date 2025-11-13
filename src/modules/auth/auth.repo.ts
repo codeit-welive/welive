@@ -1,6 +1,6 @@
 import prisma from '#core/prisma';
 import { SignupSuperAdminRequestDto, UserDto, ApartmentDto, SignupUserRequestDto } from './dto/register.dto';
-import { BoardType, JoinStatus, UserRole } from '@prisma/client';
+import { ApprovalStatus, BoardType, JoinStatus, UserRole } from '@prisma/client';
 
 const UserSelectFields = {
   id: true,
@@ -173,22 +173,36 @@ export const patchAdminStatusRepo = async (adminId: string, status: JoinStatus) 
 export const patchUserStatusRepo = async (status: JoinStatus, userId: string) => {
   return prisma.user.update({
     where: { id: userId },
-    data: { joinStatus: status },
+    data: {
+      joinStatus: status,
+      resident: {
+        update: { approvalStatus: status === JoinStatus.APPROVED ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED },
+      },
+    },
   });
 };
 
 export const patchUserListStatusRepo = async (status: JoinStatus, adminApartmentName: string) => {
-  return prisma.user.updateMany({
-    where: {
-      role: UserRole.USER,
-      joinStatus: JoinStatus.PENDING,
-      resident: {
-        apartment: {
-          apartmentName: adminApartmentName,
+  return await prisma.$transaction(async (tx) => {
+    await tx.user.updateMany({
+      where: {
+        role: UserRole.USER,
+        joinStatus: JoinStatus.PENDING,
+        resident: {
+          apartment: {
+            apartmentName: adminApartmentName,
+          },
         },
       },
-    },
-    data: { joinStatus: status },
+      data: { joinStatus: status },
+    });
+    await tx.resident.updateMany({
+      where: {
+        apartment: { apartmentName: adminApartmentName },
+        approvalStatus: ApprovalStatus.PENDING,
+      },
+      data: { approvalStatus: status === JoinStatus.APPROVED ? ApprovalStatus.APPROVED : ApprovalStatus.REJECTED },
+    });
   });
 };
 
@@ -220,6 +234,15 @@ export const getApartmentNameByAdminId = async (adminId: string) => {
           apartmentName: true,
         },
       },
+    },
+  });
+};
+
+export const deleteRejectedUser = async (targetRole: UserRole) => {
+  await prisma.user.deleteMany({
+    where: {
+      joinStatus: JoinStatus.REJECTED,
+      role: targetRole,
     },
   });
 };

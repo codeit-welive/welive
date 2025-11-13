@@ -9,7 +9,7 @@ describe('[Auth] requireRole (문자열 기반 권한 체크)', () => {
   app.get(
     '/admin',
     (req, _res, next) => {
-      req.user = { id: '1', role: 'USER' };
+      req.user = { id: '1', role: 'USER', joinStatus: 'APPROVED', isActive: true };
       next();
     },
     requireRole(['ADMIN', 'SUPER_ADMIN']),
@@ -38,7 +38,7 @@ describe('[Auth] requireRole (문자열 기반 권한 체크)', () => {
     privilegedApp.get(
       '/admin',
       (req, _res, next) => {
-        req.user = { id: '2', role: 'ADMIN' };
+        req.user = { id: '2', role: 'ADMIN', joinStatus: 'APPROVED', isActive: true };
         next();
       },
       requireRole(['ADMIN', 'SUPER_ADMIN']),
