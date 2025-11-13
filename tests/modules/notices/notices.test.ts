@@ -77,7 +77,7 @@ describe('[Notices] 통합 테스트', () => {
         unitNumber: '1001',
         isRegistered: true,
         approvalStatus: 'APPROVED',
-        residentStatus: 'RESIDENCE',
+        residenceStatus: 'RESIDENCE',
         isHouseholder: 'HOUSEHOLDER',
         apartment: { connect: { id: apartmentId } },
       },
