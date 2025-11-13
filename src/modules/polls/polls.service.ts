@@ -35,7 +35,7 @@ export const getPollListService = async (data: pollListQueryDTO, userId: string,
     boardId = await getBoardIdByAdminId(userId);
   }
   if (!boardId || !boardId.id) {
-    throw ApiError.forbidden;
+    throw ApiError.forbidden();
   }
   let where: Prisma.PollWhereInput = { boardId: boardId.id };
   if (status) {
