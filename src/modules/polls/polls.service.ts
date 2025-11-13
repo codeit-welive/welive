@@ -3,6 +3,7 @@ import { createPollBodyDTO, patchPollBodyDTO, pollListQueryDTO } from './dto/pol
 import {
   createPollRepo,
   deletePollRepo,
+  getApartmentIdByAdminId,
   getBoardIdByAdminId,
   getBoardIdByUserId,
   getPollListRepo,
@@ -13,9 +14,12 @@ import {
 } from './polls.repo';
 import { Prisma, UserRole } from '@prisma/client';
 
-export const createPollService = async (data: createPollBodyDTO) => {
-  await createPollRepo(data);
-  return 1;
+export const createPollService = async (userId: string, data: createPollBodyDTO) => {
+  const apartmentId = await getApartmentIdByAdminId(userId);
+  if (!apartmentId) {
+    throw ApiError.badRequest();
+  }
+  await createPollRepo(data, apartmentId.id);
 };
 
 export const getPollListService = async (data: pollListQueryDTO, userId: string, role: UserRole) => {
@@ -31,7 +35,7 @@ export const getPollListService = async (data: pollListQueryDTO, userId: string,
     boardId = await getBoardIdByAdminId(userId);
   }
   if (!boardId || !boardId.id) {
-    throw ApiError.forbidden;
+    throw ApiError.forbidden();
   }
   let where: Prisma.PollWhereInput = { boardId: boardId.id };
   if (status) {
@@ -67,7 +71,7 @@ export const getPollListService = async (data: pollListQueryDTO, userId: string,
   }
   const rawPollList = await getPollListRepo(where, pageSize, skip);
   const polls = rawPollList.data.map((poll) => ({
-    id: poll.id,
+    pollId: poll.id,
     userId: poll.user.id,
     title: poll.title,
     writerName: poll.user.name,
@@ -87,9 +91,10 @@ export const getPollService = async (pollId: string) => {
   if (!rawPoll) {
     throw ApiError.notFound('게시글을 찾을 수 없습니다.');
   }
-  const { user, board, ...rest } = rawPoll;
+  const { id, user, board, ...rest } = rawPoll;
   const poll = {
     ...rest,
+    pollId: id,
     userId: user.id,
     writerName: user.name,
     boardName: board.type,
