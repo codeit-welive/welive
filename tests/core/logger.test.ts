@@ -1,5 +1,27 @@
 import { describe, it, expect, jest, beforeAll, afterAll } from '@jest/globals';
+
+jest.mock('#core/logger', () => {
+  const mockDomain = () => ({
+    info: jest.fn(),
+    debug: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  });
+
+  return {
+    logger: {
+      system: mockDomain(),
+      auth: mockDomain(),
+      notices: mockDomain(),
+      sse: mockDomain(),
+      http: mockDomain(),
+    },
+  };
+});
+
 import { logger } from '#core/logger';
+
+process.env.TEST_ALLOW_ACCESS_LOG = 'true';
 
 describe('[Core] Logger 시스템', () => {
   const restores: Array<ReturnType<typeof jest.spyOn>> = [];
@@ -16,10 +38,6 @@ describe('[Core] Logger 시스템', () => {
       silence((logger as any)[domain], 'warn');
       silence((logger as any)[domain], 'error');
     });
-  });
-
-  afterAll(() => {
-    restores.forEach((s) => s.mockRestore());
   });
 
   it('system.info() 호출 시 로그가 출력되어야 함', () => {
@@ -57,5 +75,10 @@ describe('[Core] Logger 시스템', () => {
     logger.notices.info('공지 로깅 테스트');
     expect(authSpy).toHaveBeenCalledWith('인증 로깅 테스트');
     expect(noticesSpy).toHaveBeenCalledWith('공지 로깅 테스트');
+  });
+
+  afterAll(() => {
+    restores.forEach((s) => s.mockRestore());
+    delete process.env.TEST_ALLOW_ACCESS_LOG;
   });
 });

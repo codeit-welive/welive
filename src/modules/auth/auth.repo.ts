@@ -223,3 +223,12 @@ export const getApartmentNameByAdminId = async (adminId: string) => {
     },
   });
 };
+
+export const deleteRejectedUser = async (targetRole: UserRole) => {
+  await prisma.user.deleteMany({
+    where: {
+      joinStatus: JoinStatus.REJECTED,
+      role: targetRole,
+    },
+  });
+};
