@@ -3,11 +3,17 @@ import { execSync } from 'child_process';
 import app from '#core/app';
 import env from '#core/env';
 import prisma from '#core/prisma';
+import { initializeSocketServer } from '#core/socket';
 import { logger } from '#core/logger';
 import { startAllJobs } from '#jobs/index';
 
 const PORT = env.PORT || 3000;
 const server = http.createServer(app);
+
+/**
+ * Socket.io 서버 초기화
+ */
+initializeSocketServer(server);
 
 /**
  * Windows 환경에서만 UTF-8 코드페이지 설정
