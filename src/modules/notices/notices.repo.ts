@@ -1,6 +1,43 @@
 import prisma from '#core/prisma';
 import { NoticeCreateDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
-import { Prisma } from '@prisma/client';
+import { BoardType, Prisma } from '@prisma/client';
+
+export const getBoardIdByUserId = async (userId: string) => {
+  const board = await prisma.board.findFirst({
+    where: {
+      type: BoardType.NOTICE,
+      apartment: {
+        residents: {
+          some: {
+            user: {
+              id: userId,
+            },
+            isRegistered: true,
+          },
+        },
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+  return board;
+};
+
+export const getBoardIdByAdminId = async (adminId: string) => {
+  const board = await prisma.board.findFirst({
+    where: {
+      type: BoardType.NOTICE,
+      apartment: {
+        adminId,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+  return board;
+};
 
 export const getBoardTypeRepo = async (boardId: string) => {
   const boardType = await prisma.board.findUnique({
@@ -8,6 +45,17 @@ export const getBoardTypeRepo = async (boardId: string) => {
     select: { type: true },
   });
   return boardType;
+};
+
+export const getApartmentIdByAdminId = async (adminId: string) => {
+  return await prisma.apartment.findUnique({
+    where: {
+      adminId,
+    },
+    select: {
+      id: true,
+    },
+  });
 };
 
 export const existNoticeRepo = async (noticeId: string) => {
@@ -19,7 +67,7 @@ export const existNoticeRepo = async (noticeId: string) => {
   return exists > 0;
 };
 
-export const createNoticeRepo = async (data: NoticeCreateDTO) => {
+export const createNoticeRepo = async (data: NoticeCreateDTO, apartmentId: string) => {
   const notice = await prisma.notice.create({
     data: {
       title: data.title,
@@ -30,6 +78,11 @@ export const createNoticeRepo = async (data: NoticeCreateDTO) => {
       startDate: data.startDate ?? null,
       endDate: data.endDate ?? null,
       isPinned: data.isPinned ?? false,
+      apartment: {
+        connect: {
+          id: apartmentId,
+        },
+      },
     },
   });
   return notice;
