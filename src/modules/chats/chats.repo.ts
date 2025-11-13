@@ -179,6 +179,30 @@ export const getCountByAdminId = async (data: GetChatRoomListDto) => {
   });
 };
 
+// ==================== 입주민 조회 ====================
+
+/**
+ * User ID로 Resident 정보 조회
+ * @description User → Resident 변환 (채팅방 생성 시 apartmentId, residentId 추출용)
+ * @param userId - 사용자 ID
+ * @returns Resident 정보 (id, apartmentId) 또는 null
+ */
+export const getResidentByUserId = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      resident: {
+        select: {
+          id: true,
+          apartmentId: true,
+        },
+      },
+    },
+  });
+
+  return user?.resident || null;
+};
+
 // ==================== 채팅방 생성 ====================
 
 /**
@@ -194,9 +218,7 @@ export const createChatRoom = async (apartmentId: string, residentId: string) =>
       apartmentId,
       residentId,
     },
-    select: {
-      id: true,
-    },
+    select: CHAT_ROOM_WITH_RELATIONS_SELECT,
   });
 };
 

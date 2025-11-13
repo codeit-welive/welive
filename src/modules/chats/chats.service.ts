@@ -5,6 +5,29 @@ import { CHAT_ERROR_MESSAGES } from '#constants/chat.constant';
 import { GetChatRoomListDto, GetChatRoomByIdDto, GetMessageListDto, CreateMessageDto } from './dto/chats.dto';
 
 /**
+ * 채팅방 생성 (입주민용)
+ * @description 입주민이 관리자와 1:1 채팅방 생성 (멱등성 보장)
+ * @param userId - 사용자 ID
+ * @returns 채팅방 정보 (기존 또는 신규)
+ * @throws ApiError.notFound - 입주민 정보가 없을 때
+ */
+export const createChatRoomByUser = async (userId: string) => {
+  // 1. 이미 채팅방이 있는지 확인
+  const existingChatRoom = await ChatRepo.getByUserId(userId);
+  if (existingChatRoom) {
+    return existingChatRoom;
+  }
+  // 2. Resident 정보 조회 (apartmentId, residentId 필요)
+  const resident = await ChatRepo.getResidentByUserId(userId);
+  if (!resident) {
+    throw ApiError.notFound(CHAT_ERROR_MESSAGES.RESIDENT_NOT_FOUND);
+  }
+  // 3. 채팅방 생성 및 반환
+  const newChatroom = await ChatRepo.createChatRoom(resident.apartmentId, resident.id);
+  return newChatroom;
+};
+
+/**
  * 내 채팅방 조회 (입주민)
  * @description 입주민이 자신의 채팅방 조회
  * @param userId - 사용자 ID

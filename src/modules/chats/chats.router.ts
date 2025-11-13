@@ -7,6 +7,7 @@ import {
   getChatRoomListHandler,
   getChatRoomHandler,
   getMessageListHandler,
+  createChatRoomByUserHandler,
 } from './chats.controller';
 
 const chatRouter = Router();
@@ -23,7 +24,10 @@ chatRouter.route('/my-room').get(authMiddleware, requireRole(['USER']), getMyRoo
  * 채팅방 목록 조회 (관리자)
  * @access ADMIN only
  */
-chatRouter.route('/rooms').get(authMiddleware, requireRole(['ADMIN']), validateGetChatRoomList, getChatRoomListHandler);
+chatRouter
+  .route('/rooms')
+  .get(authMiddleware, requireRole(['ADMIN']), validateGetChatRoomList, getChatRoomListHandler)
+  .post(authMiddleware, requireRole(['USER']), createChatRoomByUserHandler);
 
 /**
  * GET /chats/rooms/:roomId

@@ -3,6 +3,22 @@ import * as ChatService from './chats.service';
 import type { GetChatRoomListDto, GetChatRoomByIdDto, GetMessageListDto } from './dto/chats.dto';
 
 /**
+ * 채팅방 생성 (입주민용)
+ * @route POST /api/chats/rooms
+ * @access USER only
+ */
+export const createChatRoomByUserHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await ChatService.createChatRoomByUser(userId);
+    res.status(201).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * 내 채팅방 조회 (입주민)
  * @route GET /api/chats/my-room
  * @access USER only
