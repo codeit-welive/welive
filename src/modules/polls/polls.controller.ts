@@ -27,8 +27,9 @@ import { PollStatus } from '@prisma/client';
 
 export const createPoll: RequestHandler = async (req, res, next) => {
   try {
-    const body = res.locals.body as createPollBodyDTO;
-    await createPollService(body);
+    const body = res.locals.validatedBody as createPollBodyDTO;
+    const userId = req.user.id;
+    await createPollService(userId, body);
     return res.status(201).json({ message: RESPONSE_MESSAGES.CREATE_SUCCESS });
   } catch (err) {
     next(err);
