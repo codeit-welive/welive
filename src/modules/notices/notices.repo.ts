@@ -1,6 +1,43 @@
 import prisma from '#core/prisma';
 import { NoticeCreateDTO, NoticeUpdateDTO } from '#modules/notices/dto/notices.dto';
-import { Prisma } from '@prisma/client';
+import { BoardType, Prisma } from '@prisma/client';
+
+export const getBoardIdByUserId = async (userId: string) => {
+  const board = await prisma.board.findFirst({
+    where: {
+      type: BoardType.NOTICE,
+      apartment: {
+        residents: {
+          some: {
+            user: {
+              id: userId,
+            },
+            isRegistered: true,
+          },
+        },
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+  return board;
+};
+
+export const getBoardIdByAdminId = async (adminId: string) => {
+  const board = await prisma.board.findFirst({
+    where: {
+      type: BoardType.NOTICE,
+      apartment: {
+        adminId,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+  return board;
+};
 
 export const getBoardTypeRepo = async (boardId: string) => {
   const boardType = await prisma.board.findUnique({

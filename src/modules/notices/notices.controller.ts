@@ -40,6 +40,8 @@ export const createNotice: RequestHandler = async (req, res, next) => {
 export const getNoticeList: RequestHandler = async (req, res, next) => {
   try {
     const query = res.locals.query as NoticeListQueryDTO;
+    const role = req.user.role;
+    const userId = req.user.id;
     const { page, pageSize, category, search } = query;
     const dto: NoticeListQueryDTO = {
       page: Number(page) ?? PAGINATION.DEFAULT_PAGE,
@@ -47,7 +49,8 @@ export const getNoticeList: RequestHandler = async (req, res, next) => {
       category: category as NoticeCategory,
       search: search ?? null,
     };
-    const { notices, totalCount } = await getNoticeListService(dto);
+    const { notices, totalCount } = await getNoticeListService(dto, role, userId);
+    console.log(notices);
     return res.status(200).json({ notices, totalCount });
   } catch (err) {
     next(err);
