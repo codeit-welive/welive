@@ -44,7 +44,7 @@ export const deleteResidentHandler: RequestHandler = async (req, res, next) => {
     const residentId = res.locals.validatedParams.id;
     await removeResident(residentId);
 
-    res.status(204).send({ message: '작업이 성공적으로 완료되었습니다' });
+    res.status(200).send({ message: '작업이 성공적으로 완료되었습니다' });
   } catch (err) {
     next(err);
   }
