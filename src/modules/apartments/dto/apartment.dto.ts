@@ -5,7 +5,7 @@ import { JoinStatus } from '@prisma/client';
 export const apartmentRequestQuerySchema = z.object({
   name: z.string().optional(),
   address: z.string().optional(),
-  searchKeyword: z.string().optional(),
+  searchKeyword: z.string().default(''),
   apartmentStatus: z.enum(JoinStatus).optional(),
   limit: z.coerce.number().min(1).default(PAGINATION.DEFAULT_LIMIT),
   page: z.coerce.number().min(1).default(PAGINATION.DEFAULT_PAGE),
