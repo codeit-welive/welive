@@ -62,7 +62,7 @@ describe('[Complaints] 통합 테스트', () => {
         apartment: { connect: { id: apartmentId } },
         isRegistered: true,
         approvalStatus: 'APPROVED',
-        residentStatus: 'RESIDENCE',
+        residenceStatus: 'RESIDENCE',
         isHouseholder: 'HOUSEHOLDER',
       },
     });
