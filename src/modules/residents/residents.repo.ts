@@ -70,6 +70,11 @@ export const create = async (data: ResidentCreateRequestBodyDto, apartmentId: st
   });
 };
 
+/**
+ * @description 관리자 ID로 아파트 ID 조회
+ * @param adminId 관리자 ID
+ * @returns 아파트 ID
+ */
 export const getApartmentIdByAdminId = async (adminId: string) => {
   return await prisma.apartment.findUnique({
     where: { adminId },
