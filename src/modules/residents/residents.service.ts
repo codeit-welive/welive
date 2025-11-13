@@ -8,12 +8,15 @@ import { getCount, getList, getById, update, remove, getApartmentIdByAdminId, cr
 import { residentDataMapper } from './utils/dataMapper';
 
 export const getResidentList = async (query: ResidentListRequestQueryDto, adminId: string) => {
-  const [residents, count] = await Promise.all([getList(query, adminId), getCount(query, adminId)]);
+  const [residents, totalCount] = await Promise.all([getList(query, adminId), getCount(query, adminId)]);
   const mappedResidents = residentDataMapper(residents);
+  const count = mappedResidents.length;
+
   return {
     residents: mappedResidents,
     message: `조회된 입주민 결과가 ${count}건 입니다.`,
     count,
+    totalCount,
   };
 };
 

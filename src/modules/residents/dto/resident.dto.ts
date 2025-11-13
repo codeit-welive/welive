@@ -7,8 +7,7 @@ export const residentListRequestQuerySchema = z.object({
   unitNumber: z.string().optional(),
   residenceStatus: z.enum(ResidentStatus).optional(),
   isRegistered: z.boolean().optional(),
-  name: z.string().optional(),
-  contact: z.string().optional(),
+  keyword: z.string().default(''),
   limit: z.coerce.number().default(PAGINATION.DEFAULT_LIMIT),
   page: z.coerce.number().default(PAGINATION.DEFAULT_PAGE),
 });
