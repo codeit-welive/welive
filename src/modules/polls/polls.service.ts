@@ -3,6 +3,7 @@ import { createPollBodyDTO, patchPollBodyDTO, pollListQueryDTO } from './dto/pol
 import {
   createPollRepo,
   deletePollRepo,
+  getApartmentIdByAdminId,
   getBoardIdByAdminId,
   getBoardIdByUserId,
   getPollListRepo,
@@ -13,9 +14,12 @@ import {
 } from './polls.repo';
 import { Prisma, UserRole } from '@prisma/client';
 
-export const createPollService = async (data: createPollBodyDTO) => {
-  await createPollRepo(data);
-  return 1;
+export const createPollService = async (userId: string, data: createPollBodyDTO) => {
+  const apartmentId = await getApartmentIdByAdminId(userId);
+  if (!apartmentId) {
+    throw ApiError.badRequest();
+  }
+  await createPollRepo(data, apartmentId.id);
 };
 
 export const getPollListService = async (data: pollListQueryDTO, userId: string, role: UserRole) => {

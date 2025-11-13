@@ -27,7 +27,7 @@ export const pollListQueryInputSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().default(11),
   status: z.enum(PollStatus).optional(),
-  buildingPermission: z.stringFormat('투표권자', /^[1-9][0-9][1-9]동$/).or(z.string('전체')),
+  buildingPermission: z.coerce.number().int().positive().optional(),
   keyword: z.string().optional(),
 });
 
