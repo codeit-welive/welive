@@ -1,5 +1,5 @@
 // 중복된 유저정보가 있는지 확인
-export const checkDuplicateData = (targets: string[]) => {
+export const mapUniqueConstraintError = (targets: string[]) => {
   if (targets.includes('username')) {
     return { message: '이미 사용 중인 아이디입니다.' };
   }

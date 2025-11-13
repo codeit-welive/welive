@@ -155,16 +155,16 @@ model Apartment {
 
 // User랑 별개로 존재
 model Resident {
-  id             String         @id @default(uuid())
-  name           String
-  contact        String         @unique
-  building       String
-  unitNumber     String
-  isRegistered   Boolean        @default(false)
-  approvalStatus ApprovalStatus @default(PENDING)
-  residentStatus ResidentStatus @default(RESIDENCE)
-  isHouseholder  IsHouseholder  @default(MEMBER)
-  createdAt      DateTime       @default(now())
+  id              String         @id @default(uuid())
+  name            String
+  contact         String         @unique
+  building        String
+  unitNumber      String
+  isRegistered    Boolean        @default(false)
+  approvalStatus  ApprovalStatus @default(PENDING)
+  residenceStatus ResidentStatus @default(RESIDENCE)
+  isHouseholder   IsHouseholder  @default(MEMBER)
+  createdAt       DateTime       @default(now())
 
   user User? @relation("UserResident")
 
