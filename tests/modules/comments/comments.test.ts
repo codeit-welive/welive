@@ -25,10 +25,10 @@ describe('[Comments] 통합 테스트', () => {
   const TEST_EMAILS = [
     'comment_admin@test.com',
     'comment_user@test.com',
-    'other_admin@test.com',
-    'temp_user@test.com',
-    'del_user@test.com',
-    'foreign@test.com',
+    'comment_other_admin@test.com',
+    'comment_temp_user@test.com',
+    'comment_del_user@test.com',
+    'comment_foreign@test.com',
   ];
 
   const cleanupScope = async () => {
@@ -143,7 +143,7 @@ describe('[Comments] 통합 테스트', () => {
         password: 'pw',
         contact: '01000000024',
         name: '다른관리자',
-        email: 'other_admin@test.com',
+        email: 'comment_other_admin@test.com',
         role: 'ADMIN',
         avatar: 'o',
       },
@@ -256,11 +256,11 @@ describe('[Comments] 통합 테스트', () => {
         board: { connect: { id: boardNoticeId } },
         user: {
           create: {
-            username: 'temp_user',
+            username: 'comment_temp_user',
             password: 'pw',
             contact: '01000000025',
             name: '임시유저',
-            email: 'temp_user@test.com',
+            email: 'comment_temp_user@test.com',
             role: 'USER',
             avatar: 't',
           },
@@ -288,11 +288,11 @@ describe('[Comments] 통합 테스트', () => {
         board: { connect: { id: boardNoticeId } },
         user: {
           create: {
-            username: 'del_user',
+            username: 'comment_del_user',
             password: 'pw',
             contact: '01000000026',
             name: '삭제유저',
-            email: 'del_user@test.com',
+            email: 'comment_del_user@test.com',
             role: 'USER',
             avatar: 'x',
           },
@@ -321,11 +321,11 @@ describe('[Comments] 통합 테스트', () => {
         board: { connect: { id: foreignBoard.id } },
         user: {
           create: {
-            username: 'foreign_user',
+            username: 'comment_foreign_user',
             password: 'pw',
             contact: '01000000027',
             name: '외부유저',
-            email: 'foreign@test.com',
+            email: 'comment_foreign@test.com',
             role: 'USER',
             avatar: 'f',
           },

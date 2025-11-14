@@ -49,7 +49,13 @@ describe('[Complaints] 통합 테스트', () => {
       prisma.user.deleteMany({
         where: {
           email: {
-            in: ['user@test.com', 'admin@test.com', 'other@test.com', 'otheradmin@test.com', 'temp@test.com'],
+            in: [
+              'user@test.com',
+              'admin@test.com',
+              'complaint_other@test.com',
+              'complaint_otheradmin@test.com',
+              'complaint_temp@test.com',
+            ],
           },
         },
       }),
@@ -289,11 +295,11 @@ describe('[Complaints] 통합 테스트', () => {
     // 다른 사용자 민원 생성
     const otherUser = await prisma.user.create({
       data: {
-        username: 'other_user',
+        username: 'complaint_other_user',
         password: 'pw',
         contact: '01000000033',
         name: '다른유저',
-        email: 'other@test.com',
+        email: 'complaint_other@test.com',
         role: 'USER',
         avatar: 'd',
       },
@@ -346,11 +352,11 @@ describe('[Complaints] 통합 테스트', () => {
   it('ADMIN이 관리 아파트가 아닌 민원을 수정하려 하면 403을 반환해야 함', async () => {
     const anotherAdmin = await prisma.user.create({
       data: {
-        username: 'other_admin',
+        username: 'complaint_other_admin',
         password: 'pw',
         contact: '01000000034',
         name: '다른관리자',
-        email: 'otheradmin@test.com',
+        email: 'complaint_otheradmin@test.com',
         role: 'ADMIN',
         avatar: 'd',
       },
@@ -385,11 +391,11 @@ describe('[Complaints] 통합 테스트', () => {
         board: { connect: { id: otherBoard.id } },
         user: {
           create: {
-            username: 'temp_user',
+            username: 'complaint_temp_user',
             password: 'pw',
             contact: '01000000035',
             name: '임시유저',
-            email: 'temp@test.com',
+            email: 'complaint_temp@test.com',
             role: 'USER',
             avatar: 'a',
           },
