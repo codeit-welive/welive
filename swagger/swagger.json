@@ -151,6 +151,19 @@
         ]
       }
     },
+    "/api/auth/cleanup": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
     "/api/users/me": {
       "patch": {
         "tags": [
@@ -380,6 +393,64 @@
         ]
       }
     },
+    "/api/notifications/{id}/read": {
+      "patch": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "[알림] 알림 읽음 처리",
+        "description": "지정한 알림을 읽음 상태(isChecked: true)로 변경합니다. 본인에게 전송된 알림만 읽음 처리할 수 있습니다.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "format": {
+                  "type": "string",
+                  "example": "uuid"
+                }
+              }
+            },
+            "description": "읽음 처리할 알림의 UUID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "읽음 처리된 알림 반환",
+            "content": {
+              "application/json": {
+                "example": {
+                  "notificationId": "uuid-1234",
+                  "content": "민원 처리가 완료되었습니다.",
+                  "notificationType": "COMPLAINT_RESOLVED",
+                  "notifiedAt": "2025-06-13T12:34:56.789Z",
+                  "isChecked": true,
+                  "complaintId": "complaint-uuid-9876",
+                  "noticeId": "notice-uuid-1111",
+                  "pollId": "poll-uuid-2222"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 (알림 ID 누락 등)"
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "404": {
+            "description": "알림을 찾을 수 없거나 권한 없음"
+          }
+        }
+      }
+    },
     "/api/poll-scheduler/ping": {
       "get": {
         "tags": [
@@ -445,6 +516,10 @@
     {
       "name": "Comments",
       "description": "Comments 관련 API"
+    },
+    {
+      "name": "Notifications",
+      "description": "Notifications 관련 API"
     },
     {
       "name": "Poll-scheduler",
