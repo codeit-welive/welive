@@ -3,6 +3,7 @@
 import Announce from '@/shared/assets/icons/announce.svg';
 import Apartment from '@/shared/assets/icons/apartment.svg';
 import Calendar from '@/shared/assets/icons/calendar.svg';
+import Chat from '@/shared/assets/icons/chat.svg';
 import Complaint from '@/shared/assets/icons/complaint.svg';
 import Link from 'next/link';
 import List from '@/shared/assets/icons/list.svg';
@@ -47,6 +48,11 @@ export default function Sidebar({ role }: SidebarProps) {
         icon: <Calendar />,
       },
       {
+        label: '관리자 채팅',
+        path: '/resident/chat',
+        icon: <Chat />,
+      },
+      {
         label: '내 프로필',
         path: '/resident/profile',
         icon: <Profile />,
@@ -82,6 +88,11 @@ export default function Sidebar({ role }: SidebarProps) {
         label: '아파트 일정',
         path: '/admin/schedule',
         icon: <Calendar />,
+      },
+      {
+        label: '입주민 채팅',
+        path: '/admin/chat',
+        icon: <Chat />,
       },
       {
         label: '내 프로필',
