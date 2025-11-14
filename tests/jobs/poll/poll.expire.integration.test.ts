@@ -20,7 +20,7 @@ jest.mock('#core/logger', () => ({
 
 const TEST_APARTMENT_NAME = 'ExpireTestAPT';
 const TEST_USER_EMAIL = 'expire_user@test.com';
-const TEST_USER_CONTACT = '01099990001';
+const TEST_USER_CONTACT = '01000000071';
 
 const cleanupTestData = async () => {
   await prisma.$transaction([

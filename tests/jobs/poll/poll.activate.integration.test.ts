@@ -95,7 +95,7 @@ describe('[PollActivateHandler] Integration', () => {
       data: {
         username: 'poll_user',
         password: 'pw',
-        contact: '01011112222',
+        contact: '01000000061',
         name: '테스트유저',
         email: TEST_USER,
         role: UserRole.USER,
