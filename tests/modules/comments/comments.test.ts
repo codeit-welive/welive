@@ -1,8 +1,13 @@
+/**
+ * @file tests/modules/comments/comments.test.ts
+ * @description Comments 통합 테스트
+ */
+
 import request from 'supertest';
 import app from '#core/app';
 import prisma from '#core/prisma';
 import { generateAccessToken } from '#modules/auth/utils/tokenUtils';
-import { UserRole, JoinStatus } from '@prisma/client';
+import { UserRole, JoinStatus, BoardType } from '@prisma/client';
 
 process.env.__SKIP_GLOBAL_DB_CLEANUP__ = 'true';
 
@@ -14,27 +19,57 @@ describe('[Comments] 통합 테스트', () => {
   let noticeId: string;
   let commentId: string;
 
-  beforeAll(async () => {
+  const TEST_APT = 'CommentAPT';
+  const TEST_APT_OTHER = 'OtherAPT';
+
+  const TEST_EMAILS = [
+    'comment_admin@test.com',
+    'comment_user@test.com',
+    'other_admin@test.com',
+    'temp_user@test.com',
+    'del_user@test.com',
+    'foreign@test.com',
+  ];
+
+  const cleanupScope = async () => {
     await prisma.$transaction([
-      prisma.event.deleteMany(),
-      prisma.notification.deleteMany(),
-      prisma.comment.deleteMany(),
-      prisma.pollVote.deleteMany(),
-      prisma.pollOption.deleteMany(),
-      prisma.poll.deleteMany(),
-      prisma.complaint.deleteMany(),
-      prisma.notice.deleteMany(),
-      prisma.board.deleteMany(),
-      prisma.resident.deleteMany(),
-      prisma.user.deleteMany(),
-      prisma.apartment.deleteMany(),
+      prisma.event.deleteMany({
+        where: { apartment: { apartmentName: { in: [TEST_APT, TEST_APT_OTHER] } } },
+      }),
+      prisma.notification.deleteMany({
+        where: { recipient: { email: { in: TEST_EMAILS } } },
+      }),
+      prisma.comment.deleteMany({
+        where: {
+          OR: [{ board: { apartment: { apartmentName: TEST_APT } } }, { user: { email: { in: TEST_EMAILS } } }],
+        },
+      }),
+      prisma.notice.deleteMany({
+        where: { apartment: { apartmentName: TEST_APT } },
+      }),
+      prisma.board.deleteMany({
+        where: { apartment: { apartmentName: { in: [TEST_APT, TEST_APT_OTHER] } } },
+      }),
+      prisma.resident.deleteMany({
+        where: { apartment: { apartmentName: TEST_APT } },
+      }),
+      prisma.apartment.deleteMany({
+        where: { apartmentName: { in: [TEST_APT, TEST_APT_OTHER] } },
+      }),
+      prisma.user.deleteMany({
+        where: { email: { in: TEST_EMAILS } },
+      }),
     ]);
+  };
+
+  beforeAll(async () => {
+    await cleanupScope();
 
     // apartment / board
     const apt = await prisma.apartment.create({
       data: {
-        apartmentName: 'CommentAPT',
-        apartmentAddress: 'Seoul',
+        apartmentName: TEST_APT,
+        apartmentAddress: 'Comments_Seoul',
         startComplexNumber: '1',
         endComplexNumber: '10',
         startDongNumber: '101',
@@ -62,7 +97,7 @@ describe('[Comments] 통합 테스트', () => {
       data: {
         username: 'comment_admin',
         password: 'pw',
-        contact: '01011112222',
+        contact: '01000000021',
         name: '관리자',
         email: 'comment_admin@test.com',
         role: 'ADMIN',
@@ -78,12 +113,12 @@ describe('[Comments] 통합 테스트', () => {
     const resident = await prisma.resident.create({
       data: {
         name: '일반유저',
-        contact: '01033334444',
+        contact: '01000000022',
         building: '101',
         unitNumber: '1001',
         isRegistered: true,
         approvalStatus: 'APPROVED',
-        residenceStatus: 'RESIDENCE',
+        residentStatus: 'RESIDENCE',
         isHouseholder: 'HOUSEHOLDER',
         apartment: { connect: { id: apartmentId } },
       },
@@ -93,7 +128,7 @@ describe('[Comments] 통합 테스트', () => {
       data: {
         username: 'comment_user',
         password: 'pw',
-        contact: '01033334444',
+        contact: '01000000023',
         name: '일반유저',
         email: 'comment_user@test.com',
         role: 'USER',
@@ -106,7 +141,7 @@ describe('[Comments] 통합 테스트', () => {
       data: {
         username: 'other_admin',
         password: 'pw',
-        contact: '01077778888',
+        contact: '01000000024',
         name: '다른관리자',
         email: 'other_admin@test.com',
         role: 'ADMIN',
@@ -114,9 +149,10 @@ describe('[Comments] 통합 테스트', () => {
       },
     });
 
+    // 다른 아파트 생성
     await prisma.apartment.create({
       data: {
-        apartmentName: 'OtherAPT',
+        apartmentName: TEST_APT_OTHER,
         apartmentAddress: 'Busan',
         startComplexNumber: '1',
         endComplexNumber: '10',
@@ -130,7 +166,7 @@ describe('[Comments] 통합 테스트', () => {
       },
     });
 
-    // notice
+    // Notice 생성
     const notice = await prisma.notice.create({
       data: {
         title: '엘리베이터 점검 안내',
@@ -143,7 +179,7 @@ describe('[Comments] 통합 테스트', () => {
     });
     noticeId = notice.id;
 
-    // 토큰
+    // Token 생성
     userToken = generateAccessToken({
       id: user.id,
       role: UserRole.USER,
@@ -210,7 +246,7 @@ describe('[Comments] 통합 테스트', () => {
   });
 
   /**
-   * 4. 기타
+   * 4. 기타 (권한 테스트)
    */
   it('USER가 다른 사람 댓글을 수정하려 하면 403을 반환해야 함', async () => {
     const otherComment = await prisma.comment.create({
@@ -222,7 +258,7 @@ describe('[Comments] 통합 테스트', () => {
           create: {
             username: 'temp_user',
             password: 'pw',
-            contact: '01099998888',
+            contact: '01000000025',
             name: '임시유저',
             email: 'temp_user@test.com',
             role: 'USER',
@@ -254,7 +290,7 @@ describe('[Comments] 통합 테스트', () => {
           create: {
             username: 'del_user',
             password: 'pw',
-            contact: '01055554444',
+            contact: '01000000026',
             name: '삭제유저',
             email: 'del_user@test.com',
             role: 'USER',
@@ -272,9 +308,10 @@ describe('[Comments] 통합 테스트', () => {
   });
 
   it('ADMIN이 다른 아파트의 댓글을 삭제하려 하면 403을 반환해야 함', async () => {
-    const foreignApt = await prisma.apartment.findFirst({ where: { apartmentName: 'OtherAPT' } });
+    const foreignApt = await prisma.apartment.findFirst({ where: { apartmentName: TEST_APT_OTHER } });
+
     const foreignBoard = await prisma.board.create({
-      data: { type: 'NOTICE', apartment: { connect: { id: foreignApt!.id } } },
+      data: { type: BoardType.NOTICE, apartment: { connect: { id: foreignApt!.id } } },
     });
 
     const foreignComment = await prisma.comment.create({
@@ -286,7 +323,7 @@ describe('[Comments] 통합 테스트', () => {
           create: {
             username: 'foreign_user',
             password: 'pw',
-            contact: '01044443333',
+            contact: '01000000027',
             name: '외부유저',
             email: 'foreign@test.com',
             role: 'USER',
@@ -330,6 +367,7 @@ describe('[Comments] 통합 테스트', () => {
   });
 
   afterAll(async () => {
+    await cleanupScope();
     process.env.__SKIP_GLOBAL_DB_CLEANUP__ = 'false';
     await prisma.$disconnect();
   });
