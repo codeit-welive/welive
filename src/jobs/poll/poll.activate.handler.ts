@@ -6,14 +6,14 @@
  * - 관련 Notification 생성 및 SSE 전송
  */
 
-import pLimit from 'p-limit';
+import { createLimit } from '#core/utils/Limiter';
 import prisma from '#core/prisma';
 import { logger } from '#core/logger';
 import { sendSseNotification } from '#sse/sseEmitter';
 import type { NotificationPayload } from '#sse/types';
 import { isPast, isWithinInterval, getDelayMs } from './poll.time.utils';
 
-const limit = pLimit(5);
+const limit = createLimit(5);
 
 /**
  * 개별 Poll 활성화 처리
