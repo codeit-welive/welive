@@ -10,7 +10,6 @@ import {
   getPollRepo,
   getPollStatusRepo,
   patchPollRepo,
-  //   pollNoticeRepo,
 } from './polls.repo';
 import { Prisma, UserRole } from '@prisma/client';
 
@@ -35,7 +34,7 @@ export const getPollListService = async (data: pollListQueryDTO, userId: string,
     boardId = await getBoardIdByAdminId(userId);
   }
   if (!boardId || !boardId.id) {
-    throw ApiError.forbidden();
+    throw ApiError.forbidden('유저의 권한이 필요조건을 충족하지 않습니다.');
   }
   let where: Prisma.PollWhereInput = { boardId: boardId.id };
   if (status) {
@@ -89,7 +88,7 @@ export const getPollListService = async (data: pollListQueryDTO, userId: string,
 export const getPollService = async (pollId: string) => {
   const rawPoll = await getPollRepo(pollId);
   if (!rawPoll) {
-    throw ApiError.notFound('게시글을 찾을 수 없습니다.');
+    throw ApiError.notFound('투표를 찾을 수 없습니다.');
   }
   const { id, user, board, options, ...rest } = rawPoll;
   const mappedOptions = options.map((o) => ({
