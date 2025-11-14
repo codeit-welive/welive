@@ -36,7 +36,7 @@ jobs:
       - run: npm ci
 
       - name: Remove old Prisma Client cache
-        run: rm -rf node_modules/.prisma node_modules/@prisma
+        run: rm -rf node_modules/@prisma/client node_modules/.prisma/client
 
       - name: Create .env.test
         run: |
