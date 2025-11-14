@@ -1,5 +1,5 @@
 /**
- * @file jobs/poll/poll.expire.utils.ts
+ * @file jobs/poll/poll.time.utils.ts
  * @description Poll 만료 작업에서 사용하는 시간 계산 유틸
  *
  * - Date 객체만 사용 (UTC 기준)
