@@ -17,6 +17,7 @@ import pollSchedulerRouter from '#modules/poll-scheduler/poll-scheduler.router';
 import residentsRouter from '#modules/residents/residents.router';
 import usersRouter from '#modules/users/users.router';
 import pollRouter from '#modules/polls/polls.router';
+import optionRouter from '#modules/polls/options/options.router';
 import apartmentRouter from '#modules/apartments/apartments.router';
 import notificationsRouter from '#modules/notifications/notifications.router';
 
@@ -39,6 +40,7 @@ router.use('/poll-scheduler', pollSchedulerRouter);
 router.use('/residents', residentsRouter);
 router.use('/users', usersRouter);
 router.use('/polls', pollRouter);
+router.use('/options', optionRouter);
 router.use('/apartments', apartmentRouter);
 router.use('/notifications', notificationsRouter);
 
