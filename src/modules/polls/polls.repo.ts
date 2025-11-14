@@ -74,6 +74,9 @@ export const getPollListRepo = async (where: Prisma.PollWhereInput, pageSize: nu
       where,
       skip,
       take: pageSize,
+      orderBy: {
+        createdAt: 'desc',
+      },
       select: {
         id: true,
         user: {
@@ -123,7 +126,7 @@ export const getPollRepo = async (pollId: string) => {
         select: {
           id: true,
           title: true,
-          //voteCount: true,
+          _count: true,
         },
       },
     },

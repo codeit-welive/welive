@@ -14,6 +14,11 @@ apartmentRouter
   .get(authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), validateApartmentRequestQuery, getApartmentListHandler);
 apartmentRouter
   .route('/:id')
-  .get(authMiddleware, requireRole(['ADMIN', 'SUPER_ADMIN']), validateApartmentRequestParams, getApartmentHandler);
+  .get(
+    authMiddleware,
+    requireRole(['ADMIN', 'SUPER_ADMIN', 'USER']),
+    validateApartmentRequestParams,
+    getApartmentHandler
+  );
 
 export default apartmentRouter;
