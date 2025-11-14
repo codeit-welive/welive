@@ -49,7 +49,7 @@ import { sendSseNotification } from '#sse/sseEmitter';
 sendSseNotification({
   notificationId: created.id,
   content: created.content,
-  notificationType: created.notificationType.NOTICE_REG, // prisma에서 import 필요
+  notificationType: created.notificationType,
   notifiedAt: created.notifiedAt.toISOString(),
   isChecked: created.isChecked,
   noticeId: created.noticeId,
@@ -64,7 +64,7 @@ import { sendSseToUser } from '#sse/sseEmitter';
 sendSseToUser(targetUserId, {
   notificationId: n.id,
   content: n.content,
-  notificationType: n.notificationType.COMPLAINT_RESOLVED, // prisma에서 import 필요
+  notificationType: n.notificationType,
   notifiedAt: n.notifiedAt.toISOString(),
   isChecked: n.isChecked,
   complaintId: n.complaintId,
