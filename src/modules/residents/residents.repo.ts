@@ -81,3 +81,22 @@ export const getApartmentIdByAdminId = async (adminId: string) => {
     select: { id: true },
   });
 };
+
+/**
+ * @description 입주민 명부 다운로드용 데이터 조회
+ * @param adminId 관리자 ID
+ * @param query 필터링 및 페이징 정보
+ * @returns 입주민 목록
+ */
+export const getResidentListForDownload = async (adminId: string, query: ResidentListRequestQueryDto) => {
+  return await prisma.resident.findMany({
+    where: buildWhereCondition(query, adminId),
+    select: {
+      building: true,
+      unitNumber: true,
+      contact: true,
+      name: true,
+      isHouseholder: true,
+    },
+  });
+};
