@@ -3,7 +3,7 @@ import { deleteVoteService, getBuildingPermission, getPollId, postVoteService } 
 
 export const postVote: RequestHandler = async (req, res, next) => {
   try {
-    const optionId = req.params.optionId;
+    const optionId = res.locals.validatedParams.optionId;
     const userId = req.user.id;
     const pollId = await getPollId(optionId);
     await getBuildingPermission(userId, pollId);
@@ -16,7 +16,7 @@ export const postVote: RequestHandler = async (req, res, next) => {
 
 export const cancelVote: RequestHandler = async (req, res, next) => {
   try {
-    const optionId = req.params.optionId;
+    const optionId = res.locals.validatedParams.optionId;
     const userId = req.user.id;
     const pollId = await getPollId(optionId);
     await getBuildingPermission(userId, pollId);

@@ -8,6 +8,7 @@ import {
   getOptionIdList,
   getOptionListRepo,
   getOptionRepo,
+  getPollByIdRepo,
   getPollIdByOptionId,
 } from './options.repo';
 
@@ -26,16 +27,28 @@ export const getBuildingPermission = async (userId: string, pollId: string) => {
   }
   const apartment = Number(residentBuilding.resident.building);
   const buildingPermission = await getBuildingPermissionRepo(pollId);
-  if (buildingPermission === undefined || buildingPermission === null) {
+  if (!buildingPermission || buildingPermission.buildingPermission === 0) {
     return;
   } else if (buildingPermission.buildingPermission !== apartment) {
     throw ApiError.forbidden('투표 권한이 없습니다.');
-  } else if (buildingPermission.buildingPermission === apartment) {
-    return;
   }
 };
 
 export const postVoteService = async (optionId: string, userId: string, pollId: string) => {
+  const poll = await getPollByIdRepo(pollId);
+  if (!poll) throw ApiError.notFound('투표 정보를 찾을 수 없습니다.');
+
+  // 기간 검증
+  const now = new Date();
+  if (now < poll.startDate || now > poll.endDate) {
+    throw ApiError.forbidden('현재 투표 기간이 아닙니다.');
+  }
+
+  // 상태 검증
+  if (poll.status !== 'IN_PROGRESS') {
+    throw ApiError.forbidden('현재 투표가 진행 중이 아닙니다.');
+  }
+
   //투표 데이터 생성(pollVote 생성)
   await createVoteRepo(pollId, optionId, userId);
 
@@ -56,6 +69,9 @@ export const postVoteService = async (optionId: string, userId: string, pollId: 
   const optionIdList = await getOptionIdList(pollId);
   const optionIds = optionIdList.map((o) => o.id);
   const voteCounts = await compareVoteCountRepo(optionIds);
+  if (voteCounts.length === 0) {
+    throw ApiError.notFound('투표 데이터가 없습니다.');
+  }
   const max = voteCounts.reduce((prev, curr) => (curr._count.optionId > prev._count.optionId ? curr : prev));
   if (!max || !max.optionId) {
     throw ApiError.notFound();
