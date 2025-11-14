@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { downloadResidentTemplate } from './residents.file.controller';
+import { downloadResidentList, downloadResidentTemplate } from './residents.file.controller';
 import authMiddleware from '#core/middlewares/authMiddleware';
 import requireRole from '#core/middlewares/requireRole';
 import {
@@ -22,10 +22,13 @@ const router = Router();
 router.get('/file/template', downloadResidentTemplate);
 
 router
+  .route('/file')
+  .get(authMiddleware, requireRole(['ADMIN']), validateResidentListRequestQuery, downloadResidentList);
+
+router
   .route('/')
   .get(authMiddleware, requireRole(['ADMIN']), validateResidentListRequestQuery, getResidentListHandler)
   .post(authMiddleware, requireRole(['ADMIN']), validateCreateResidentRequestBody, createResidentHandler);
-
 router
   .route('/:id')
   .get(authMiddleware, requireRole(['ADMIN']), validateResidentRequestParam, getResidentHandler)
