@@ -1,6 +1,43 @@
 import type { Request, Response, NextFunction } from 'express';
 import * as ChatService from './chats.service';
-import type { GetChatRoomListDto, GetChatRoomByIdDto, GetMessageListDto } from './dto/chats.dto';
+import type {
+  GetChatRoomListDto,
+  GetChatRoomByIdDto,
+  GetMessageListDto,
+  CreateChatRoomByAdminDto,
+} from './dto/chats.dto';
+
+/**
+ * 채팅방 생성 (입주민용)
+ * @route POST /api/chats/rooms
+ * @access USER only
+ */
+export const createChatRoomByUserHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await ChatService.createChatRoomByUser(userId);
+    res.status(201).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * 채팅방 생성 (관리자용)
+ * @route POST /api/chats/rooms
+ * @access ADMIN only
+ */
+export const createChatRoomByAdminHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = res.locals.validatedData as CreateChatRoomByAdminDto;
+
+    const result = await ChatService.createChatRoomByAdmin(data);
+    res.status(201).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
 
 /**
  * 내 채팅방 조회 (입주민)

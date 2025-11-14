@@ -1,6 +1,28 @@
 import type { Request, Response, NextFunction } from 'express';
 import forwardZodError from '#utils/zod';
-import { getChatRoomListSchema, getChatRoomByIdSchema, getMessageListSchema } from './dto/chats.dto';
+import {
+  getChatRoomListSchema,
+  getChatRoomByIdSchema,
+  getMessageListSchema,
+  createChatRoomByAdminSchema,
+} from './dto/chats.dto';
+
+/**
+ * 채팅방 생성 검증 (관리자용)
+ * @description POST /api/chats/rooms (ADMIN) - body + user 결합 검증
+ */
+export const validateCreateChatRoomByAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const validatedData = await createChatRoomByAdminSchema.parseAsync({
+      userId: req.user.id,
+      residentId: req.body.residentId,
+    });
+    res.locals.validatedData = validatedData;
+    next();
+  } catch (err) {
+    forwardZodError(err, '관리자 채팅방 생성', next);
+  }
+};
 
 /**
  * 채팅방 목록 조회 검증 (관리자용)

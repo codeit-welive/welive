@@ -1,12 +1,19 @@
 import { Router } from 'express';
 import authMiddleware from '#middlewares/authMiddleware';
 import requireRole from '#middlewares/requireRole';
-import { validateGetChatRoomList, validateGetChatRoomById, validateGetMessageList } from './chats.validator';
+import {
+  validateGetChatRoomList,
+  validateGetChatRoomById,
+  validateGetMessageList,
+  validateCreateChatRoomByAdmin,
+} from './chats.validator';
 import {
   getMyRoomHandler,
   getChatRoomListHandler,
   getChatRoomHandler,
   getMessageListHandler,
+  createChatRoomByUserHandler,
+  createChatRoomByAdminHandler,
 } from './chats.controller';
 
 const chatRouter = Router();
@@ -16,14 +23,20 @@ const chatRouter = Router();
  * 내 채팅방 조회 (입주민)
  * @access USER only
  */
-chatRouter.route('/my-room').get(authMiddleware, requireRole(['USER']), getMyRoomHandler);
+chatRouter
+  .route('/my-room')
+  .get(authMiddleware, requireRole(['USER']), getMyRoomHandler)
+  .post(authMiddleware, requireRole(['USER']), createChatRoomByUserHandler);
 
 /**
  * GET /chats/rooms
  * 채팅방 목록 조회 (관리자)
  * @access ADMIN only
  */
-chatRouter.route('/rooms').get(authMiddleware, requireRole(['ADMIN']), validateGetChatRoomList, getChatRoomListHandler);
+chatRouter
+  .route('/rooms')
+  .get(authMiddleware, requireRole(['ADMIN']), validateGetChatRoomList, getChatRoomListHandler)
+  .post(authMiddleware, requireRole(['ADMIN']), validateCreateChatRoomByAdmin, createChatRoomByAdminHandler);
 
 /**
  * GET /chats/rooms/:roomId

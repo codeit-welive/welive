@@ -20,6 +20,7 @@ import pollRouter from '#modules/polls/polls.router';
 import optionRouter from '#modules/polls/options/options.router';
 import eventRouter from '#modules/events/events.router';
 import apartmentRouter from '#modules/apartments/apartments.router';
+import chatRouter from '#modules/chats/chats.router';
 import notificationsRouter from '#modules/notifications/notifications.router';
 
 const router = Router();
