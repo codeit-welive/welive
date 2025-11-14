@@ -46,24 +46,21 @@ let socket: Socket | null = null;
 
 /**
  * Socket.io 연결 생성 및 반환
- * @param token - JWT 액세스 토큰
  * @returns Socket.io 클라이언트 인스턴스
  * @description
  * - 싱글톤 패턴: 한 번만 생성됨
- * - JWT 토큰으로 인증
+ * - 쿠키로 인증 (HTTP API와 동일)
  * - 자동 재연결 활성화
  */
-export const getSocket = (token: string): Socket => {
+export const getSocket = (): Socket => {
   // 이미 연결되어 있으면 기존 소켓 반환
   if (socket && socket.connected) {
     return socket;
   }
 
   // Socket.io 클라이언트 생성
-  socket = io(process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9000', {
-    auth: {
-      token, // JWT 토큰 전달
-    },
+  socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001', {
+    withCredentials: true, // 쿠키 자동 전송 (access_token 쿠키 포함)
     transports: ['websocket', 'polling'], // WebSocket 우선, 실패 시 polling
     reconnection: true, // 자동 재연결
     reconnectionAttempts: 5, // 재연결 시도 횟수

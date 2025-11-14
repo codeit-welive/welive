@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/shared/store/auth.store';
-import { getMyChatRoom, getMessageList, createMyChatRoom } from '../api/chat.api';
+import { getMyChatRoom, getChatRoom, createMyChatRoom } from '../api/chat.api';
 import type { ChatMessage, ChatRoom } from '../api/chat.types';
 import { useChatSocket } from '../model/useChatSocket';
 import { ChatMessageList, ChatInput } from '../ui';
@@ -49,14 +49,9 @@ export function ResidentChatPage() {
 
         setChatRoom(room);
 
-        // 2. 메시지 목록 조회
-        const messageData = await getMessageList({
-          chatRoomId: room.id,
-          page: 1,
-          limit: 50,
-        });
-
-        setMessages(messageData.data);
+        // 2. 채팅방 상세 조회 (최근 메시지 포함)
+        const roomDetail = await getChatRoom(room.id);
+        setMessages(roomDetail.recentMessages);
       } catch (err) {
         console.error('채팅 데이터 로드 실패:', err);
         const errorMessage =
@@ -74,18 +69,9 @@ export function ResidentChatPage() {
 
   // ==================== Socket.io 연결 ====================
 
-  // 쿠키에서 access_token 가져오기
-  const getAccessToken = (): string => {
-    if (typeof document === 'undefined') return '';
-    const cookies = document.cookie.split('; ');
-    const tokenCookie = cookies.find((c) => c.startsWith('access_token='));
-    return tokenCookie ? tokenCookie.split('=')[1] : '';
-  };
-
   const { sendMessage, isConnected, isJoinedRoom } = useChatSocket(
     {
       chatRoomId: chatRoom?.id || null,
-      token: getAccessToken(),
     },
     {
       // 새 메시지 수신

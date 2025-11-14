@@ -7,10 +7,12 @@
 
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/shared/store/auth.store';
-import { getChatRoomList, getMessageList } from '../api/chat.api';
+import { getChatRoomList, getChatRoom, createChatRoomByAdmin } from '../api/chat.api';
 import type { ChatMessage, ChatRoom } from '../api/chat.types';
 import { useChatSocket } from '../model/useChatSocket';
 import { ChatMessageList, ChatInput } from '../ui';
+import axios from '@/shared/lib/axios';
+import type { residentInfoType } from '@/entities/resident-info/type';
 
 export function AdminChatPage() {
   const { user } = useAuthStore();
@@ -20,6 +22,10 @@ export function AdminChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [residents, setResidents] = useState<residentInfoType[]>([]);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [isLoadingResidents, setIsLoadingResidents] = useState(false);
 
   // ==================== 채팅방 목록 불러오기 ====================
 
@@ -56,46 +62,32 @@ export function AdminChatPage() {
     loadChatRooms();
   }, [user]);
 
-  // ==================== 선택한 채팅방 메시지 불러오기 ====================
+  // ==================== 선택한 채팅방 상세 조회 (메시지 포함) ====================
 
   useEffect(() => {
-    const loadMessages = async () => {
+    const loadChatRoomDetail = async () => {
       if (!selectedRoom) {
         setMessages([]);
         return;
       }
 
       try {
-        const messageData = await getMessageList({
-          chatRoomId: selectedRoom.id,
-          page: 1,
-          limit: 50,
-        });
-
-        setMessages(messageData.data);
+        const roomDetail = await getChatRoom(selectedRoom.id);
+        setMessages(roomDetail.recentMessages);
       } catch (err) {
-        console.error('메시지 로드 실패:', err);
-        alert('메시지를 불러오는데 실패했습니다.');
+        console.error('채팅방 상세 조회 실패:', err);
+        alert('채팅방 정보를 불러오는데 실패했습니다.');
       }
     };
 
-    loadMessages();
+    loadChatRoomDetail();
   }, [selectedRoom]);
 
   // ==================== Socket.io 연결 ====================
 
-  // 쿠키에서 access_token 가져오기
-  const getAccessToken = (): string => {
-    if (typeof document === 'undefined') return '';
-    const cookies = document.cookie.split('; ');
-    const tokenCookie = cookies.find((c) => c.startsWith('access_token='));
-    return tokenCookie ? tokenCookie.split('=')[1] : '';
-  };
-
   const { sendMessage, isConnected, isJoinedRoom } = useChatSocket(
     {
       chatRoomId: selectedRoom?.id || null,
-      token: getAccessToken(),
     },
     {
       // 새 메시지 수신
@@ -136,6 +128,61 @@ export function AdminChatPage() {
     setSelectedRoom(room);
   };
 
+  // ==================== 입주민 목록 불러오기 ====================
+
+  useEffect(() => {
+    const loadResidents = async () => {
+      if (!showCreateModal) return;
+
+      try {
+        setIsLoadingResidents(true);
+        const res = await axios.get('/residents', {
+          params: {
+            isRegistered: true,
+            keyword: searchKeyword || undefined,
+          },
+        });
+        setResidents(res.data.residents);
+      } catch (err) {
+        console.error('입주민 목록 로드 실패:', err);
+      } finally {
+        setIsLoadingResidents(false);
+      }
+    };
+
+    loadResidents();
+  }, [showCreateModal, searchKeyword]);
+
+  // ==================== 채팅방 생성 ====================
+
+  const handleCreateChatRoom = async (selectedResidentId: string) => {
+    if (!selectedResidentId.trim()) {
+      alert('입주민을 선택해주세요.');
+      return;
+    }
+
+    try {
+      const newRoom = await createChatRoomByAdmin({ residentId: selectedResidentId.trim() });
+
+      // 채팅방 목록에 추가
+      setChatRooms((prev) => [newRoom, ...prev]);
+
+      // 새로 생성한 채팅방 선택
+      setSelectedRoom(newRoom);
+
+      // 모달 닫기 및 초기화
+      setShowCreateModal(false);
+      setSearchKeyword('');
+    } catch (err) {
+      console.error('채팅방 생성 실패:', err);
+      const errorMessage =
+        err instanceof Error && 'response' in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
+      alert(errorMessage || '채팅방 생성에 실패했습니다.');
+    }
+  };
+
   // ==================== 렌더링 ====================
 
   if (isLoading) {
@@ -168,8 +215,19 @@ export function AdminChatPage() {
       <div className='flex w-80 flex-col border-r bg-white'>
         {/* 헤더 */}
         <div className='bg-blue-500 px-6 py-4 text-white'>
-          <h1 className='text-xl font-bold'>채팅 목록</h1>
-          <p className='text-sm text-blue-100'>총 {chatRooms.length}개</p>
+          <div className='flex items-center justify-between'>
+            <div>
+              <h1 className='text-xl font-bold'>채팅 목록</h1>
+              <p className='text-sm text-blue-100'>총 {chatRooms.length}개</p>
+            </div>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className='bg-opacity-20 hover:bg-opacity-30 rounded-full bg-white px-3 py-1 text-sm font-medium transition-colors'
+              title='새 채팅방 만들기'
+            >
+              + 생성
+            </button>
+          </div>
         </div>
 
         {/* 채팅방 목록 */}
@@ -251,6 +309,84 @@ export function AdminChatPage() {
           </div>
         )}
       </div>
+
+      {/* 채팅방 생성 모달 */}
+      {showCreateModal && (
+        <div className='bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black'>
+          <div className='w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl'>
+            <div className='mb-4 flex items-center justify-between'>
+              <h2 className='text-xl font-bold text-gray-800'>새 채팅방 만들기</h2>
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setSearchKeyword('');
+                }}
+                className='text-gray-400 transition-colors hover:text-gray-600'
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 검색창 */}
+            <div className='mb-4'>
+              <input
+                type='text'
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder='이름, 동/호수로 검색...'
+                className='w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none'
+                autoFocus
+              />
+            </div>
+
+            {/* 입주민 목록 */}
+            <div className='mb-4 max-h-96 overflow-y-auto rounded-md border border-gray-200'>
+              {isLoadingResidents ? (
+                <div className='flex items-center justify-center py-8 text-gray-500'>
+                  <div>로딩 중...</div>
+                </div>
+              ) : residents.length === 0 ? (
+                <div className='flex items-center justify-center py-8 text-gray-500'>
+                  <div>등록된 입주민이 없습니다</div>
+                </div>
+              ) : (
+                residents.map((resident) => (
+                  <button
+                    key={resident.userId}
+                    onClick={() => handleCreateChatRoom(resident.id)}
+                    className='w-full border-b border-gray-100 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-blue-50'
+                  >
+                    <div className='flex items-center justify-between'>
+                      <div>
+                        <h3 className='font-semibold text-gray-800'>{resident.name}</h3>
+                        <p className='text-sm text-gray-600'>
+                          {resident.building}동 {resident.unitNumber}호
+                        </p>
+                        {resident.contact && (
+                          <p className='text-xs text-gray-500'>{resident.contact}</p>
+                        )}
+                      </div>
+                      <div className='text-sm text-blue-500'>선택 →</div>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+
+            <div className='flex justify-end'>
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setSearchKeyword('');
+                }}
+                className='rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

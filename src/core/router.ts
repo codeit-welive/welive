@@ -40,5 +40,6 @@ router.use('/residents', residentsRouter);
 router.use('/users', usersRouter);
 router.use('/polls', pollRouter);
 router.use('/apartments', apartmentRouter);
+router.use('/chats', chatRouter);
 
 export default router;

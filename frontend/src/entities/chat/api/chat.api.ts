@@ -6,6 +6,7 @@
 import axios from '@/shared/lib/axios';
 import type {
   ChatRoom,
+  ChatMessage,
   ChatRoomListResponse,
   MessageListResponse,
   CreateChatRoomByAdminRequest,
@@ -62,12 +63,12 @@ export const getChatRoomList = async (
 };
 
 /**
- * 특정 채팅방 조회
- * @description USER/ADMIN이 특정 채팅방의 상세 정보 조회
+ * 특정 채팅방 조회 (최근 메시지 50개 포함)
+ * @description USER/ADMIN이 특정 채팅방의 상세 정보 및 최근 메시지 조회
  * GET /chats/rooms/:id
  */
-export const getChatRoom = async (chatRoomId: string): Promise<ChatRoom> => {
-  const response = await axios.get<ChatRoom>(`/chats/rooms/${chatRoomId}`);
+export const getChatRoom = async (chatRoomId: string): Promise<ChatRoom & { recentMessages: ChatMessage[] }> => {
+  const response = await axios.get<ChatRoom & { recentMessages: ChatMessage[] }>(`/chats/rooms/${chatRoomId}`);
   return response.data;
 };
 

@@ -32,12 +32,6 @@ interface UseChatSocketOptions {
   chatRoomId: string | null;
 
   /**
-   * JWT 액세스 토큰
-   * @description Socket.io 인증에 사용
-   */
-  token: string;
-
-  /**
    * 컴포넌트 언마운트 시 Socket 연결 해제 여부
    * @default false - 다른 페이지에서도 Socket 유지
    */
@@ -114,7 +108,6 @@ interface UseChatSocketHandlers {
  * // 기본 사용
  * const { sendMessage, isConnected } = useChatSocket({
  *   chatRoomId: 'room-123',
- *   token: accessToken,
  * }, {
  *   onNewMessage: (message) => {
  *     console.log('새 메시지:', message);
@@ -125,14 +118,13 @@ interface UseChatSocketHandlers {
  * // Room 입장 없이 Socket만 연결
  * const { socket } = useChatSocket({
  *   chatRoomId: null,
- *   token: accessToken,
  * });
  */
 export const useChatSocket = (
   options: UseChatSocketOptions,
   handlers: UseChatSocketHandlers = {},
 ): UseChatSocketReturn => {
-  const { chatRoomId, token, disconnectOnUnmount = false } = options;
+  const { chatRoomId, disconnectOnUnmount = false } = options;
   const {
     onNewMessage,
     onMessagesRead,
@@ -150,8 +142,8 @@ export const useChatSocket = (
   // ==================== Socket 연결 ====================
 
   useEffect(() => {
-    // Socket 생성
-    const socketInstance = getSocket(token);
+    // Socket 생성 (쿠키로 자동 인증)
+    const socketInstance = getSocket();
     setSocket(socketInstance);
 
     // 연결 상태 이벤트
@@ -183,7 +175,7 @@ export const useChatSocket = (
         disconnectSocket();
       }
     };
-  }, [token, disconnectOnUnmount]);
+  }, [disconnectOnUnmount]);
 
   // ==================== 채팅방 입장/퇴장 ====================
 
