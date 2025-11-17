@@ -43,7 +43,7 @@ export const downloadResidentList: RequestHandler = async (req, res, next) => {
       'Content-Disposition',
       `attachment; filename="residents.csv"; filename*=UTF-8''${encodeURIComponent(filename)}`
     );
-    res.send(csv);
+    return res.send(csv);
   } catch (err) {
     next(err);
   }
@@ -62,7 +62,7 @@ export const uploadResidentListFile: RequestHandler = async (req, res, next) => 
     const data = res.locals.parsedCsv;
 
     const createdCount = await ResidentFileService.createResidentFromFile(adminId, data);
-    res.status(201).json({
+    return res.status(201).json({
       message: `${createdCount}명의 입주민이 등록되었습니다`,
       count: createdCount,
     });
@@ -70,9 +70,9 @@ export const uploadResidentListFile: RequestHandler = async (req, res, next) => 
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === 'P2002') {
         const errorFields = err.meta?.target as string[];
-        next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
+        return next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
       } else {
-        next(new ApiError(500, '입주민 등록 중 오류가 발생했습니다.'));
+        return next(new ApiError(500, '입주민 등록 중 오류가 발생했습니다.'));
       }
     }
     next(err);
