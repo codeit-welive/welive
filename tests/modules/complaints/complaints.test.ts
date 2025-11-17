@@ -1,8 +1,13 @@
+/**
+ * @file tests/modules/complaints/complaint.test.ts
+ * @description Complaint 모듈 통합 테스트
+ */
 import request from 'supertest';
 import app from '#core/app';
 import prisma from '#core/prisma';
 import { generateAccessToken } from '#modules/auth/utils/tokenUtils';
 import { UserRole, ComplaintStatus, JoinStatus } from '@prisma/client';
+
 process.env.__SKIP_GLOBAL_DB_CLEANUP__ = 'true';
 
 describe('[Complaints] 통합 테스트', () => {
@@ -12,25 +17,63 @@ describe('[Complaints] 통합 테스트', () => {
   let apartmentId: string;
   let complaintId: string;
 
-  beforeAll(async () => {
+  const TEST_APARTMENT_NAME = 'ComplaintTest';
+
+  /**
+   * 이 테스트 파일에서만 사용하는 데이터 정리
+   * - apartmentName으로 묶이는 엔티티들만 삭제
+   * - 이 파일에서 생성하는 테스트용 이메일들만 삭제
+   */
+  const cleanupTestData = async () => {
     await prisma.$transaction([
-      prisma.event.deleteMany(),
-      prisma.notification.deleteMany(),
-      prisma.comment.deleteMany(),
-      prisma.pollVote.deleteMany(),
-      prisma.pollOption.deleteMany(),
-      prisma.poll.deleteMany(),
-      prisma.complaint.deleteMany(),
-      prisma.notice.deleteMany(),
-      prisma.board.deleteMany(),
-      prisma.resident.deleteMany(),
-      prisma.user.deleteMany(),
-      prisma.apartment.deleteMany(),
+      prisma.complaint.deleteMany({
+        where: {
+          OR: [
+            { board: { apartment: { apartmentName: TEST_APARTMENT_NAME } } },
+            { board: { apartment: { apartmentName: 'AnotherAPT' } } },
+          ],
+        },
+      }),
+      prisma.board.deleteMany({
+        where: {
+          apartment: {
+            apartmentName: { in: [TEST_APARTMENT_NAME, 'AnotherAPT'] },
+          },
+        },
+      }),
+      prisma.resident.deleteMany({
+        where: {
+          apartment: { apartmentName: TEST_APARTMENT_NAME },
+        },
+      }),
+      prisma.user.deleteMany({
+        where: {
+          email: {
+            in: [
+              'user@test.com',
+              'admin@test.com',
+              'complaint_other@test.com',
+              'complaint_otheradmin@test.com',
+              'complaint_temp@test.com',
+            ],
+          },
+        },
+      }),
+      prisma.apartment.deleteMany({
+        where: {
+          apartmentName: { in: [TEST_APARTMENT_NAME, 'AnotherAPT'] },
+        },
+      }),
     ]);
+  };
+
+  beforeAll(async () => {
+    // 🔹 이 파일이 만든 것만 먼저 정리
+    await cleanupTestData();
 
     const apt = await prisma.apartment.create({
       data: {
-        apartmentName: 'ComplaintTest',
+        apartmentName: TEST_APARTMENT_NAME,
         apartmentAddress: 'Seoul',
         startComplexNumber: '1',
         endComplexNumber: '10',
@@ -56,13 +99,13 @@ describe('[Complaints] 통합 테스트', () => {
     const resident = await prisma.resident.create({
       data: {
         name: '일반유저',
-        contact: '01033334444',
+        contact: '01000000031',
         building: '101',
         unitNumber: '1001',
         apartment: { connect: { id: apartmentId } },
         isRegistered: true,
         approvalStatus: 'APPROVED',
-        residentStatus: 'RESIDENCE',
+        residenceStatus: 'RESIDENCE',
         isHouseholder: 'HOUSEHOLDER',
       },
     });
@@ -71,7 +114,7 @@ describe('[Complaints] 통합 테스트', () => {
       data: {
         username: 'normal_user',
         password: 'pw',
-        contact: '01033334444',
+        contact: '01000000031',
         name: '일반유저',
         email: 'user@test.com',
         role: 'USER',
@@ -84,7 +127,7 @@ describe('[Complaints] 통합 테스트', () => {
       data: {
         username: 'admin_user',
         password: 'pw',
-        contact: '01011112222',
+        contact: '01000000032',
         name: '관리자',
         email: 'admin@test.com',
         role: 'ADMIN',
@@ -252,11 +295,11 @@ describe('[Complaints] 통합 테스트', () => {
     // 다른 사용자 민원 생성
     const otherUser = await prisma.user.create({
       data: {
-        username: 'other_user',
+        username: 'complaint_other_user',
         password: 'pw',
-        contact: '01055556666',
+        contact: '01000000033',
         name: '다른유저',
-        email: 'other@test.com',
+        email: 'complaint_other@test.com',
         role: 'USER',
         avatar: 'd',
       },
@@ -309,11 +352,11 @@ describe('[Complaints] 통합 테스트', () => {
   it('ADMIN이 관리 아파트가 아닌 민원을 수정하려 하면 403을 반환해야 함', async () => {
     const anotherAdmin = await prisma.user.create({
       data: {
-        username: 'other_admin',
+        username: 'complaint_other_admin',
         password: 'pw',
-        contact: '01077778888',
+        contact: '01000000034',
         name: '다른관리자',
-        email: 'otheradmin@test.com',
+        email: 'complaint_otheradmin@test.com',
         role: 'ADMIN',
         avatar: 'd',
       },
@@ -348,11 +391,11 @@ describe('[Complaints] 통합 테스트', () => {
         board: { connect: { id: otherBoard.id } },
         user: {
           create: {
-            username: 'temp_user',
+            username: 'complaint_temp_user',
             password: 'pw',
-            contact: '01099998888',
+            contact: '01000000035',
             name: '임시유저',
-            email: 'temp@test.com',
+            email: 'complaint_temp@test.com',
             role: 'USER',
             avatar: 'a',
           },

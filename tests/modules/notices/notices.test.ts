@@ -1,3 +1,8 @@
+/**
+ * @file tests/modules/notices/notices.test.ts
+ * @description Notices 모듈 통합 테스트
+ */
+
 import request from 'supertest';
 import app from '#core/app';
 import prisma from '#core/prisma';
@@ -5,6 +10,48 @@ import { generateAccessToken } from '#modules/auth/utils/tokenUtils';
 import { UserRole, NoticeCategory, JoinStatus } from '@prisma/client';
 
 process.env.__SKIP_GLOBAL_DB_CLEANUP__ = 'true';
+
+const TEST_APARTMENT_NAME = 'NoticeAPT';
+const ADMIN_EMAIL = 'notice_admin@test.com';
+const USER_EMAIL = 'notice_user@test.com';
+
+const cleanupScope = async () => {
+  await prisma.$transaction([
+    prisma.comment.deleteMany({
+      where: {
+        board: {
+          apartment: { apartmentName: TEST_APARTMENT_NAME },
+        },
+      },
+    }),
+    prisma.notice.deleteMany({
+      where: {
+        apartment: { apartmentName: TEST_APARTMENT_NAME },
+      },
+    }),
+    prisma.board.deleteMany({
+      where: {
+        apartment: { apartmentName: TEST_APARTMENT_NAME },
+        type: 'NOTICE',
+      },
+    }),
+    prisma.resident.deleteMany({
+      where: {
+        apartment: { apartmentName: TEST_APARTMENT_NAME },
+      },
+    }),
+    prisma.user.deleteMany({
+      where: {
+        email: { in: [ADMIN_EMAIL, USER_EMAIL] },
+      },
+    }),
+    prisma.apartment.deleteMany({
+      where: {
+        apartmentName: TEST_APARTMENT_NAME,
+      },
+    }),
+  ]);
+};
 
 describe('[Notices] 통합 테스트', () => {
   let adminToken: string;
@@ -14,26 +61,13 @@ describe('[Notices] 통합 테스트', () => {
   let noticeId: string;
 
   beforeAll(async () => {
-    await prisma.$transaction([
-      prisma.event.deleteMany(),
-      prisma.notification.deleteMany(),
-      prisma.comment.deleteMany(),
-      prisma.pollVote.deleteMany(),
-      prisma.pollOption.deleteMany(),
-      prisma.poll.deleteMany(),
-      prisma.complaint.deleteMany(),
-      prisma.notice.deleteMany(),
-      prisma.board.deleteMany(),
-      prisma.resident.deleteMany(),
-      prisma.apartment.deleteMany(),
-      prisma.user.deleteMany(),
-    ]);
+    await cleanupScope();
 
     // apartment / board
     const apt = await prisma.apartment.create({
       data: {
-        apartmentName: 'NoticeAPT',
-        apartmentAddress: 'Seoul',
+        apartmentName: TEST_APARTMENT_NAME,
+        apartmentAddress: 'Notice_Seoul',
         startComplexNumber: '1',
         endComplexNumber: '10',
         startDongNumber: '101',
@@ -56,9 +90,9 @@ describe('[Notices] 통합 테스트', () => {
       data: {
         username: 'notice_admin',
         password: 'pw',
-        contact: '01011112222',
+        contact: '01000000041',
         name: '관리자',
-        email: 'notice_admin@test.com',
+        email: ADMIN_EMAIL,
         role: 'ADMIN',
         avatar: 'a',
       },
@@ -72,12 +106,12 @@ describe('[Notices] 통합 테스트', () => {
     const resident = await prisma.resident.create({
       data: {
         name: '일반유저',
-        contact: '01033334444',
+        contact: '01000000042',
         building: '101',
         unitNumber: '1001',
         isRegistered: true,
         approvalStatus: 'APPROVED',
-        residentStatus: 'RESIDENCE',
+        residenceStatus: 'RESIDENCE',
         isHouseholder: 'HOUSEHOLDER',
         apartment: { connect: { id: apartmentId } },
       },
@@ -87,9 +121,9 @@ describe('[Notices] 통합 테스트', () => {
       data: {
         username: 'notice_user',
         password: 'pw',
-        contact: '01033334444',
+        contact: '01000000042',
         name: '일반유저',
-        email: 'notice_user@test.com',
+        email: USER_EMAIL,
         role: 'USER',
         avatar: 'u',
         resident: { connect: { id: resident.id } },
@@ -128,7 +162,9 @@ describe('[Notices] 통합 테스트', () => {
     expect(res.status).toBe(201);
     expect(res.body).toEqual({ message: '정상적으로 등록 처리되었습니다.' });
 
-    const created = await prisma.notice.findFirst({ where: { title: '주차장 정기 점검 안내' } });
+    const created = await prisma.notice.findFirst({
+      where: { title: '주차장 정기 점검 안내', apartmentId },
+    });
     expect(created).not.toBeNull();
     noticeId = created!.id;
   });
@@ -299,6 +335,7 @@ describe('[Notices] 통합 테스트', () => {
 
   afterAll(async () => {
     process.env.__SKIP_GLOBAL_DB_CLEANUP__ = 'false';
+    await cleanupScope();
     await prisma.$disconnect();
   });
 });

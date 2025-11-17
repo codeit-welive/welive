@@ -29,7 +29,8 @@ import { RESPONSE_MESSAGES } from '#constants/response.constant';
 export const createNotice: RequestHandler = async (req, res, next) => {
   try {
     const data = res.locals.validatedBody as NoticeCreateDTO;
-    await createNoticeService(data);
+    const userId = req.user.id;
+    await createNoticeService(userId, data);
     return res.status(201).json({ message: RESPONSE_MESSAGES.CREATE_SUCCESS });
   } catch (err) {
     next(err);
@@ -39,6 +40,8 @@ export const createNotice: RequestHandler = async (req, res, next) => {
 export const getNoticeList: RequestHandler = async (req, res, next) => {
   try {
     const query = res.locals.query as NoticeListQueryDTO;
+    const role = req.user.role;
+    const userId = req.user.id;
     const { page, pageSize, category, search } = query;
     const dto: NoticeListQueryDTO = {
       page: Number(page) ?? PAGINATION.DEFAULT_PAGE,
@@ -46,7 +49,7 @@ export const getNoticeList: RequestHandler = async (req, res, next) => {
       category: category as NoticeCategory,
       search: search ?? null,
     };
-    const { notices, totalCount } = await getNoticeListService(dto);
+    const { notices, totalCount } = await getNoticeListService(dto, role, userId);
     return res.status(200).json({ notices, totalCount });
   } catch (err) {
     next(err);

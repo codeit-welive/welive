@@ -27,7 +27,7 @@ export const getBoardIdByUserId = async (userId: string) => {
 export const getBoardIdByAdminId = async (adminId: string) => {
   const board = await prisma.board.findFirst({
     where: {
-      type: BoardType.COMPLAINT,
+      type: BoardType.POLL,
       apartment: {
         adminId,
       },
@@ -48,7 +48,7 @@ export const getPollStatusRepo = async (pollId: string) => {
   });
 };
 
-export const createPollRepo = async (data: createPollBodyDTO) => {
+export const createPollRepo = async (data: createPollBodyDTO, apartmentId: string) => {
   return prisma.poll.create({
     data: {
       boardId: data.boardId,
@@ -63,6 +63,7 @@ export const createPollRepo = async (data: createPollBodyDTO) => {
           title: opt.title,
         })),
       },
+      apartmentId,
     },
   });
 };
@@ -73,6 +74,9 @@ export const getPollListRepo = async (where: Prisma.PollWhereInput, pageSize: nu
       where,
       skip,
       take: pageSize,
+      orderBy: {
+        createdAt: 'desc',
+      },
       select: {
         id: true,
         user: {
@@ -122,7 +126,7 @@ export const getPollRepo = async (pollId: string) => {
         select: {
           id: true,
           title: true,
-          //voteCount: true,
+          _count: true,
         },
       },
     },
@@ -162,13 +166,13 @@ export const deletePollRepo = async (pollId: string) => {
   });
 };
 
-// export const pollNoticeRepo = async (pollId: string) => {
-//   await prisma.poll.update({
-//     where: {
-//       id: pollId,
-//     },
-//     data: {
-
-//     }
-//   });
-// };
+export const getApartmentIdByAdminId = async (adminId: string) => {
+  return await prisma.apartment.findUnique({
+    where: {
+      adminId,
+    },
+    select: {
+      id: true,
+    },
+  });
+};

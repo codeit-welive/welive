@@ -1,3 +1,8 @@
+/**
+ * @file core/sse/index.ts
+ * @description 알림 SSE 엔드포인트 및 클라이언트 관리
+ */
+
 import { Router } from 'express';
 import { SseClient } from './sseClient';
 import type { SseEvent, NotificationPayload } from './types';
@@ -6,7 +11,38 @@ import prisma from '#core/prisma';
 import env from '#core/env';
 
 const router = Router();
-const clients = new Map<string, SseClient>();
+
+/**
+ * 연결된 SSE 클라이언트 목록
+ * - key: userId
+ * - value: 해당 유저의 모든 SSE 연결(Set)
+ */
+const clients = new Map<string, Set<SseClient>>();
+
+/**
+ * 클라이언트 추가
+ */
+const addClient = (userId: string, client: SseClient): void => {
+  const set = clients.get(userId);
+  if (set) {
+    set.add(client);
+  } else {
+    clients.set(userId, new Set([client]));
+  }
+};
+
+/**
+ * 클라이언트 제거
+ */
+const removeClient = (userId: string, client: SseClient): void => {
+  const set = clients.get(userId);
+  if (!set) return;
+
+  set.delete(client);
+  if (set.size === 0) {
+    clients.delete(userId);
+  }
+};
 
 /**
  * @route GET /api/notifications/sse
@@ -24,7 +60,7 @@ router.get('/sse', authMiddleware, async (req, res) => {
   res.flushHeaders();
 
   const client = new SseClient(userId, res);
-  clients.set(userId, client);
+  addClient(userId, client);
 
   // 초기 전송: 현재 읽지 않은 알림 목록
   const unread = await prisma.notification.findMany({
@@ -53,7 +89,7 @@ router.get('/sse', authMiddleware, async (req, res) => {
 
   req.on('close', () => {
     client.close();
-    clients.delete(userId);
+    removeClient(userId, client);
   });
 });
 
@@ -61,9 +97,11 @@ router.get('/sse', authMiddleware, async (req, res) => {
  * 단일 유저에게 알림 전송
  */
 export const sendToUser = (userId: string, payload: NotificationPayload): void => {
-  const client = clients.get(userId);
-  if (client) {
-    const event: SseEvent = { event: 'alarm', data: [payload] };
+  const set = clients.get(userId);
+  if (!set || set.size === 0) return;
+
+  const event: SseEvent = { event: 'alarm', data: [payload] };
+  for (const client of set) {
     client.send(event);
   }
 };
@@ -73,7 +111,11 @@ export const sendToUser = (userId: string, payload: NotificationPayload): void =
  */
 export const broadcast = (payload: NotificationPayload): void => {
   const event: SseEvent = { event: 'alarm', data: [payload] };
-  for (const client of clients.values()) client.send(event);
+  for (const set of clients.values()) {
+    for (const client of set) {
+      client.send(event);
+    }
+  }
 };
 
 /**
@@ -85,7 +127,11 @@ const baseInterval = 30_000;
 // prettier-ignore
 if (env.NODE_ENV !== 'test') {
   setInterval(() => {
-    for (const client of clients.values()) client.ping();
+    for (const set of clients.values()) {
+      for (const client of set) {
+        client.ping();
+      }
+    }
   }, baseInterval + (Math.random() * 10_000 - 5_000));
 }
 

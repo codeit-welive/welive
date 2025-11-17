@@ -11,11 +11,11 @@ import {
 } from './auth.service';
 import ApiError from '#errors/ApiError';
 import { Prisma } from '@prisma/client';
-import { checkDuplicateData } from './utils/checkDuplicateData';
+import { mapUniqueConstraintError } from '#helpers/mapPrismaError';
 import env from '#core/env';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from './utils/tokenUtils';
 
-export const registSuperAdminHandler: RequestHandler = async (req, res, next) => {
+export const registSuperAdminHandler: RequestHandler = async (_req, res, next) => {
   try {
     const data = res.locals.validatedBody;
 
@@ -24,13 +24,13 @@ export const registSuperAdminHandler: RequestHandler = async (req, res, next) =>
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       const errorFields = err.meta?.target as string[];
-      throw ApiError.conflict(checkDuplicateData(errorFields).message);
+      return next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
     }
-    next(err);
+    return next(err);
   }
 };
 
-export const registerAdminHandler: RequestHandler = async (req, res, next) => {
+export const registerAdminHandler: RequestHandler = async (_req, res, next) => {
   try {
     const data = res.locals.validatedBody;
 
@@ -39,13 +39,13 @@ export const registerAdminHandler: RequestHandler = async (req, res, next) => {
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       const errorFields = err.meta?.target as string[];
-      throw ApiError.conflict(checkDuplicateData(errorFields).message);
+      return next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
     }
-    next(err);
+    return next(err);
   }
 };
 
-export const registerUserHandler: RequestHandler = async (req, res, next) => {
+export const registerUserHandler: RequestHandler = async (_req, res, next) => {
   try {
     const data = res.locals.validatedBody;
 
@@ -55,16 +55,16 @@ export const registerUserHandler: RequestHandler = async (req, res, next) => {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === 'P2002') {
         const errorFields = err.meta?.target as string[];
-        throw ApiError.conflict(checkDuplicateData(errorFields).message);
+        return next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
       } else if (err.code === 'P2025') {
-        throw ApiError.notFound('해당 아파트가 존재하지 않습니다.');
+        return next(new ApiError(404, '해당 아파트가 존재하지 않습니다.'));
       }
     }
-    next(err);
+    return next(err);
   }
 };
 
-export const loginHandler: RequestHandler = async (req, res, next) => {
+export const loginHandler: RequestHandler = async (_req, res, next) => {
   try {
     const data = res.locals.validatedBody;
     const result = await login(data);
@@ -89,14 +89,14 @@ export const loginHandler: RequestHandler = async (req, res, next) => {
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === 'P2025') {
-        throw ApiError.notFound('사용자를 찾을 수 없습니다');
+        return next(new ApiError(404, '사용자를 찾을 수 없습니다'));
       }
     }
-    next(err);
+    return next(err);
   }
 };
 
-export const logoutHandler: RequestHandler = async (req, res, next) => {
+export const logoutHandler: RequestHandler = async (_req, res, next) => {
   try {
     res.clearCookie('access_token', {
       httpOnly: true,
@@ -122,7 +122,7 @@ export const refreshTokenHandler: RequestHandler = async (req, res, next) => {
     const cookies = req.cookies as Record<string, string>;
     const refreshToken = cookies['refresh_token'];
 
-    const decoded = await verifyRefreshToken(refreshToken);
+    const decoded = verifyRefreshToken(refreshToken);
 
     const newAccessToken = generateAccessToken({
       id: decoded.id,

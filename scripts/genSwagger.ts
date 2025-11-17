@@ -34,6 +34,7 @@ const domains = [
   'complaints',
   'notices',
   'comments',
+  'notifications',
   'poll-scheduler',
 ];
 

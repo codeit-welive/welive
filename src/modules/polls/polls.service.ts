@@ -3,19 +3,22 @@ import { createPollBodyDTO, patchPollBodyDTO, pollListQueryDTO } from './dto/pol
 import {
   createPollRepo,
   deletePollRepo,
+  getApartmentIdByAdminId,
   getBoardIdByAdminId,
   getBoardIdByUserId,
   getPollListRepo,
   getPollRepo,
   getPollStatusRepo,
   patchPollRepo,
-  //   pollNoticeRepo,
 } from './polls.repo';
 import { Prisma, UserRole } from '@prisma/client';
 
-export const createPollService = async (data: createPollBodyDTO) => {
-  await createPollRepo(data);
-  return 1;
+export const createPollService = async (userId: string, data: createPollBodyDTO) => {
+  const apartmentId = await getApartmentIdByAdminId(userId);
+  if (!apartmentId) {
+    throw ApiError.badRequest();
+  }
+  await createPollRepo(data, apartmentId.id);
 };
 
 export const getPollListService = async (data: pollListQueryDTO, userId: string, role: UserRole) => {
@@ -31,7 +34,7 @@ export const getPollListService = async (data: pollListQueryDTO, userId: string,
     boardId = await getBoardIdByAdminId(userId);
   }
   if (!boardId || !boardId.id) {
-    throw ApiError.forbidden;
+    throw ApiError.forbidden('유저의 권한이 필요조건을 충족하지 않습니다.');
   }
   let where: Prisma.PollWhereInput = { boardId: boardId.id };
   if (status) {
@@ -67,7 +70,7 @@ export const getPollListService = async (data: pollListQueryDTO, userId: string,
   }
   const rawPollList = await getPollListRepo(where, pageSize, skip);
   const polls = rawPollList.data.map((poll) => ({
-    id: poll.id,
+    pollId: poll.id,
     userId: poll.user.id,
     title: poll.title,
     writerName: poll.user.name,
@@ -85,14 +88,21 @@ export const getPollListService = async (data: pollListQueryDTO, userId: string,
 export const getPollService = async (pollId: string) => {
   const rawPoll = await getPollRepo(pollId);
   if (!rawPoll) {
-    throw ApiError.notFound('게시글을 찾을 수 없습니다.');
+    throw ApiError.notFound('투표를 찾을 수 없습니다.');
   }
-  const { user, board, ...rest } = rawPoll;
+  const { id, user, board, options, ...rest } = rawPoll;
+  const mappedOptions = options.map((o) => ({
+    id: o.id,
+    title: o.title,
+    voteCount: o._count.votes,
+  }));
   const poll = {
     ...rest,
+    pollId: id,
     userId: user.id,
     writerName: user.name,
     boardName: board.type,
+    options: mappedOptions,
   };
   return poll;
 };
@@ -119,13 +129,3 @@ export const deletePollService = async (pollId: string) => {
   }
   await deletePollRepo(pollId);
 };
-
-// export const closedPollService = async (pollId: string) => {
-//   const status = await getPollStatusRepo(pollId);
-//   if (!status) {
-//     throw ApiError.badRequest();
-//   }
-//   if (status.status === 'CLOSED') {
-//     const pollNotice = await pollNoticeRepo(pollId);
-//   }
-// };
