@@ -86,21 +86,3 @@ export const deletePoll: RequestHandler = async (req, res, next) => {
     next(err);
   }
 };
-
-// export const closedPoll: RequestHandler = async (req, res, next) => {
-//   try {
-//     const pollId = req.params.pollId;
-//     // await closedPollService(pollId);
-//     broadcast({
-//       notificationId: pollId,
-//       content: `투표가 마감되었습니다.`,
-//       notificationType: 'POLL_CLOSED', // Prisma NotificationType
-//       notifiedAt: new Date().toISOString(),
-//       isChecked: false,
-//       pollId: pollId,
-//     });
-//     // return res.status(200).json({ message: RESPONSE_MESSAGES.DELETE_SUCCESS });
-//   } catch (err) {
-//     next(err);
-//   }
-// };

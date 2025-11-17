@@ -1,17 +1,28 @@
 import { PollStatus } from '@prisma/client';
 import { z } from 'zod';
 
-export const createPollBodySchema = z.object({
-  boardId: z.uuid({ message: '유효한 경로가 아닙니다.' }),
-  userId: z.uuid(),
-  status: z.enum(PollStatus),
-  title: z.string(),
-  content: z.string(),
-  buildingPermission: z.number().gte(0),
-  startDate: z.iso.datetime(),
-  endDate: z.iso.datetime(),
-  options: z.array(z.object({ title: z.string().min(1).max(50) })),
-});
+export const createPollBodySchema = z
+  .object({
+    boardId: z.uuid({ message: '유효한 경로가 아닙니다.' }),
+    userId: z.uuid(),
+    status: z.string(PollStatus.PENDING),
+    title: z.string(),
+    content: z.string(),
+    buildingPermission: z.number().gte(0),
+    startDate: z.date(),
+    endDate: z.date(),
+    options: z.array(z.object({ title: z.string().min(1).max(50) })),
+  })
+  .refine(
+    (data) => {
+      const now = new Date();
+      return data.startDate < now && now < data.endDate;
+    },
+    {
+      message: '현재 시간은 startDate와 endDate 사이여야 합니다',
+      path: ['startDate'],
+    }
+  );
 
 export type createPollBodyDTO = z.infer<typeof createPollBodySchema>;
 
