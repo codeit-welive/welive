@@ -53,6 +53,11 @@ export const validateCreateResidentRequestBody: RequestHandler = (req, res, next
   }
 };
 
+/**
+ * @description CSV 파일의 헤더를 검증하는 미들웨어
+ * @param req.file 업로드된 CSV 파일
+ * @throws ApiError(400) 파일이 없거나, CSV 확장자가 아니거나, 헤더 형식이 잘못된 경우
+ */
 export const validateCsvHeader: RequestHandler = async (req, res, next) => {
   try {
     if (!req.file) return next(new ApiError(400, '파일이 첨부되지 않았습니다.'));

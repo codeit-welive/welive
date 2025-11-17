@@ -102,6 +102,12 @@ export const getResidentListForDownload = async (adminId: string, query: Residen
   });
 };
 
+/**
+ * @description 입주민 일괄 생성
+ * @param data 입주민 데이터 배열
+ * @param apartmentId 아파트 ID
+ * @returns 생성된 입주민 수 정보
+ */
 export const createMany = async (data: ResidentCsvDto[], apartmentId: string) => {
   return await prisma.resident.createMany({
     data: data.map((item) => ({ ...item, apartmentId })),

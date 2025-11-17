@@ -49,6 +49,13 @@ export const downloadResidentList: RequestHandler = async (req, res, next) => {
   }
 };
 
+/**
+ * @description CSV 파일로부터 입주민 일괄 등록
+ * [POST] /api/residents/from-file
+ * @param req.user.id 관리자 ID
+ * @param res.locals.parsedCsv 파싱된 CSV 데이터
+ * @returns 생성된 입주민 수
+ */
 export const uploadResidentListFile: RequestHandler = async (req, res, next) => {
   try {
     const adminId = req.user.id;

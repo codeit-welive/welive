@@ -3,6 +3,11 @@ import { Readable } from 'stream';
 import { parse } from 'csv-parse';
 import { residentCsvSchema } from '#modules/residents/dto/csv.dto';
 
+/**
+ * @description CSV 파일을 파싱하고 유효성을 검증하는 미들웨어
+ * @param req.file 업로드된 CSV 파일 (multer를 통해 처리됨)
+ * @returns res.locals.parsedCsv 파싱 및 검증된 입주민 데이터 배열
+ */
 const csvParser: RequestHandler = async (req, res, next) => {
   try {
     const stream = Readable.from(req.file!.buffer);

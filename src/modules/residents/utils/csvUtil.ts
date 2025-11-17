@@ -28,6 +28,11 @@ export const filenameFormat = (date: Date) => {
   return `${year}${month}${day}_${hours}${minutes}${seconds}`;
 };
 
+/**
+ * @description CSV 파일의 헤더 추출
+ * @param buffer CSV 파일 버퍼
+ * @returns CSV 헤더 배열
+ */
 export const extractHeaderFromBuffer = async (buffer: Buffer) => {
   const stream = Readable.from(buffer);
   const parser = stream.pipe(parse({ to_line: 1, bom: true, relax_column_count: true, trim: true }));
