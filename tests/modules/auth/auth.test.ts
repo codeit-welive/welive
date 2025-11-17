@@ -70,7 +70,7 @@ describe('[Auth] 통합 테스트', () => {
     const res = await request(app).post('/api/auth/signup/super-admin').send({
       username: 'auth_super',
       password: 'Test!@1234', // 소문자 + 숫자 + 특수문자 포함
-      contact: '01000002001',
+      contact: '01000000701',
       name: '슈퍼관리자',
       email: 'auth_super@gmail.com', // MX 존재 도메인
       role: UserRole.SUPER_ADMIN,
@@ -100,7 +100,7 @@ describe('[Auth] 통합 테스트', () => {
     const res = await request(app).post('/api/auth/signup/admin').send({
       username: 'auth_admin',
       password: 'Test!@1234',
-      contact: '01000002002',
+      contact: '01000000702',
       name: '관리자',
       email: 'auth_admin@gmail.com',
       role: UserRole.ADMIN,
@@ -151,7 +151,7 @@ describe('[Auth] 통합 테스트', () => {
     const res = await request(app).post('/api/auth/signup').send({
       username: 'auth_user',
       password: 'Test!@1234',
-      contact: '01000002003',
+      contact: '01000000703',
       name: '일반유저',
       email: 'auth_user@gmail.com',
       role: UserRole.USER,
@@ -235,7 +235,7 @@ describe('[Auth] 통합 테스트', () => {
     const res = await request(app).post('/api/auth/signup').send({
       username: 'auth_user2',
       password: 'Test!@1234',
-      contact: '01000002004',
+      contact: '01000000704',
       name: '다른유저',
       email: 'auth_user2@gmail.com',
       role: UserRole.USER,
@@ -255,7 +255,7 @@ describe('[Auth] 통합 테스트', () => {
     const body = {
       username: 'auth_dup',
       password: 'Test!@1234',
-      contact: '01000002005',
+      contact: '01000000705',
       name: '중복유저',
       email: 'auth_dup@gmail.com',
       role: UserRole.USER,
@@ -328,7 +328,7 @@ describe('[Auth] 통합 테스트', () => {
     const pendingResident = await prisma.resident.create({
       data: {
         name: '대기입주민',
-        contact: '01000002006',
+        contact: '01000000706',
         building: '101',
         unitNumber: '1002',
         isRegistered: true,
@@ -345,7 +345,7 @@ describe('[Auth] 통합 테스트', () => {
       data: {
         username: 'auth_user_pending',
         password: 'pw',
-        contact: '01000002006',
+        contact: '01000000706',
         name: '대기유저',
         email: 'auth_user_pending@gmail.com',
         role: UserRole.USER,
@@ -386,7 +386,7 @@ describe('[Auth] 통합 테스트', () => {
       data: {
         username: 'auth_rejected_admin',
         password: 'pw',
-        contact: '01000002007',
+        contact: '01000000707',
         name: '거절관리자',
         email: 'auth_rejected_admin@gmail.com',
         role: UserRole.ADMIN,
@@ -419,7 +419,7 @@ describe('[Auth] 통합 테스트', () => {
       data: {
         username: 'auth_rejected_user',
         password: 'pw',
-        contact: '01000002008',
+        contact: '01000000708',
         name: '거절유저',
         email: 'auth_rejected_user@gmail.com',
         role: UserRole.USER,
