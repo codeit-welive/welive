@@ -1,12 +1,14 @@
 import { Router } from 'express';
-import { downloadResidentList, downloadResidentTemplate } from './residents.file.controller';
+import { downloadResidentList, downloadResidentTemplate, uploadResidentListFile } from './residents.file.controller';
 import authMiddleware from '#core/middlewares/authMiddleware';
 import requireRole from '#core/middlewares/requireRole';
+import csvParser from '#core/middlewares/csvParser';
 import {
   validateCreateResidentRequestBody,
   validatePatchResidentRequestBody,
   validateResidentListRequestQuery,
   validateResidentRequestParam,
+  validateCsvHeader,
 } from './residents.validator';
 import {
   getResidentListHandler,
@@ -15,8 +17,10 @@ import {
   deleteResidentHandler,
   createResidentHandler,
 } from './residents.controller';
+import multer from 'multer';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 // 입주민 업로드 템플릿 다운로드
 router.get('/file/template', downloadResidentTemplate);
@@ -26,9 +30,16 @@ router
   .get(authMiddleware, requireRole(['ADMIN']), validateResidentListRequestQuery, downloadResidentList);
 
 router
-  .route('/')
-  .get(authMiddleware, requireRole(['ADMIN']), validateResidentListRequestQuery, getResidentListHandler)
-  .post(authMiddleware, requireRole(['ADMIN']), validateCreateResidentRequestBody, createResidentHandler);
+  .route('/from-file')
+  .post(
+    authMiddleware,
+    requireRole(['ADMIN']),
+    upload.single('file'),
+    validateCsvHeader,
+    csvParser,
+    uploadResidentListFile
+  );
+
 router
   .route('/:id')
   .get(authMiddleware, requireRole(['ADMIN']), validateResidentRequestParam, getResidentHandler)
@@ -40,5 +51,9 @@ router
     patchResidentHandler
   )
   .delete(authMiddleware, requireRole(['ADMIN']), validateResidentRequestParam, deleteResidentHandler);
+router
+  .route('/')
+  .get(authMiddleware, requireRole(['ADMIN']), validateResidentListRequestQuery, getResidentListHandler)
+  .post(authMiddleware, requireRole(['ADMIN']), validateCreateResidentRequestBody, createResidentHandler);
 
 export default router;

@@ -1,4 +1,5 @@
 import prisma from '#core/prisma';
+import { ResidentCsvDto } from './dto/csv.dto';
 import {
   ResidentCreateRequestBodyDto,
   ResidentListRequestQueryDto,
@@ -98,5 +99,12 @@ export const getResidentListForDownload = async (adminId: string, query: Residen
       name: true,
       isHouseholder: true,
     },
+  });
+};
+
+export const createMany = async (data: ResidentCsvDto[], apartmentId: string) => {
+  return await prisma.resident.createMany({
+    data: data.map((item) => ({ ...item, apartmentId })),
+    skipDuplicates: true,
   });
 };
