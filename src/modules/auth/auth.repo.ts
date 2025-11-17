@@ -36,6 +36,15 @@ export const createAdmin = async (userData: UserDto, apartmentData: ApartmentDto
   });
 };
 
+export const isUserDuplicate = async (data: SignupUserRequestDto) => {
+  return prisma.user.findFirst({
+    where: {
+      OR: [{ username: data.username }, { email: data.email }, { contact: data.contact }],
+    },
+    select: { id: true },
+  });
+};
+
 export const createUser = async (userData: SignupUserRequestDto) => {
   return prisma.$transaction(async (tx) => {
     // 아파트가 존재하는지 확인

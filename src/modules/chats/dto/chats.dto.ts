@@ -6,6 +6,15 @@ import { PAGINATION } from '#constants/pagination.constant';
 // ==================== HTTP API 요청 DTO ====================
 
 /**
+ * 채팅방 생성 스키마 (관리자용)
+ * @description POST /api/chats/rooms (ADMIN) - Validator에서 사용
+ */
+export const createChatRoomByAdminSchema = z.object({
+  userId: z.uuid({ message: '유효한 관리자 ID가 아닙니다.' }),
+  residentId: z.uuid({ message: '유효한 입주민 ID가 아닙니다.' }),
+});
+
+/**
  * 채팅방 목록 조회 스키마 (관리자용)
  * @description GET /api/chats/rooms - Validator에서 사용
  */
@@ -61,6 +70,7 @@ export const createMessageSchema = z.object({
  */
 export type ChatUserRole = Extract<UserRole, 'ADMIN' | 'USER'>;
 
+export type CreateChatRoomByAdminDto = z.infer<typeof createChatRoomByAdminSchema>;
 export type GetChatRoomListDto = z.infer<typeof getChatRoomListSchema>;
 export type GetChatRoomByIdDto = z.infer<typeof getChatRoomByIdSchema>;
 export type GetMessageListDto = z.infer<typeof getMessageListSchema>;

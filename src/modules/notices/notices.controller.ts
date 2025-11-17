@@ -50,7 +50,6 @@ export const getNoticeList: RequestHandler = async (req, res, next) => {
       search: search ?? null,
     };
     const { notices, totalCount } = await getNoticeListService(dto, role, userId);
-    console.log(notices);
     return res.status(200).json({ notices, totalCount });
   } catch (err) {
     next(err);

@@ -11,6 +11,7 @@ import {
   patchUserListStatusRepo,
   getApartmentNameByAdminId,
   deleteRejectedUser,
+  isUserDuplicate,
 } from './auth.repo';
 import { SignupSuperAdminRequestDto, SignupAdminRequestDto, SignupUserRequestDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -38,6 +39,11 @@ export const registAdmin = async (data: SignupAdminRequestDto) => {
 };
 
 export const registUser = async (data: SignupUserRequestDto) => {
+  const duplicate = await isUserDuplicate(data);
+  if (duplicate) {
+    throw ApiError.conflict('이미 존재하는 사용자입니다.');
+  }
+
   const createdUser = await createUser({
     ...data,
     password: await hashPassword(data.password),
