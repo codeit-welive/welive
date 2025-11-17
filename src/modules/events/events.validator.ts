@@ -31,7 +31,7 @@ export const validateEventUpdateQuery: RequestHandler = async (req, res, next) =
 export const validateEventDeleteParams: RequestHandler = async (req, res, next) => {
   try {
     const validatedParams = await eventDeleteParamsInputSchema.parseAsync({
-      ...req.query,
+      ...req.params,
     });
 
     res.locals.params = validatedParams;
