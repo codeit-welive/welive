@@ -63,14 +63,14 @@ export const validateCsvHeader: RequestHandler = async (req, res, next) => {
 
     // 헤더 검사
     const headers = await extractHeaderFromBuffer(req.file.buffer);
-    if (headers.length === 0 || headers.length !== CSV_HEADERS.length) {
+    if (headers.length !== CSV_HEADERS.length) {
       return next(new ApiError(400, '잘못된 형식의 CSV 파일입니다'));
     }
 
-    for (const header of headers) {
-      if (!CSV_HEADERS.includes(header)) {
-        return next(new ApiError(400, '잘못된 형식의 CSV 파일입니다'));
-      }
+    // 헤더 목록에 없는 항목이 있는지 검사
+    const missingHeaders = CSV_HEADERS.filter((h) => !headers.includes(h));
+    if (missingHeaders.length > 0) {
+      return next(new ApiError(400, '잘못된 형식의 CSV 파일입니다'));
     }
     next();
   } catch (err) {
