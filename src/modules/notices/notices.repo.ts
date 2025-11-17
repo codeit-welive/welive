@@ -94,6 +94,9 @@ export const getNoticeListRepo = async (where: Prisma.NoticeWhereInput, pageSize
       where,
       skip,
       take: pageSize,
+      orderBy: {
+        createdAt: 'desc',
+      },
       select: {
         id: true,
         user: {

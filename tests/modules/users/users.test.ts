@@ -1,3 +1,8 @@
+/**
+ * @file tests/modules/users/users.test.ts
+ * @description Users PATCH /api/users/me 통합 테스트
+ */
+
 import request from 'supertest';
 import app from '#core/app';
 import prisma from '#core/prisma';
@@ -8,7 +13,6 @@ import ApiError from '#errors/ApiError';
 import { assertAllowedByMagic } from '#core/files/assertAllowedByMagic';
 import { processImageBeforeUpload } from '#core/files/processImageBeforeUpload';
 import { uploadImageToS3 } from '#core/aws/uploadImageToS3';
-import { deleteImageFromS3 } from '#core/aws/deleteImageFromS3';
 import { isPasswordValid, hashPassword } from '#helpers/passwordUtils';
 
 // mock
@@ -20,35 +24,63 @@ jest.mock('#helpers/passwordUtils');
 
 process.env.__SKIP_GLOBAL_DB_CLEANUP__ = 'true';
 
+const USER_EMAIL = 'update@test.com';
+const USERNAME = 'update_test_user';
+const APT_NAME = 'UsersTestAPT';
+
+const cleanupScope = async () => {
+  await prisma.$transaction([
+    prisma.comment.deleteMany({
+      where: { user: { email: USER_EMAIL } },
+    }),
+    prisma.notification.deleteMany({
+      where: { recipient: { email: USER_EMAIL } },
+    }),
+
+    prisma.user.deleteMany({
+      where: {
+        OR: [{ email: USER_EMAIL }, { username: USERNAME }],
+      },
+    }),
+
+    prisma.apartment.deleteMany({
+      where: { apartmentName: APT_NAME },
+    }),
+  ]);
+};
+
 describe('[Users] PATCH /api/users/me', () => {
   let user: any;
   let userToken: string;
 
   beforeAll(async () => {
-    await prisma.$transaction([
-      prisma.event.deleteMany(),
-      prisma.notification.deleteMany(),
-      prisma.comment.deleteMany(),
-      prisma.pollVote.deleteMany(),
-      prisma.pollOption.deleteMany(),
-      prisma.poll.deleteMany(),
-      prisma.complaint.deleteMany(),
-      prisma.notice.deleteMany(),
-      prisma.board.deleteMany(),
-      prisma.resident.deleteMany(),
-      prisma.user.deleteMany(),
-      prisma.apartment.deleteMany(),
-    ]);
+    await cleanupScope();
+
+    const apt = await prisma.apartment.create({
+      data: {
+        apartmentName: APT_NAME,
+        apartmentAddress: 'Users_Seoul',
+        startComplexNumber: '1',
+        endComplexNumber: '10',
+        startDongNumber: '101',
+        endDongNumber: '110',
+        startFloorNumber: '1',
+        endFloorNumber: '15',
+        startHoNumber: '1',
+        endHoNumber: '10',
+      },
+    });
 
     user = await prisma.user.create({
       data: {
-        username: 'update_test_user',
+        username: USERNAME,
         password: 'hashed_pw',
-        contact: '01011112222',
+        contact: '01000000051',
         name: '유우저',
-        email: 'update@test.com',
+        email: USER_EMAIL,
         role: 'USER',
         avatar: 'image',
+        apartment: { connect: { id: apt.id } },
       },
     });
 
@@ -58,6 +90,10 @@ describe('[Users] PATCH /api/users/me', () => {
       joinStatus: JoinStatus.APPROVED,
       isActive: true,
     });
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
   /**
@@ -137,6 +173,7 @@ describe('[Users] PATCH /api/users/me', () => {
   });
 
   afterAll(async () => {
+    await cleanupScope();
     await prisma.$disconnect();
   });
 });

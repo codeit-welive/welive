@@ -1,25 +1,50 @@
+/**
+ * @file tests/core/prisma/cascade.test.ts
+ * @description Prisma Cascade 동작 검증 테스트
+ */
+
 import prisma from '#core/prisma';
 
 describe('[Prisma][Cascade] Apartment 삭제 시 종속 데이터 자동 삭제', () => {
-  let apartmentId: string;
+  const APT_NAME = 'CascadeTestAPT';
+
+  const cleanupScope = async () => {
+    await prisma.$transaction([
+      prisma.complaint.deleteMany({
+        where: { apartment: { apartmentName: APT_NAME } },
+      }),
+      prisma.notice.deleteMany({
+        where: { apartment: { apartmentName: APT_NAME } },
+      }),
+      prisma.board.deleteMany({
+        where: { apartment: { apartmentName: APT_NAME } },
+      }),
+      prisma.resident.deleteMany({
+        where: { apartment: { apartmentName: APT_NAME } },
+      }),
+      prisma.user.deleteMany({
+        where: {
+          email: {
+            in: ['cascade_notice@test.com', 'cascade_complaint@test.com'],
+          },
+        },
+      }),
+      prisma.apartment.deleteMany({
+        where: { apartmentName: APT_NAME },
+      }),
+    ]);
+  };
 
   beforeAll(async () => {
-    await prisma.$transaction([
-      prisma.complaint.deleteMany(),
-      prisma.notice.deleteMany(),
-      prisma.board.deleteMany(),
-      prisma.resident.deleteMany(),
-      prisma.user.deleteMany(),
-      prisma.apartment.deleteMany(),
-    ]);
+    await cleanupScope();
   });
 
   it('Apartment 삭제 시 Resident/Notice/Complaint가 0건이어야 함', async () => {
     // 1. apartment 생성
     const apt = await prisma.apartment.create({
       data: {
-        apartmentName: 'Cascade',
-        apartmentAddress: 'Seoul',
+        apartmentName: APT_NAME,
+        apartmentAddress: 'Cascade_Seoul',
         startComplexNumber: '1',
         endComplexNumber: '10',
         startDongNumber: '101',
@@ -30,9 +55,9 @@ describe('[Prisma][Cascade] Apartment 삭제 시 종속 데이터 자동 삭제'
         endHoNumber: '10',
       },
     });
-    apartmentId = apt.id;
+    const apartmentId = apt.id;
 
-    // 2. 연동 Board 생성 (Noitce/Complaint)
+    // 2. 연동 Board 생성 (Notice/Complaint)
     const [boardNotice, boardComplaint] = await prisma.$transaction([
       prisma.board.create({
         data: {
@@ -48,12 +73,12 @@ describe('[Prisma][Cascade] Apartment 삭제 시 종속 데이터 자동 삭제'
       }),
     ]);
 
-    // 3. Resident/Noitce/Complaint 생성
+    // 3. Resident/Notice/Complaint 생성
     await prisma.$transaction(async (tx) => {
       await tx.resident.create({
         data: {
           name: '김아무개',
-          contact: '01011112222',
+          contact: '01000000001',
           building: '101',
           unitNumber: '101',
           apartment: { connect: { id: apartmentId } },
@@ -71,9 +96,9 @@ describe('[Prisma][Cascade] Apartment 삭제 시 종속 데이터 자동 삭제'
             create: {
               username: 'user_notice',
               password: 'password1!',
-              contact: '01033334444',
+              contact: '01000000002',
               name: '공지관리자',
-              email: 'notice@test.com',
+              email: 'cascade_notice@test.com',
               avatar: 'https://test.com/avatar/notice.png',
             },
           },
@@ -90,9 +115,9 @@ describe('[Prisma][Cascade] Apartment 삭제 시 종속 데이터 자동 삭제'
             create: {
               username: 'user_complaint',
               password: 'password2@',
-              contact: '01055556666',
+              contact: '01000000003',
               name: '민원작성자',
-              email: 'complaint@test.com',
+              email: 'cascade_complaint@test.com',
               avatar: 'https://test.com/avatar/complaint.png',
             },
           },
@@ -100,17 +125,18 @@ describe('[Prisma][Cascade] Apartment 삭제 시 종속 데이터 자동 삭제'
       });
     });
 
-    // 삭제 전 존재 확인
+    // 삭제 전 검증
     const [residentsBefore, noticesBefore, complaintsBefore] = await Promise.all([
       prisma.resident.count({ where: { apartmentId } }),
       prisma.notice.count({ where: { apartmentId } }),
       prisma.complaint.count({ where: { apartmentId } }),
     ]);
+
     expect(residentsBefore).toBe(1);
     expect(noticesBefore).toBe(1);
     expect(complaintsBefore).toBe(1);
 
-    // 4. Apartment 삭제
+    // 4. Apartment 삭제 (cascade 트리거)
     await prisma.apartment.delete({ where: { id: apartmentId } });
 
     // Cascade 확인
@@ -119,12 +145,14 @@ describe('[Prisma][Cascade] Apartment 삭제 시 종속 데이터 자동 삭제'
       prisma.notice.count({ where: { apartmentId } }),
       prisma.complaint.count({ where: { apartmentId } }),
     ]);
+
     expect(residentsAfter).toBe(0);
     expect(noticesAfter).toBe(0);
     expect(complaintsAfter).toBe(0);
   });
 
   afterAll(async () => {
+    await cleanupScope();
     await prisma.$disconnect();
   });
 });

@@ -8,6 +8,9 @@
 import path from 'path';
 import fs from 'fs';
 import ApiError from '#errors/ApiError';
+import { toCsv } from './utils/csvUtil';
+import { ResidentListRequestQueryDto } from './dto/resident.dto';
+import { getResidentListForDownload } from './residents.repo';
 
 export const ResidentFileService = {
   getTemplateFile() {
@@ -19,5 +22,16 @@ export const ResidentFileService = {
       filePath,
       downloadName: '입주민명부_템플릿.csv',
     };
+  },
+  async getResidentListFile(adminId: string, query: ResidentListRequestQueryDto) {
+    const residents = await getResidentListForDownload(adminId, query);
+    return (
+      '\uFEFF' +
+      toCsv(
+        residents,
+        ['building', 'unitNumber', 'name', 'contact', 'isHouseholder'],
+        ['동', '호수', '이름', '연락처', '세대주여부']
+      )
+    );
   },
 };

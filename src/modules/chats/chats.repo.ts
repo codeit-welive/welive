@@ -102,6 +102,21 @@ export const getByUserId = async (userId: string) => {
 };
 
 /**
+ * residentId로 채팅방 조회
+ * @description 입주민 ID로 채팅방 존재 여부 확인 (중복 생성 방지용)
+ * @param residentId - 입주민 ID
+ * @returns 채팅방 정보 또는 null
+ */
+export const getByResidentId = async (residentId: string) => {
+  return await prisma.chatRoom.findUnique({
+    where: {
+      residentId,
+    },
+    select: CHAT_ROOM_WITH_RELATIONS_SELECT,
+  });
+};
+
+/**
  * 채팅방 ID + 사용자 권한으로 조회 (USER용)
  * @description 입주민이 자신의 채팅방만 조회할 수 있도록 권한 체크 포함
  * @param chatRoomId - 채팅방 ID
@@ -179,6 +194,52 @@ export const getCountByAdminId = async (data: GetChatRoomListDto) => {
   });
 };
 
+// ==================== 입주민 조회 ====================
+
+/**
+ * User ID로 Resident 정보 조회
+ * @description User → Resident 변환 (채팅방 생성 시 apartmentId, residentId 추출용)
+ * @param userId - 사용자 ID
+ * @returns Resident 정보 (id, apartmentId) 또는 null
+ */
+export const getResidentByUserId = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      resident: {
+        select: {
+          id: true,
+          apartmentId: true,
+        },
+      },
+    },
+  });
+
+  return user?.resident || null;
+};
+
+/**
+ * Resident ID + 관리자 ID로 입주민 조회 (권한 검증용)
+ * @description 관리자가 자신의 아파트 입주민인지 확인
+ * @param residentId - 입주민 ID
+ * @param adminId - 관리자 ID
+ * @returns Resident 정보 또는 null (다른 아파트 소속이면 null)
+ */
+export const getResidentByIdWithApartmentCheck = async (residentId: string, adminId: string) => {
+  return await prisma.resident.findFirst({
+    where: {
+      id: residentId,
+      apartment: {
+        adminId,
+      },
+    },
+    select: {
+      id: true,
+      apartmentId: true,
+    },
+  });
+};
+
 // ==================== 채팅방 생성 ====================
 
 /**
@@ -194,9 +255,7 @@ export const createChatRoom = async (apartmentId: string, residentId: string) =>
       apartmentId,
       residentId,
     },
-    select: {
-      id: true,
-    },
+    select: CHAT_ROOM_WITH_RELATIONS_SELECT,
   });
 };
 
