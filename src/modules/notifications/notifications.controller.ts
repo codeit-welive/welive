@@ -11,6 +11,7 @@ import { markNotificationAsReadService } from './notifications.service';
 /**
  * @description 단일 알림 읽음 처리 컨트롤러
  */
+
 export const markNotificationAsReadController: RequestHandler = async (req, res, next) => {
   const notificationId = req.params.id;
   const userId = req.user.id;
@@ -19,14 +20,14 @@ export const markNotificationAsReadController: RequestHandler = async (req, res,
 
   try {
     await markNotificationAsReadService(notificationId, userId);
-    logger.notifications.info(`알림 읽음 처리 완료 (notificationId=${notificationId}, userId=${userId})`);
+    logger.notifications?.info?.(`알림 읽음 처리 완료 (notificationId=${notificationId}, userId=${userId})`);
 
     return res.status(200).json({
       message: '알림을 읽음 처리했습니다.',
       notificationId,
     });
   } catch (err) {
-    logger.notifications.warn(`알림 읽음 처리 실패 (notificationId=${notificationId}, userId=${userId})`);
+    logger.notifications?.warn?.(`알림 읽음 처리 실패 (notificationId=${notificationId}, userId=${userId})`);
     return next(err);
   }
 };

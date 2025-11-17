@@ -10,7 +10,8 @@ import fs from 'fs';
 import ApiError from '#errors/ApiError';
 import { toCsv } from './utils/csvUtil';
 import { ResidentListRequestQueryDto } from './dto/resident.dto';
-import { getResidentListForDownload } from './residents.repo';
+import { createMany, getApartmentIdByAdminId, getResidentListForDownload } from './residents.repo';
+import { ResidentCsvDto } from './dto/csv.dto';
 
 export const ResidentFileService = {
   getTemplateFile() {
@@ -33,5 +34,12 @@ export const ResidentFileService = {
         ['동', '호수', '이름', '연락처', '세대주여부']
       )
     );
+  },
+  async createResidentFromFile(adminId: string, data: ResidentCsvDto[]) {
+    const apartmentId = await getApartmentIdByAdminId(adminId);
+    if (!apartmentId) throw ApiError.notFound('해당 아파트가 존재하지 않습니다.');
+
+    const result = await createMany(data, apartmentId.id);
+    return result.count;
   },
 };
