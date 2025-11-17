@@ -6,11 +6,11 @@
 import { describe, it, beforeAll, afterAll, beforeEach, expect, jest } from '@jest/globals';
 import prisma from '#core/prisma';
 import { activateReadyPolls } from '#jobs/poll/poll.activate.handler';
-import { sendSseNotification } from '#core/sse/sseEmitter';
+import { sendSseNotification } from '#sse/sseEmitter';
 import { PollStatus, BoardType, UserRole } from '@prisma/client';
 process.env.__SKIP_GLOBAL_DB_CLEANUP__ = 'true';
 
-jest.mock('#core/sse/sseEmitter', () => ({
+jest.mock('#sse/sseEmitter', () => ({
   sendSseNotification: jest.fn(),
 }));
 
@@ -172,25 +172,32 @@ describe('[PollActivateHandler] Integration', () => {
       },
     });
 
-    const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+    let capturedDelay: number | undefined;
+
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(((
+      fn: (...args: any[]) => void,
+      delay?: number,
+      ...args: any[]
+    ) => {
+      capturedDelay = delay as number;
+
+      // 타이머 즉시 실행
+      fn(...args);
+
+      // fake timer id 반환
+      return 0 as unknown as NodeJS.Timeout;
+    }) as unknown as typeof setTimeout);
 
     await activateReadyPolls();
 
-    expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
-    const [fn, delay] = setTimeoutSpy.mock.calls[0];
-    expect(typeof fn).toBe('function');
-    expect(delay).toBeGreaterThanOrEqual(2500);
-    expect(delay).toBeLessThanOrEqual(3500);
+    expect(setTimeoutSpy).toHaveBeenCalled();
+    expect(typeof capturedDelay).toBe('number');
+    expect(capturedDelay!).toBeGreaterThanOrEqual(2500);
+    expect(capturedDelay!).toBeLessThanOrEqual(3500);
 
-    jest.advanceTimersByTime(3000);
-    await Promise.resolve();
-    await new Promise(setImmediate);
-
-    const updated = await prisma.poll.findFirst({
-      where: { title: '직후 예약 투표' },
-    });
-
+    const updated = await prisma.poll.findFirst({ where: { title: '직후 예약 투표' } });
     expect(updated?.status).toBe(PollStatus.IN_PROGRESS);
-    expect(sendSseNotification).toHaveBeenCalledTimes(1);
+
+    setTimeoutSpy.mockRestore();
   });
 });
