@@ -8,6 +8,7 @@ import {
   getPollDataByBoardId,
   upsertEventByNoticeId,
   upsertEventByPollId,
+  findEventByIdRepo,
 } from './events.repo';
 import { eventListQueryInputDTO, eventUpdateQueryInputDTO } from './dto/events.dto';
 import { getBoardTypeRepo } from '#modules/notices/notices.repo';
@@ -121,5 +122,10 @@ export const updateCreateEventService = async (query: eventUpdateQueryInputDTO) 
 };
 
 export const deleteEventService = async (eventId: string) => {
+  const exists = await findEventByIdRepo(eventId);
+  if (!exists) {
+    throw ApiError.notFound('이벤트를 찾을 수 없습니다.');
+  }
+
   return deleteEventRepo(eventId);
 };

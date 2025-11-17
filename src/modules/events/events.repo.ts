@@ -185,6 +185,22 @@ export const upsertEventByPollId = async (
   });
 };
 
+export const findEventByIdRepo = async (eventId: string) => {
+  return prisma.event.findUnique({
+    where: {
+      id: eventId,
+    },
+    select: {
+      id: true,
+      startDate: true,
+      endDate: true,
+      boardType: true,
+      noticeId: true,
+      pollId: true,
+    },
+  });
+};
+
 export const deleteEventRepo = async (eventId: string) => {
   return await prisma.event.delete({
     where: {
