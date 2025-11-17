@@ -21,8 +21,13 @@ export const createEvent: RequestHandler = async (req, res, next) => {
 };
 
 export const deleteEvent: RequestHandler = async (req, res, next) => {
-  const params = res.locals.params as eventDeleteParamsInputDTO;
-  const eventId = params.eventId;
-  const deletedEvent = await deleteEventService(eventId);
-  return res.status(200).json(deletedEvent);
+  try {
+    const params = res.locals.params as eventDeleteParamsInputDTO;
+    const eventId = params.eventId;
+
+    const deletedEvent = await deleteEventService(eventId);
+    return res.status(200).json(deletedEvent);
+  } catch (err) {
+    next(err);
+  }
 };
