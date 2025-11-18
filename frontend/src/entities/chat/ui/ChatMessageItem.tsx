@@ -1,8 +1,10 @@
 /**
  * ChatMessageItem 컴포넌트
  * @description 개별 채팅 메시지를 표시하는 컴포넌트
+ * @performance React.memo로 최적화 - props 변경 시에만 리렌더링
  */
 
+import { memo } from 'react';
 import type { ChatMessage } from '../api/chat.types';
 
 interface ChatMessageItemProps {
@@ -24,7 +26,7 @@ interface ChatMessageItemProps {
   userRole?: 'ADMIN' | 'USER';
 }
 
-export function ChatMessageItem({ message, currentUserId, userRole }: ChatMessageItemProps) {
+export const ChatMessageItem = memo(function ChatMessageItem({ message, currentUserId, userRole }: ChatMessageItemProps) {
   const isMyMessage = message.senderId === currentUserId;
   const createdAt = new Date(message.createdAt);
 
@@ -86,4 +88,4 @@ export function ChatMessageItem({ message, currentUserId, userRole }: ChatMessag
       </div>
     </div>
   );
-}
+});
