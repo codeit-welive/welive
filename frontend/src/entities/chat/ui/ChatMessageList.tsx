@@ -3,9 +3,10 @@
  * @description 채팅 메시지 목록을 표시하는 컴포넌트
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import type { ChatMessage } from '../api/chat.types';
 import { ChatMessageItem } from './ChatMessageItem';
+import { useUnreadMessageScroll } from '../model/useUnreadMessageScroll';
 
 /**
  * 날짜를 명확한 형식으로 포맷
@@ -52,6 +53,22 @@ interface ChatMessageListProps {
    * 더 불러올 메시지가 있는지 여부
    */
   hasMore?: boolean;
+
+  /**
+   * 채팅방 ID (변경 감지용)
+   */
+  chatRoomId?: string;
+
+  /**
+   * 초기 읽음 상태 스냅샷 (메시지 로드 직후 상태)
+   * @description markAsRead()보다 먼저 캡처된 읽음 상태
+   */
+  initialReadStates?: Map<string, boolean>;
+
+  /**
+   * 마지막 메시지 전송 시간 (내가 보낸 메시지는 무조건 스크롤)
+   */
+  lastMessageSentTime?: number;
 }
 
 export function ChatMessageList({
@@ -61,20 +78,30 @@ export function ChatMessageList({
   isLoading = false,
   onLoadMore,
   hasMore = false,
+  chatRoomId,
+  initialReadStates,
+  lastMessageSentTime,
 }: ChatMessageListProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
 
-  // 새 메시지가 오면 자동으로 스크롤 아래로 (초기 로딩 또는 새 메시지 수신 시)
-  useEffect(() => {
-    if (scrollRef.current && shouldScrollToBottom) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, shouldScrollToBottom]);
+  // 읽지 않은 메시지 스크롤 관리 커스텀 훅
+  const {
+    scrollRef,
+    unreadMarkerRef,
+    handleScroll: handleUnreadScroll,
+    getUnreadMarkerInfo,
+  } = useUnreadMessageScroll({
+    messages,
+    chatRoomId,
+    initialReadStates,
+    lastMessageSentTime,
+  });
 
   // 스크롤 이벤트 핸들러: 맨 위로 스크롤 시 이전 메시지 로드
   const handleScroll = async () => {
+    // 읽지 않은 메시지 스크롤 감지
+    handleUnreadScroll();
+
     const scrollElement = scrollRef.current;
     if (!scrollElement || !onLoadMore || !hasMore || isLoadingMore) {
       return;
@@ -83,15 +110,12 @@ export function ChatMessageList({
     // 스크롤이 맨 위에 도달했는지 확인 (여유 50px)
     if (scrollElement.scrollTop < 50) {
       setIsLoadingMore(true);
-      setShouldScrollToBottom(false); // 이전 메시지 로드 시에는 스크롤 위치 유지
 
-      // 현재 스크롤 높이 저장 (새 메시지 추가 후 위치 유지용)
       const previousScrollHeight = scrollElement.scrollHeight;
 
       try {
         await onLoadMore();
 
-        // 새 메시지가 추가된 후 스크롤 위치 조정 (사용자가 보던 위치 유지)
         setTimeout(() => {
           if (scrollElement) {
             const newScrollHeight = scrollElement.scrollHeight;
@@ -157,6 +181,9 @@ export function ChatMessageList({
         // 날짜가 바뀔 때만 구분선 표시 (첫 메시지 제외)
         const showDateDivider = prevDate !== null && currentDate !== prevDate;
 
+        // 읽지 않은 메시지 마커 표시 여부
+        const showUnreadMarker = getUnreadMarkerInfo(message, prevMessage);
+
         return (
           <div key={message.id}>
             {/* 날짜 구분선 */}
@@ -167,6 +194,20 @@ export function ChatMessageList({
                   {formatDateDivider(message.createdAt.toString())}
                 </span>
                 <div className="flex-1 border-t border-gray-300"></div>
+              </div>
+            )}
+
+            {/* 읽지 않은 메시지 구분선 */}
+            {showUnreadMarker && (
+              <div
+                ref={unreadMarkerRef}
+                className="flex items-center justify-center my-6"
+              >
+                <div className="flex-1 border-t-2 border-blue-400"></div>
+                <span className="px-4 text-sm text-blue-600 font-semibold">
+                  여기까지 읽었습니다
+                </span>
+                <div className="flex-1 border-t-2 border-blue-400"></div>
               </div>
             )}
 

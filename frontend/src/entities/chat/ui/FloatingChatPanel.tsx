@@ -39,6 +39,12 @@ export function FloatingChatPanel() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
 
+  // 초기 읽음 상태 스냅샷 (markAsRead 실행 전 상태)
+  const [initialReadStates, setInitialReadStates] = useState<Map<string, boolean>>(new Map());
+
+  // 메시지 전송 시간 추적 (자동 스크롤용)
+  const [lastMessageSentTime, setLastMessageSentTime] = useState<number>(0);
+
   const isAdmin = user?.role === 'ADMIN';
   const isResident = user?.role === 'USER';
 
@@ -183,8 +189,18 @@ export function FloatingChatPanel() {
       setCurrentPage(1);
       setHasMoreMessages(false);
 
-      // getChatRoom으로 채팅방 상세 + 최근 메시지 50개(1페이지) 한 번에 조회
       const roomDetail = await getChatRoom(room.id);
+
+      // 초기 읽음 상태 스냅샷 생성
+      const snapshot = new Map<string, boolean>();
+      const unreadCount = room.unreadCountAdmin;
+
+      roomDetail.recentMessages.forEach((message, index) => {
+        const shouldBeUnread = index < unreadCount;
+        snapshot.set(message.id, !shouldBeUnread);
+      });
+
+      setInitialReadStates(snapshot);
 
       setMessages(roomDetail.recentMessages);
       setCurrentPage(1); // 이미 1페이지를 로드했음
@@ -281,8 +297,18 @@ export function FloatingChatPanel() {
         setCurrentPage(1);
         setHasMoreMessages(false);
 
-        // getChatRoom으로 채팅방 상세 + 최근 메시지 50개(1페이지) 한 번에 조회
         const roomDetail = await getChatRoom(chatRoom.id);
+
+        // 초기 읽음 상태 스냅샷 생성
+        const snapshot = new Map<string, boolean>();
+        const unreadCount = chatRoom.unreadCountResident;
+
+        roomDetail.recentMessages.forEach((message, index) => {
+          const shouldBeUnread = index < unreadCount;
+          snapshot.set(message.id, !shouldBeUnread);
+        });
+
+        setInitialReadStates(snapshot);
 
         setMessages(roomDetail.recentMessages);
         setCurrentPage(1); // 이미 1페이지를 로드했음
@@ -339,6 +365,7 @@ export function FloatingChatPanel() {
 
   const handleSendMessage = (content: string) => {
     sendMessage(content);
+    setLastMessageSentTime(Date.now());
   };
 
   // ==================== 렌더링 ====================
@@ -462,6 +489,9 @@ export function FloatingChatPanel() {
                   isLoading={false}
                   onLoadMore={handleLoadMoreMessages}
                   hasMore={hasMoreMessages}
+                  chatRoomId={selectedRoom.id}
+                  initialReadStates={initialReadStates}
+                  lastMessageSentTime={lastMessageSentTime}
                 />
 
                 {/* 입력창 */}
@@ -515,6 +545,9 @@ export function FloatingChatPanel() {
                   isLoading={false}
                   onLoadMore={handleLoadMoreMessages}
                   hasMore={hasMoreMessages}
+                  chatRoomId={chatRoom?.id}
+                  initialReadStates={initialReadStates}
+                  lastMessageSentTime={lastMessageSentTime}
                 />
                 <ChatInput
                   onSend={handleSendMessage}
