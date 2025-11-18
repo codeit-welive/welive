@@ -3,7 +3,7 @@
  * @description 채팅 메시지 목록을 표시하는 컴포넌트
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ChatMessage } from '../api/chat.types';
 import { ChatMessageItem } from './ChatMessageItem';
 import { useUnreadMessageScroll } from '../model/useUnreadMessageScroll';
@@ -69,6 +69,11 @@ interface ChatMessageListProps {
    * 마지막 메시지 전송 시간 (내가 보낸 메시지는 무조건 스크롤)
    */
   lastMessageSentTime?: number;
+
+  /**
+   * 상대방이 타이핑 중인지 여부
+   */
+  isOtherUserTyping?: boolean;
 }
 
 export function ChatMessageList({
@@ -81,6 +86,7 @@ export function ChatMessageList({
   chatRoomId,
   initialReadStates,
   lastMessageSentTime,
+  isOtherUserTyping = false,
 }: ChatMessageListProps) {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -90,12 +96,29 @@ export function ChatMessageList({
     unreadMarkerRef,
     handleScroll: handleUnreadScroll,
     getUnreadMarkerInfo,
+    isNearBottom,
   } = useUnreadMessageScroll({
     messages,
     chatRoomId,
     initialReadStates,
     lastMessageSentTime,
   });
+
+  // 타이핑 인디케이터가 나타날 때 스크롤 (맨 아래 근처에 있을 때만)
+  useEffect(() => {
+    if (isOtherUserTyping && isNearBottom) {
+      const scrollElement = scrollRef.current;
+      if (scrollElement) {
+        // 부드러운 스크롤로 맨 아래로 이동
+        setTimeout(() => {
+          scrollElement.scrollTo({
+            top: scrollElement.scrollHeight,
+            behavior: 'smooth',
+          });
+        }, 100);
+      }
+    }
+  }, [isOtherUserTyping, isNearBottom, scrollRef]);
 
   // 스크롤 이벤트 핸들러: 맨 위로 스크롤 시 이전 메시지 로드
   const handleScroll = async () => {
@@ -220,6 +243,22 @@ export function ChatMessageList({
           </div>
         );
       })}
+
+      {/* 타이핑 인디케이터 */}
+      {isOtherUserTyping && (
+        <div className="flex items-start mb-4">
+          <div className="max-w-xs bg-white rounded-lg px-4 py-2 shadow-sm">
+            <div className="flex items-center space-x-1">
+              <span className="text-sm text-gray-600">상대방이 입력 중</span>
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

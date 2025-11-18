@@ -124,6 +124,18 @@ export interface SocketMessagesReadData {
   updatedCount: number;
 }
 
+export interface SocketTypingData {
+  chatRoomId: string;
+  isTyping: boolean;
+}
+
+export interface SocketUserTypingData {
+  chatRoomId: string;
+  userId: string;
+  userName: string;
+  isTyping: boolean;
+}
+
 export interface SocketErrorData {
   message: string;
 }

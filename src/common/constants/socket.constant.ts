@@ -15,6 +15,8 @@ export const SOCKET_EVENTS_RECEIVE = {
   SEND_MESSAGE: 'send_message',
   /** 읽음 처리 */
   MARK_AS_READ: 'mark_as_read',
+  /** 타이핑 중 */
+  TYPING: 'typing',
 } as const;
 
 /**
@@ -29,6 +31,8 @@ export const SOCKET_EVENTS_SEND = {
   NEW_MESSAGE: 'new_message',
   /** 메시지 읽음 처리 (브로드캐스트) */
   MESSAGES_READ: 'messages_read',
+  /** 타이핑 중 (브로드캐스트) */
+  USER_TYPING: 'user_typing',
   /** 에러 이벤트 */
   ERROR_EVENT: 'error_event',
 } as const;

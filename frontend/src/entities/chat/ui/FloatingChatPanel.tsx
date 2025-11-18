@@ -11,6 +11,7 @@ import { useChatStore } from '@/shared/store/chat.store';
 import { getMyChatRoom, createMyChatRoom, getChatRoomList, createChatRoomByAdmin, getMessageList, getChatRoom } from '../api/chat.api';
 import type { ChatMessage, ChatRoom } from '../api/chat.types';
 import { useChatSocket } from '../model/useChatSocket';
+import { useTypingIndicator } from '../model/useTypingIndicator';
 import { ChatMessageList, ChatInput } from '../ui';
 import axios from '@/shared/lib/axios';
 import type { residentInfoType } from '@/entities/resident-info/type';
@@ -119,6 +120,14 @@ export function FloatingChatPanel() {
       },
     },
   );
+
+  // ==================== 타이핑 인디케이터 ====================
+
+  const { isOtherUserTyping, emitTyping } = useTypingIndicator({
+    socket: getSocket(),
+    chatRoomId: isAdmin ? selectedRoom?.id : chatRoom?.id,
+    currentUserId: user?.id,
+  });
 
   // ==================== Admin: 채팅방 목록 불러오기 ====================
 
@@ -492,6 +501,7 @@ export function FloatingChatPanel() {
                   chatRoomId={selectedRoom.id}
                   initialReadStates={initialReadStates}
                   lastMessageSentTime={lastMessageSentTime}
+                  isOtherUserTyping={isOtherUserTyping}
                 />
 
                 {/* 입력창 */}
@@ -499,6 +509,7 @@ export function FloatingChatPanel() {
                   onSend={handleSendMessage}
                   disabled={!isConnected || !isJoinedRoom}
                   placeholder={isConnected && isJoinedRoom ? '메시지를 입력하세요...' : '연결 중...'}
+                  onTyping={emitTyping}
                 />
               </div>
             )}
@@ -548,11 +559,13 @@ export function FloatingChatPanel() {
                   chatRoomId={chatRoom?.id}
                   initialReadStates={initialReadStates}
                   lastMessageSentTime={lastMessageSentTime}
+                  isOtherUserTyping={isOtherUserTyping}
                 />
                 <ChatInput
                   onSend={handleSendMessage}
                   disabled={!isConnected || !isJoinedRoom}
                   placeholder={isConnected && isJoinedRoom ? '메시지를 입력하세요...' : '연결 중...'}
+                  onTyping={emitTyping}
                 />
               </>
             )}

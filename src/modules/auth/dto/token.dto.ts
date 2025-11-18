@@ -6,6 +6,7 @@ export interface DecodedToken extends JwtPayload {
   role: User['role'];
   joinStatus: User['joinStatus'];
   isActive: boolean;
+  name: string;
 }
 
 export interface RefreshDto {

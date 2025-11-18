@@ -186,6 +186,41 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
+
+    /**
+     * 타이핑 중 이벤트
+     * @event typing
+     * @description 클라이언트가 메시지를 입력 중일 때 실행
+     */
+    socket.on(SOCKET_EVENTS_RECEIVE.TYPING, async (data: { chatRoomId: string; isTyping: boolean }) => {
+      try {
+        // 1. 데이터 추출
+        const { chatRoomId, isTyping } = data;
+        const { user } = socket as AuthenticatedSocket;
+
+        // 2. Room 입장 확인 (메모리)
+        if (!socket.rooms.has(chatRoomId)) {
+          throw ApiError.forbidden(CHAT_ERROR_MESSAGES.MUST_JOIN_ROOM_FIRST);
+        }
+
+        // 3. 같은 Room의 다른 사용자들에게만 브로드캐스트 (본인 제외)
+        socket.to(chatRoomId).emit(SOCKET_EVENTS_SEND.USER_TYPING, {
+          chatRoomId,
+          userId: user.id,
+          userName: user.name,
+          isTyping,
+        });
+
+        // 4. 로깅
+        logger.system.info(
+          `⌨️ 타이핑: User ${user.id} (${user.name}) → Room ${chatRoomId} (${isTyping ? '입력 중' : '중지'})`
+        );
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+        logger.system.error(`❌ 타이핑 이벤트 에러: ${errorMessage}`);
+        socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
+      }
+    });
   });
 
   return io;

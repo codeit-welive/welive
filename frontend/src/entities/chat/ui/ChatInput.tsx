@@ -3,7 +3,7 @@
  * @description 메시지 입력창
  */
 
-import { useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useState, type FormEvent, type KeyboardEvent, type ChangeEvent } from 'react';
 
 interface ChatInputProps {
   /**
@@ -20,12 +20,18 @@ interface ChatInputProps {
    * Placeholder 텍스트
    */
   placeholder?: string;
+
+  /**
+   * 타이핑 이벤트 전송 함수
+   */
+  onTyping?: (isTyping: boolean) => void;
 }
 
 export function ChatInput({
   onSend,
   disabled = false,
   placeholder = '메시지를 입력하세요...',
+  onTyping,
 }: ChatInputProps) {
   const [message, setMessage] = useState('');
 
@@ -35,8 +41,27 @@ export function ChatInput({
     const trimmedMessage = message.trim();
     if (!trimmedMessage) return;
 
+    // 메시지 전송 시 타이핑 중지 이벤트 전송
+    if (onTyping) {
+      onTyping(false);
+    }
+
     onSend(trimmedMessage);
     setMessage(''); // 전송 후 입력창 비우기
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setMessage(newValue);
+
+    // 타이핑 이벤트 전송
+    if (onTyping) {
+      if (newValue.length > 0) {
+        onTyping(true); // 입력 중
+      } else {
+        onTyping(false); // 입력 중지
+      }
+    }
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -53,7 +78,7 @@ export function ChatInput({
       <div className="flex gap-2">
         <textarea
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder={placeholder}
