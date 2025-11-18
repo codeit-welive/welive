@@ -143,17 +143,16 @@ export const useChatSocket = (
 
   useEffect(() => {
     // Socket 생성 (쿠키로 자동 인증)
+    // getSocket()은 이미 존재하는 Socket이 disconnect 상태면 자동으로 재연결 시도
     const socketInstance = getSocket();
     setSocket(socketInstance);
 
     // 연결 상태 이벤트
     const handleConnect = () => {
-      console.log('✅ useChatSocket: Socket 연결됨');
       setIsConnected(true);
     };
 
-    const handleDisconnect = (reason: string) => {
-      console.log('👋 useChatSocket: Socket 연결 해제:', reason);
+    const handleDisconnect = () => {
       setIsConnected(false);
       setIsJoinedRoom(false);
     };
@@ -175,7 +174,8 @@ export const useChatSocket = (
         disconnectSocket();
       }
     };
-  }, [disconnectOnUnmount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Socket 연결은 Hook 마운트 시 1회만 (chatRoomId 변경 시 재연결 불필요, Room 입장은 별도 useEffect)
 
   // ==================== 채팅방 입장/퇴장 ====================
 
@@ -184,14 +184,11 @@ export const useChatSocket = (
       return;
     }
 
-    console.log(`🚪 useChatSocket: 채팅방 입장 시도 [${chatRoomId}]`);
-
     // 채팅방 입장
     socket.emit(SOCKET_EVENTS_RECEIVE.JOIN_ROOM, { chatRoomId });
 
     // 정리: 채팅방 퇴장
     return () => {
-      console.log(`🚪 useChatSocket: 채팅방 퇴장 [${chatRoomId}]`);
       socket.emit(SOCKET_EVENTS_RECEIVE.LEAVE_ROOM, { chatRoomId });
       setIsJoinedRoom(false);
     };
@@ -258,13 +255,7 @@ export const useChatSocket = (
    */
   const sendMessage = useCallback(
     (content: string) => {
-      if (!socket || !chatRoomId) {
-        console.warn('⚠️ useChatSocket: Socket 또는 chatRoomId가 없습니다');
-        return;
-      }
-
-      if (!isJoinedRoom) {
-        console.warn('⚠️ useChatSocket: 채팅방에 입장하지 않았습니다');
+      if (!socket || !chatRoomId || !isJoinedRoom) {
         return;
       }
 
@@ -280,13 +271,7 @@ export const useChatSocket = (
    * 읽음 처리
    */
   const markAsRead = useCallback(() => {
-    if (!socket || !chatRoomId) {
-      console.warn('⚠️ useChatSocket: Socket 또는 chatRoomId가 없습니다');
-      return;
-    }
-
-    if (!isJoinedRoom) {
-      console.warn('⚠️ useChatSocket: 채팅방에 입장하지 않았습니다');
+    if (!socket || !chatRoomId || !isJoinedRoom) {
       return;
     }
 

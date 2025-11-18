@@ -14,7 +14,7 @@ import { useChatSocket } from '../model/useChatSocket';
 import { ChatMessageList, ChatInput } from '../ui';
 import axios from '@/shared/lib/axios';
 import type { residentInfoType } from '@/entities/resident-info/type';
-import { disconnectSocket } from '../lib/socket';
+import { getSocket } from '../lib/socket';
 
 export function FloatingChatPanel() {
   const { user } = useAuthStore();
@@ -42,14 +42,15 @@ export function FloatingChatPanel() {
   const isAdmin = user?.role === 'ADMIN';
   const isResident = user?.role === 'USER';
 
-  // ==================== 로그아웃 시 Socket 연결 해제 ====================
+  // ==================== Socket 재연결 시도 ====================
 
+  // 채팅 패널이 열릴 때 Socket 재연결 시도
   useEffect(() => {
-    // 로그아웃 시에만 Socket 연결 해제 (로그인 시 연결은 useChatSocket이 담당)
-    if (!user) {
-      disconnectSocket();
+    if (isOpen) {
+      // getSocket()은 Socket이 disconnect 상태면 자동으로 재연결 시도
+      getSocket();
     }
-  }, [user]);
+  }, [isOpen]);
 
   // ==================== Socket.io 연결 ====================
 
@@ -88,7 +89,7 @@ export function FloatingChatPanel() {
         }
       },
       onMessagesRead: (data) => {
-        // 읽음 처리 후 채팅방 목록의 unreadCount 업데이트
+        // Admin: 채팅방 목록의 unreadCount 업데이트
         if (isAdmin) {
           setChatRooms((prev) =>
             prev.map((room) =>
@@ -96,6 +97,13 @@ export function FloatingChatPanel() {
                 ? { ...room, unreadCountAdmin: 0 }
                 : room
             )
+          );
+        }
+
+        // Resident: 내 채팅방의 unreadCount 업데이트
+        if (isResident && chatRoom?.id === data.chatRoomId) {
+          setChatRoom((prev) =>
+            prev ? { ...prev, unreadCountResident: 0 } : prev
           );
         }
       },
@@ -108,8 +116,9 @@ export function FloatingChatPanel() {
 
   // ==================== Admin: 채팅방 목록 불러오기 ====================
 
+  // Admin 로그인 시 채팅방 목록 로드 (읽지 않은 메시지 카운트 계산용)
   useEffect(() => {
-    if (!isOpen || !isAdmin) return;
+    if (!isAdmin) return;
 
     const loadChatRooms = async () => {
       try {
@@ -125,7 +134,7 @@ export function FloatingChatPanel() {
     };
 
     loadChatRooms();
-  }, [isOpen, isAdmin]);
+  }, [isAdmin]); // isOpen 제거 - 로그인 시 즉시 로드
 
   // ==================== 읽지 않은 메시지 수 업데이트 ====================
 
@@ -147,11 +156,21 @@ export function FloatingChatPanel() {
   // ==================== Socket 읽음 처리 ====================
 
   useEffect(() => {
-    // 채팅방에 입장하고 Socket이 연결되면 자동으로 읽음 처리
-    if (isJoinedRoom && (selectedRoom || chatRoom)) {
+    // 패널이 열리고, 채팅방에 입장했을 때만 읽음 처리
+    if (!isOpen || !isJoinedRoom) return;
+
+    // Admin: 선택된 채팅방에 읽지 않은 메시지가 있을 때
+    if (isAdmin && selectedRoom && selectedRoom.unreadCountAdmin > 0) {
+      markAsRead();
+      return;
+    }
+
+    // Resident: 내 채팅방에 읽지 않은 메시지가 있을 때
+    if (isResident && chatRoom && chatRoom.unreadCountResident > 0) {
       markAsRead();
     }
-  }, [isJoinedRoom, selectedRoom, chatRoom, markAsRead]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, isJoinedRoom, isAdmin, isResident, selectedRoom?.id, chatRoom?.unreadCountResident]);
 
   // ==================== Admin: 채팅방 선택 시 메시지 로드 ====================
 
