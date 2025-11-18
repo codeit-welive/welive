@@ -7,6 +7,21 @@ import { useEffect, useRef, useState } from 'react';
 import type { ChatMessage } from '../api/chat.types';
 import { ChatMessageItem } from './ChatMessageItem';
 
+/**
+ * 날짜를 명확한 형식으로 포맷
+ * @param dateString ISO 형식의 날짜 문자열
+ * @returns "2025년 1월 18일" 형식
+ */
+function formatDateDivider(dateString: string): string {
+  const date = new Date(dateString);
+
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
 interface ChatMessageListProps {
   /**
    * 메시지 목록
@@ -131,14 +146,39 @@ export function ChatMessageList({
       )}
 
       {/* 메시지를 오래된 순서대로 표시 (백엔드는 최신순으로 주므로 reverse) */}
-      {[...messages].reverse().map((message) => (
-        <ChatMessageItem
-          key={message.id}
-          message={message}
-          currentUserId={currentUserId}
-          userRole={userRole}
-        />
-      ))}
+      {[...messages].reverse().map((message, index, reversedMessages) => {
+        // 이전 메시지 가져오기
+        const prevMessage = index > 0 ? reversedMessages[index - 1] : null;
+
+        // 현재 메시지와 이전 메시지의 날짜 비교
+        const currentDate = new Date(message.createdAt).toDateString();
+        const prevDate = prevMessage ? new Date(prevMessage.createdAt).toDateString() : null;
+
+        // 날짜가 바뀔 때만 구분선 표시 (첫 메시지 제외)
+        const showDateDivider = prevDate !== null && currentDate !== prevDate;
+
+        return (
+          <div key={message.id}>
+            {/* 날짜 구분선 */}
+            {showDateDivider && (
+              <div className="flex items-center justify-center my-4">
+                <div className="flex-1 border-t border-gray-300"></div>
+                <span className="px-4 text-sm text-gray-500 font-medium">
+                  {formatDateDivider(message.createdAt.toString())}
+                </span>
+                <div className="flex-1 border-t border-gray-300"></div>
+              </div>
+            )}
+
+            {/* 메시지 */}
+            <ChatMessageItem
+              message={message}
+              currentUserId={currentUserId}
+              userRole={userRole}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
