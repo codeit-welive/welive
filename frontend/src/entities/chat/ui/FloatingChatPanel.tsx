@@ -74,13 +74,13 @@ export function FloatingChatPanel() {
           setChatRooms((prev) => {
             const updatedRooms = prev.map((room) => {
               if (room.id === message.chatRoomId) {
-                // 현재 채팅방이 선택되어 있지 않으면 읽지 않은 메시지 수 증가
-                const isCurrentRoom = selectedRoom?.id === message.chatRoomId;
+                const isMyMessage = message.senderId === user?.id;
+                const newUnreadCount = isMyMessage ? 0 : room.unreadCountAdmin + 1;
                 return {
                   ...room,
                   lastMessage: message.content,
                   lastMessageAt: message.createdAt,
-                  unreadCountAdmin: isCurrentRoom ? room.unreadCountAdmin : room.unreadCountAdmin + 1,
+                  unreadCountAdmin: newUnreadCount,
                 };
               }
               return room;
@@ -94,10 +94,29 @@ export function FloatingChatPanel() {
             });
           });
         }
+
+        // Resident: 채팅방 정보 업데이트 + 읽지 않은 메시지 수 증가
+        if (isResident && chatRoom && message.chatRoomId === chatRoom.id) {
+          const isMyMessage = message.senderId === user?.id;
+          const newUnreadCount = isMyMessage ? 0 : chatRoom.unreadCountResident + 1;
+
+          setChatRoom((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  lastMessage: message.content,
+                  lastMessageAt: message.createdAt,
+                  unreadCountResident: newUnreadCount,
+                }
+              : prev
+          );
+        }
       },
       onMessagesRead: (data) => {
-        // Admin: 채팅방 목록의 unreadCount 업데이트
-        if (isAdmin) {
+        // 상대방이 읽었을 때만 내 안읽음 표시 제거
+
+        // Admin이 받는 경우: Resident가 읽었다는 알림 → Admin의 안읽음 표시 제거
+        if (isAdmin && data.role === 'USER') {
           setChatRooms((prev) =>
             prev.map((room) =>
               room.id === data.chatRoomId
@@ -105,12 +124,30 @@ export function FloatingChatPanel() {
                 : room
             )
           );
+
+          // 현재 화면에 표시된 메시지들의 읽음 상태 업데이트
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.chatRoomId === data.chatRoomId
+                ? { ...msg, isReadByResident: true }
+                : msg
+            )
+          );
         }
 
-        // Resident: 내 채팅방의 unreadCount 업데이트
-        if (isResident && chatRoom?.id === data.chatRoomId) {
+        // Resident가 받는 경우: Admin이 읽었다는 알림 → Resident의 안읽음 표시 제거
+        if (isResident && data.role === 'ADMIN' && chatRoom?.id === data.chatRoomId) {
           setChatRoom((prev) =>
             prev ? { ...prev, unreadCountResident: 0 } : prev
+          );
+
+          // 현재 화면에 표시된 메시지들의 읽음 상태 업데이트
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.chatRoomId === data.chatRoomId
+                ? { ...msg, isReadByAdmin: true }
+                : msg
+            )
           );
         }
       },
@@ -168,6 +205,18 @@ export function FloatingChatPanel() {
     }
   }, [isResident, chatRoom, setUnreadCount]);
 
+  // ==================== selectedRoom 동기화 (Admin용) ====================
+
+  useEffect(() => {
+    // Admin: chatRooms가 업데이트되면 selectedRoom도 동기화
+    if (isAdmin && selectedRoom) {
+      const updatedRoom = chatRooms.find((room) => room.id === selectedRoom.id);
+      if (updatedRoom && updatedRoom !== selectedRoom) {
+        setSelectedRoom(updatedRoom);
+      }
+    }
+  }, [isAdmin, chatRooms, selectedRoom]);
+
   // ==================== Socket 읽음 처리 ====================
 
   useEffect(() => {
@@ -177,15 +226,30 @@ export function FloatingChatPanel() {
     // Admin: 선택된 채팅방에 읽지 않은 메시지가 있을 때
     if (isAdmin && selectedRoom && selectedRoom.unreadCountAdmin > 0) {
       markAsRead();
+      setChatRooms((prev) =>
+        prev.map((room) =>
+          room.id === selectedRoom.id ? { ...room, unreadCountAdmin: 0 } : room
+        )
+      );
       return;
     }
 
     // Resident: 내 채팅방에 읽지 않은 메시지가 있을 때
     if (isResident && chatRoom && chatRoom.unreadCountResident > 0) {
       markAsRead();
+      setChatRoom((prev) => (prev ? { ...prev, unreadCountResident: 0 } : prev));
+
+      // initialReadStates를 모두 읽음(true)으로 업데이트하여 "여기까지 읽었습니다" 마커 제거
+      setInitialReadStates((prev) => {
+        const newStates = new Map(prev);
+        messages.forEach((msg) => {
+          newStates.set(msg.id, true);
+        });
+        return newStates;
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, isJoinedRoom, isAdmin, isResident, selectedRoom?.id, chatRoom?.unreadCountResident]);
+  }, [isOpen, isJoinedRoom, isAdmin, isResident, selectedRoom?.id, selectedRoom?.unreadCountAdmin, chatRoom?.unreadCountResident, messages.length]);
 
   // ==================== Admin: 채팅방 선택 시 메시지 로드 ====================
 
@@ -216,14 +280,7 @@ export function FloatingChatPanel() {
       // 초기에는 항상 true로 설정 (스크롤 시 실제 페이지네이션으로 판단)
       setHasMoreMessages(true);
 
-      // 채팅방 입장 시 읽지 않은 메시지 수를 0으로 리셋
-      setChatRooms((prev) =>
-        prev.map((r) =>
-          r.id === room.id
-            ? { ...r, unreadCountAdmin: 0 }
-            : r
-        )
-      );
+      // ✅ unreadCountAdmin을 0으로 리셋하지 않음 - markAsRead useEffect에서 처리
     } catch (err) {
       console.error('메시지 로드 실패:', err);
       alert('메시지를 불러오는데 실패했습니다.');
@@ -332,7 +389,9 @@ export function FloatingChatPanel() {
     };
 
     loadMessages();
-  }, [isOpen, isResident, chatRoom]);
+    // ✅ chatRoom 대신 chatRoom.id를 dependency로 사용하여 불필요한 리로드 방지
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, isResident, chatRoom?.id]);
 
   // ==================== 이전 메시지 불러오기 (무한 스크롤) ====================
 

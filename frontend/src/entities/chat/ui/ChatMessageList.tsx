@@ -221,7 +221,9 @@ export function ChatMessageList({
         const showDateDivider = prevDate !== null && currentDate !== prevDate;
 
         // 읽지 않은 메시지 마커 표시 여부
-        const showUnreadMarker = getUnreadMarkerInfo(message, prevMessage);
+        // ✅ 내가 보낸 메시지는 마커를 표시하지 않음
+        const isMyMessage = message.senderId === currentUserId;
+        const showUnreadMarker = !isMyMessage && getUnreadMarkerInfo(message, prevMessage);
 
         return (
           <div key={message.id}>
