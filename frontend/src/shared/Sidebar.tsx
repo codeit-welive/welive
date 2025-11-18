@@ -3,7 +3,6 @@
 import Announce from '@/shared/assets/icons/announce.svg';
 import Apartment from '@/shared/assets/icons/apartment.svg';
 import Calendar from '@/shared/assets/icons/calendar.svg';
-import Chat from '@/shared/assets/icons/chat.svg';
 import Complaint from '@/shared/assets/icons/complaint.svg';
 import Link from 'next/link';
 import List from '@/shared/assets/icons/list.svg';
@@ -25,6 +24,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ role }: SidebarProps) {
+
   const menuByRole: Record<UserRole, SidebarItem[]> = {
     resident: [
       {
@@ -46,11 +46,6 @@ export default function Sidebar({ role }: SidebarProps) {
         label: '아파트 일정',
         path: '/resident/schedule',
         icon: <Calendar />,
-      },
-      {
-        label: '관리자 채팅',
-        path: '/resident/chat',
-        icon: <Chat />,
       },
       {
         label: '내 프로필',
@@ -90,11 +85,6 @@ export default function Sidebar({ role }: SidebarProps) {
         icon: <Calendar />,
       },
       {
-        label: '입주민 채팅',
-        path: '/admin/chat',
-        icon: <Chat />,
-      },
-      {
         label: '내 프로필',
         path: '/admin/profile',
         icon: <Profile />,
@@ -116,14 +106,12 @@ export default function Sidebar({ role }: SidebarProps) {
       <nav className='py-[11px] text-sm'>
         {menu.map((item) => {
           const isActive = pathname?.split('/').slice(0, 3).join('/') === item.path;
+          const className = `flex items-center gap-3 rounded-md px-2 py-2 ${
+            isActive ? 'text-main font-semibold' : 'hover:text-main text-gray-700'
+          }`;
+
           return (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`flex items-center gap-3 rounded-md px-2 py-2 ${
-                isActive ? 'text-main font-semibold' : 'hover:text-main text-gray-700'
-              }`}
-            >
+            <Link key={item.path} href={item.path} className={className}>
               <span>{item.icon}</span>
               <span>{item.label}</span>
             </Link>

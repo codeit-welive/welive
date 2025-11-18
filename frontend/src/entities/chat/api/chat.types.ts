@@ -75,10 +75,12 @@ export interface SendMessageRequest {
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: {
-    currentPage: number;
+    page: number;
+    limit: number;
+    totalCount: number;
     totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
+    hasNext: boolean;
+    nextCursor?: string;
   };
 }
 

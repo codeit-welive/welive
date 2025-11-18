@@ -58,7 +58,15 @@ export const getSocket = (): Socket => {
     return socket;
   }
 
-  // Socket.io 클라이언트 생성
+  // Socket이 존재하지만 연결이 끊어진 경우 재연결
+  if (socket && !socket.connected) {
+    console.log('🔄 Socket.io 재연결 시도...');
+    socket.connect();
+    return socket;
+  }
+
+  // Socket.io 클라이언트 생성 (최초 1회)
+  console.log('🆕 Socket.io 새 인스턴스 생성...');
   socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001', {
     withCredentials: true, // 쿠키 자동 전송 (access_token 쿠키 포함)
     transports: ['websocket', 'polling'], // WebSocket 우선, 실패 시 polling
