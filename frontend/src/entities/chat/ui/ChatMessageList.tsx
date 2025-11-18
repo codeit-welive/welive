@@ -3,7 +3,7 @@
  * @description 채팅 메시지 목록을 표시하는 컴포넌트
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { ChatMessage } from '../api/chat.types';
 import { ChatMessageItem } from './ChatMessageItem';
 import { useUnreadMessageScroll } from '../model/useUnreadMessageScroll';
@@ -96,7 +96,6 @@ export function ChatMessageList({
     unreadMarkerRef,
     handleScroll: handleUnreadScroll,
     getUnreadMarkerInfo,
-    isNearBottom,
   } = useUnreadMessageScroll({
     messages,
     chatRoomId,
@@ -104,21 +103,38 @@ export function ChatMessageList({
     lastMessageSentTime,
   });
 
-  // 타이핑 인디케이터가 나타날 때 스크롤 (맨 아래 근처에 있을 때만)
+  // 이전 타이핑 상태 추적
+  const prevTypingRef = useRef(false);
+
+  // 타이핑 인디케이터가 나타날 때 스크롤 (false -> true 변경 시에만)
   useEffect(() => {
-    if (isOtherUserTyping && isNearBottom) {
+    // 이전에 타이핑 중이 아니었고, 지금 타이핑 중이면 스크롤
+    if (!prevTypingRef.current && isOtherUserTyping) {
       const scrollElement = scrollRef.current;
       if (scrollElement) {
-        // 부드러운 스크롤로 맨 아래로 이동
-        setTimeout(() => {
-          scrollElement.scrollTo({
-            top: scrollElement.scrollHeight,
-            behavior: 'smooth',
-          });
-        }, 100);
+        // 맨 아래 근처에 있을 때만 스크롤 (스냅샷 방식)
+        const scrollBottom = scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight;
+        const isUserNearBottom = scrollBottom < 100;
+
+        if (isUserNearBottom) {
+          // 부드러운 스크롤로 맨 아래로 이동
+          setTimeout(() => {
+            const el = scrollRef.current;
+            if (el) {
+              el.scrollTo({
+                top: el.scrollHeight,
+                behavior: 'smooth',
+              });
+            }
+          }, 100);
+        }
       }
     }
-  }, [isOtherUserTyping, isNearBottom, scrollRef]);
+
+    // 현재 상태를 이전 상태로 저장
+    prevTypingRef.current = isOtherUserTyping;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOtherUserTyping]);
 
   // 스크롤 이벤트 핸들러: 맨 위로 스크롤 시 이전 메시지 로드
   const handleScroll = async () => {
