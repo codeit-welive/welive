@@ -277,8 +277,8 @@ export function FloatingChatPanel() {
 
       setMessages(roomDetail.recentMessages);
       setCurrentPage(1); // 이미 1페이지를 로드했음
-      // 초기에는 항상 true로 설정 (스크롤 시 실제 페이지네이션으로 판단)
-      setHasMoreMessages(true);
+      // 메시지가 50개(페이지 크기) 이상이면 더 있을 수 있음, 미만이면 더 이상 없음
+      setHasMoreMessages(roomDetail.recentMessages.length >= 50);
 
       // ✅ unreadCountAdmin을 0으로 리셋하지 않음 - markAsRead useEffect에서 처리
     } catch (err) {
@@ -378,8 +378,8 @@ export function FloatingChatPanel() {
 
         setMessages(roomDetail.recentMessages);
         setCurrentPage(1); // 이미 1페이지를 로드했음
-        // 초기에는 항상 true로 설정 (스크롤 시 실제 페이지네이션으로 판단)
-        setHasMoreMessages(true);
+        // 메시지가 50개(페이지 크기) 이상이면 더 있을 수 있음, 미만이면 더 이상 없음
+        setHasMoreMessages(roomDetail.recentMessages.length >= 50);
       } catch (err) {
         console.error('메시지 로드 실패:', err);
         setError('메시지를 불러오는데 실패했습니다.');
