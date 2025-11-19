@@ -150,8 +150,13 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
           // Resident가 보낸 메시지인 경우, 해당 아파트의 Admin을 찾아서 전달
           io.sockets.sockets.forEach((clientSocket) => {
             const authSocket = clientSocket as AuthenticatedSocket;
-            // ✅ Admin이면서 해당 Room에 입장하지 않은 경우에만 메시지 전달
-            if (authSocket.user && authSocket.user.role === 'ADMIN' && !clientSocket.rooms.has(chatRoomId)) {
+            // ✅ Admin이면서 + 같은 아파트이면서 + Room에 입장하지 않은 경우에만 메시지 전달
+            if (
+              authSocket.user &&
+              authSocket.user.role === 'ADMIN' &&
+              authSocket.user.apartmentId === user.apartmentId &&
+              !clientSocket.rooms.has(chatRoomId)
+            ) {
               clientSocket.emit(SOCKET_EVENTS_SEND.NEW_MESSAGE, savedMessage);
             }
           });
