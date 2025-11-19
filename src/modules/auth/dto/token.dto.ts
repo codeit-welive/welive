@@ -7,6 +7,7 @@ export interface DecodedToken extends JwtPayload {
   joinStatus: User['joinStatus'];
   isActive: boolean;
   name: string;
+  apartmentId?: string; // Admin/User의 아파트 ID (SUPER_ADMIN은 없음)
 }
 
 export interface RefreshDto {
@@ -27,4 +28,5 @@ export interface TokenPayload {
   role: User['role'];
   joinStatus: User['joinStatus'];
   isActive: boolean;
+  apartmentId?: string; // Admin/User의 아파트 ID (SUPER_ADMIN은 없음)
 }

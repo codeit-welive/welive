@@ -6,6 +6,7 @@ import ApiError from '#errors/ApiError';
 
 export interface AuthenticatedSocket extends Socket {
   user: DecodedToken;
+  apartmentId?: string; // JWT 토큰 또는 JOIN_ROOM 시 저장된 apartmentId
 }
 
 export const socketAuthMiddleware = (socket: Socket, next: (err?: ApiError) => void) => {
@@ -29,7 +30,11 @@ export const socketAuthMiddleware = (socket: Socket, next: (err?: ApiError) => v
 
     const decoded = verifyAccessToken(token);
     (socket as AuthenticatedSocket).user = decoded;
-    logger.system.info(`✅ Socket 인증 성공: ${decoded.role} (User ID: ${decoded.id}, Socket ID: ${socket.id})`);
+    // apartmentId를 JWT에서 가져와 socket에 저장 (SUPER_ADMIN은 undefined)
+    (socket as AuthenticatedSocket).apartmentId = decoded.apartmentId;
+    logger.system.info(
+      `✅ Socket 인증 성공: ${decoded.role} (User ID: ${decoded.id}, Apartment: ${decoded.apartmentId || 'N/A'}, Socket ID: ${socket.id})`
+    );
 
     next();
   } catch (error) {

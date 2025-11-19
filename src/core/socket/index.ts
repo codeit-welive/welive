@@ -143,23 +143,28 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         // 4. 브로드캐스팅 (본인 포함 - 메시지는 모든 참여자가 받아야 함)
         io.to(chatRoomId).emit(SOCKET_EVENTS_SEND.NEW_MESSAGE, savedMessage);
 
-        // 5. ✅ 추가: Admin에게도 메시지 전달 (Room에 입장하지 않은 경우 대비)
-        // Admin이 해당 Room에 입장하지 않았어도 메시지를 받을 수 있도록
-        // 모든 연결된 Socket을 순회하여 Room에 없는 Admin에게만 메시지 전달
+        // 5. ✅ Room에 입장하지 않은 Admin에게도 메시지 전달
+        // Resident가 메시지를 보냈을 때, 채팅방에 입장하지 않은 같은 아파트의 Admin에게도 알림
         if (user.role === 'USER') {
-          // Resident가 보낸 메시지인 경우, 해당 아파트의 Admin을 찾아서 전달
-          io.sockets.sockets.forEach((clientSocket) => {
-            const authSocket = clientSocket as AuthenticatedSocket;
-            // ✅ Admin이면서 + 같은 아파트이면서 + Room에 입장하지 않은 경우에만 메시지 전달
-            if (
-              authSocket.user &&
-              authSocket.user.role === 'ADMIN' &&
-              authSocket.user.apartmentId === user.apartmentId &&
-              !clientSocket.rooms.has(chatRoomId)
-            ) {
-              clientSocket.emit(SOCKET_EVENTS_SEND.NEW_MESSAGE, savedMessage);
-            }
-          });
+          const senderApartmentId = (socket as AuthenticatedSocket).apartmentId;
+
+          // apartmentId 검증 (JWT에 apartmentId가 없는 경우 방어)
+          if (!senderApartmentId) {
+            logger.system.warn(`⚠️ apartmentId가 없는 Resident의 메시지 전송: User ${user.id}`);
+          } else {
+            io.sockets.sockets.forEach((clientSocket) => {
+              const authSocket = clientSocket as AuthenticatedSocket;
+              // Admin이면서 + 같은 아파트이면서 + Room에 입장하지 않은 경우에만 메시지 전달
+              if (
+                authSocket.user &&
+                authSocket.user.role === 'ADMIN' &&
+                authSocket.apartmentId === senderApartmentId && // JWT에서 가져온 apartmentId 비교
+                !clientSocket.rooms.has(chatRoomId)
+              ) {
+                clientSocket.emit(SOCKET_EVENTS_SEND.NEW_MESSAGE, savedMessage);
+              }
+            });
+          }
         }
 
         // 6. 로깅
