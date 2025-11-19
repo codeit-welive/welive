@@ -36,6 +36,7 @@ const domains = [
   'comments',
   'notifications',
   'poll-scheduler',
+  'chats',
 ];
 
 const modules = [
