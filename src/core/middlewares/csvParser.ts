@@ -4,11 +4,6 @@ import ApiError from '#errors/ApiError';
 import forwardZodError from '#core/utils/zod';
 
 /**
- * 세대주여부 매핑 딕셔너리
- * - CSV의 "세대주"/"세대원"을 Prisma enum 값으로 변환
- */
-
-/**
  * @description CSV 파일을 파싱하고 유효성을 검증하는 미들웨어
  * @param req.file 업로드된 CSV 파일 (multer를 통해 처리됨)
  * @returns res.locals.parsedCsv 파싱 및 검증된 입주민 데이터 배열
