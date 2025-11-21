@@ -54,8 +54,8 @@ jobs:
         working-directory: frontend
         run: |
           cat > .env.production <<'ENV'
-NEXT_PUBLIC_API_URL=/api
-ENV
+          NEXT_PUBLIC_API_URL=/api
+          ENV
 
       - name: Build frontend
         working-directory: frontend
@@ -77,79 +77,88 @@ ENV
       - name: Deploy on EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} <<'EOF'
-set -e
+          set -e
 
-echo "=== Prepare directories ==="
-mkdir -p ~/welive/app ~/welive/frontend
-cd ~/welive/app
+          echo ""
+          echo "=== Prepare directories ==="
+          mkdir -p ~/welive/app ~/welive/frontend
+          cd ~/welive/app
 
-echo "=== Write docker-compose.prod.yaml ==="
-cat > docker-compose.prod.yaml <<'YML'
-version: "3.9"
-services:
-  web:
-    image: ghcr.io/codeit-welive/welive-backend:latest
-    env_file:
-      - .env.prod
-    ports:
-      - "3001:3001"
-    restart: unless-stopped
-YML
+          echo ""
+          echo "=== Write docker-compose.prod.yaml (backend only) ==="
+          cat > docker-compose.prod.yaml <<YML
+          version: "3.9"
+          services:
+            web:
+              image: ghcr.io/codeit-welive/welive-backend:latest
+              env_file:
+                - .env.prod
+              ports:
+                - "3001:3001"
+              restart: unless-stopped
+          YML
 
-echo "=== Write .env.prod ==="
-cat > .env.prod <<'ENV'
-# DATABASE
-DATABASE_URL=${{ secrets.DATABASE_URL }}
+          echo ""
+          echo "=== Write .env.prod ==="
+          cat > .env.prod <<'ENV'
+          # DATABASE
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
 
-# PORT
-PORT=3001
+          # PORT
+          PORT=3001
 
-# BASE URL
-BASE_URL=${{ secrets.BASE_URL }}
+          # BASE URL
+          BASE_URL=${{ secrets.BASE_URL }}
 
-# FRONT URL
-FRONT_URL=${{ secrets.FRONT_URL }}
+          # FRONT URL
+          FRONT_URL=${{ secrets.FRONT_URL }}
 
-# RUNTIME
-CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
-ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}
-REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}
-PASSWORD_PEPPER=${{ secrets.PASSWORD_PEPPER }}
+          # RUNTIME
+          CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
+          ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}
+          REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}
+          PASSWORD_PEPPER=${{ secrets.PASSWORD_PEPPER }}
 
-# AWS S3
-AWS_REGION=${{ secrets.AWS_REGION }}
-AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
-AWS_S3_BASE_URL=${{ secrets.AWS_S3_BASE_URL }}
+          # AWS S3
+          AWS_REGION=${{ secrets.AWS_REGION }}
+          AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
+          AWS_S3_BASE_URL=${{ secrets.AWS_S3_BASE_URL }}
 
-# ENV
-NODE_ENV=production
-UPLOAD_STRATEGY=s3
-ENV
+          # ENV
+          NODE_ENV=production
+          UPLOAD_STRATEGY=s3
+          ENV
 
-echo "=== Backend: pull & up ==="
-docker compose -f docker-compose.prod.yaml down || true
-docker compose -f docker-compose.prod.yaml pull
-docker compose -f docker-compose.prod.yaml up -d
+          echo ""
+          echo "=== Backend: pull & up ==="
+          export GITHUB_SHA=${GITHUB_SHA}
+          docker compose -f docker-compose.prod.yaml down || true
+          docker compose -f docker-compose.prod.yaml pull
+          docker compose -f docker-compose.prod.yaml up -d
 
-echo "=== Frontend: unpack ==="
-tar -xzf ~/welive/frontend.tar.gz -C ~/welive/frontend
+          echo ""
+          echo "=== Frontend: deploy Next.js (SSR) ==="
+          cd ~
+          tar -xzf ~/welive/frontend.tar.gz -C ~/welive/frontend
+          cd ~/welive/frontend
 
-cd ~/welive/frontend
+          # 최초 1회 또는 변경 시 설치
+          if [ ! -d node_modules ]; then
+            npm ci --omit=dev
+          fi
 
-# node_modules 설치 (최초 1회만)
-if [ ! -d node_modules ]; then
-  npm ci --omit=dev
-fi
+          # PM2 설치가 없다면 설치
+          command -v pm2 >/dev/null 2>&1 || sudo npm i -g pm2
 
-# PM2 없으면 설치
-command -v pm2 >/dev/null 2>&1 || sudo npm i -g pm2
+          # 앱 시작/재시작 (포트 3000)
+          pm2 start "npm run start" --name welive-fe || pm2 restart welive-fe
 
-# SSR start
-pm2 start "npm run start" --name welive-fe || pm2 restart welive-fe
+          echo ""
+          echo "=== Cleanup ==="
+          rm -f ~/welive/frontend.tar.gz
+          docker image prune -af || true
 
-echo "=== Cleanup ==="
-rm -f ~/welive/frontend.tar.gz
-docker image prune -af || true
-
-echo "✅ Deployment done."
-EOF
+          echo "✅ Deployment done."
+          EOF
+        env:
+          GITHUB_SHA: ${{ github.sha }}
