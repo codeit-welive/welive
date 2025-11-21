@@ -17,6 +17,7 @@ RUN npx prisma generate --schema=prisma/schema.prisma
 
 # ---------- build (TS → CJS) ----------
 FROM deps AS build
+COPY prisma ./prisma
 RUN npm run build
 
 # ---------- prod-deps (런타임: prod deps + prisma CLI만 추가) ----------
