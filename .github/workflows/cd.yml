@@ -121,6 +121,7 @@ jobs:
           ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}
           REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}
           PASSWORD_PEPPER=${{ secrets.PASSWORD_PEPPER }}
+          DEFAULT_AVATAR_URL=${{ secrets.DEFAULT_AVATAR_URL }}
 
           # AWS S3
           AWS_REGION=${{ secrets.AWS_REGION }}
