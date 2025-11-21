@@ -12,9 +12,6 @@ COPY tsconfig*.json ./
 COPY prisma ./prisma
 COPY src ./src
 
-# Prisma Client 생성
-RUN npx prisma generate --schema=prisma/schema.prisma
-
 # ---------- build (TS → CJS) ----------
 FROM deps AS build
 COPY prisma ./prisma
@@ -25,6 +22,9 @@ FROM base AS prod-deps
 COPY package*.json ./
 RUN npm ci --omit=dev \
   && npm i --no-save prisma@6.17.1 @prisma/client
+
+  # Prisma Client 생성
+RUN npx prisma generate --schema=prisma/schema.prisma
 
 # ---------- runtime ----------
 FROM base AS runtime
