@@ -31,6 +31,7 @@ ENV PORT=3001
 
 # non-root
 RUN addgroup -S app && adduser -S app -G app
+RUN mkdir -p /app/logs && chown -R app:app /app/logs
 USER app
 
 # deps / app
