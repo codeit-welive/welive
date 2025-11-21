@@ -51,7 +51,7 @@ jobs:
         working-directory: frontend
         run: |
           cat > .env.production <<'ENV'
-          NEXT_PUBLIC_API_URL=http://localhost:3001/api
+          NEXT_PUBLIC_API_URL=/api
           ENV
 
       - name: Build frontend
@@ -69,7 +69,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Copy frontend bundle to EC2
-        run: scp -o StrictHostKeyChecking=no frontend.tar.gz ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/frontend.tar.gz
+        run: scp -o StrictHostKeyChecking=no frontend.tar.gz ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/welive/frontend.tar.gz
 
       - name: Deploy on EC2
         run: |
@@ -78,16 +78,16 @@ jobs:
 
             echo ""
             echo "=== Prepare directories ==="
-            mkdir -p ~/app ~/frontend
-            cd ~/app
+            mkdir -p ~/welive/app ~/welive/frontend
+            cd ~/welive/app
 
             echo ""
             echo "=== Write docker-compose.prod.yaml (backend only) ==="
-            cat > docker-compose.prod.yaml <<'YML'
+            cat > docker-compose.prod.yaml <<YML
             version: "3.9"
             services:
               web:
-                image: ghcr.io/codeit-welive/welive-backend:sha-${GITHUB_SHA}
+                image: ghcr.io/codeit-welive/welive-backend:${IMAGE_TAG}
                 env_file:
                   - .env.prod
                 ports:
@@ -117,14 +117,9 @@ jobs:
             PASSWORD_PEPPER=${{ secrets.PASSWORD_PEPPER }}
 
             # AWS S3
-            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION=${{ secrets.AWS_REGION }}
             AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
             AWS_S3_BASE_URL=${{ secrets.AWS_S3_BASE_URL }}
-
-            # FILE URL
-            FILE_BASE_URL=${{ secrets.AWS_S3_BASE_URL }}
 
             # ENV
             NODE_ENV=production
@@ -141,8 +136,8 @@ jobs:
             echo ""
             echo "=== Frontend: deploy Next.js (SSR) ==="
             cd ~
-            tar -xzf frontend.tar.gz -C ~/frontend
-            cd ~/frontend
+            tar -xzf ~/welive/frontend.tar.gz -C ~/welive/frontend
+            cd ~/welive/frontend
 
             # 최초 1회 또는 변경 시 설치
             if [ ! -d node_modules ]; then
@@ -153,11 +148,12 @@ jobs:
             command -v pm2 >/dev/null 2>&1 || sudo npm i -g pm2
 
             # 앱 시작/재시작 (포트 3000)
-            pm2 start "npm run start --prefix ~/frontend" --name welive-fe || pm2 restart welive-fe
+            cd ~/welive/frontend
+            pm2 start "npm run start" --name welive-fe || pm2 restart welive-fe
 
             echo ""
             echo "=== Cleanup ==="
-            rm -f ~/frontend.tar.gz
+            rm -f ~/welive/frontend.tar.gz
             docker image prune -af || true
 
             echo "✅ Deployment done."
