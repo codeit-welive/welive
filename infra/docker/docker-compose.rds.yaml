@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+  # Node.js 애플리케이션 서비스
+  web:
+    image: ghcr.io/codeit-welive/welive-backend:${IMAGE_TAG}
+    restart: always
+    ports:
+      - '3001:3001'
+    env_file:
+      - ../../.env
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3001/api']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+networks:
+  default:
+    name: welive_network
