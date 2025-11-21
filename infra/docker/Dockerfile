@@ -17,13 +17,14 @@ RUN npx prisma generate --schema=prisma/schema.prisma
 
 # ---------- build (TS → CJS) ----------
 FROM deps AS build
+COPY prisma ./prisma
 RUN npm run build
 
 # ---------- prod-deps (런타임: prod deps + prisma CLI만 추가) ----------
 FROM base AS prod-deps
 COPY package*.json ./
 RUN npm ci --omit=dev \
-  && npm i --no-save prisma@6.17.1
+  && npm i --no-save prisma@6.17.1 @prisma/client
 
 # ---------- runtime ----------
 FROM base AS runtime
