@@ -148,7 +148,7 @@ jobs:
           fi
 
           # PM2 설치가 없다면 설치
-          command -v pm2 >/dev/null 2>&1 || sudo npm i -g pm2
+          command -v pm2 >/dev/null 2>&1 || npm i -g pm2
 
           # 앱 시작/재시작 (포트 3000)
           pm2 start "npm run start" --name welive-fe || pm2 restart welive-fe
