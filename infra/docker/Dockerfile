@@ -34,10 +34,10 @@ RUN addgroup -S app && adduser -S app -G app
 USER app
 
 # deps / app
-COPY --from=prod-deps /app/node_modules ./node_modules
-COPY --from=build     /app/dist         ./dist
-COPY --from=build     /app/prisma       ./prisma
-COPY package*.json ./ 
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
+COPY package*.json ./
 
 EXPOSE 3001
 
