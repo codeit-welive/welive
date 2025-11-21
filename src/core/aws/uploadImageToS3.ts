@@ -22,10 +22,6 @@ export const uploadImageToS3 = async (buffer: Buffer): Promise<string> => {
     // S3 클라이언트 생성
     const s3 = new S3Client({
       region: env.AWS_CONFIG.region!,
-      credentials: {
-        accessKeyId: env.AWS_CONFIG.accessKeyId!,
-        secretAccessKey: env.AWS_CONFIG.secretAccessKey!,
-      },
     });
 
     // 파일명 생성
