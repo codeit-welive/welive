@@ -1,0 +1,533 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "위리브 API",
+    "description": "위리브 API 명세서",
+    "version": "1.0.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "AccessTokenCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "access_token",
+        "description": "로그인 시 발급되는 JWT 액세스 토큰 (쿠키 기반 인증)"
+      }
+    }
+  },
+  "security": [
+    {
+      "AccessTokenCookie": []
+    }
+  ],
+  "paths": {
+    "/api/auth/signup": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/signup/admin": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/signup/super-admin": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/admins/{adminId}/status": {
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/admins/status": {
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/residents/{residentId}/status": {
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/residents/status": {
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/cleanup": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/users/me": {
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "[사용자] 유저 정보 수정",
+        "description": "현재 로그인한 사용자의 정보를 수정합니다. 비밀번호 변경 또는 아바타 이미지 업로드가 가능합니다.",
+        "responses": {
+          "200": {
+            "description": "유저 정보 수정 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "홍길동님의 정보가 성공적으로 업데이트되었습니다. 다시 로그인해주세요."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "유저 정보 수정 실패"
+          },
+          "401": {
+            "description": "권한 없음"
+          },
+          "403": {
+            "description": "권한 없음 (비밀번호 불일치 등)"
+          },
+          "404": {
+            "description": "사용자를 찾을 수 없음"
+          },
+          "500": {
+            "description": "서버 내부 오류"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "currentPassword": {
+                    "type": "string",
+                    "description": "현재 비밀번호 (새 비밀번호 설정 시 필요)"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "description": "새 비밀번호"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "아바타 이미지 파일 (선택사항)"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/complaints/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      },
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      }
+    },
+    "/api/complaints/{complaintId}": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      },
+      "delete": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      },
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      }
+    },
+    "/api/complaints/{complaintId}/status": {
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Complaints"
+        ]
+      }
+    },
+    "/api/notices/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notices"
+        ]
+      },
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notices"
+        ]
+      }
+    },
+    "/api/notices/{noticeId}": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notices"
+        ]
+      },
+      "delete": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notices"
+        ]
+      },
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notices"
+        ]
+      }
+    },
+    "/api/comments/": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Comments"
+        ]
+      }
+    },
+    "/api/comments/{commentId}": {
+      "delete": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Comments"
+        ]
+      },
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Comments"
+        ]
+      }
+    },
+    "/api/notifications/{id}/read": {
+      "patch": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "[알림] 알림 읽음 처리",
+        "description": "지정한 알림을 읽음 상태(isChecked: true)로 변경합니다. 본인에게 전송된 알림만 읽음 처리할 수 있습니다.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "format": {
+                  "type": "string",
+                  "example": "uuid"
+                }
+              }
+            },
+            "description": "읽음 처리할 알림의 UUID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "읽음 처리된 알림 반환",
+            "content": {
+              "application/json": {
+                "example": {
+                  "notificationId": "uuid-1234",
+                  "content": "민원 처리가 완료되었습니다.",
+                  "notificationType": "COMPLAINT_RESOLVED",
+                  "notifiedAt": "2025-06-13T12:34:56.789Z",
+                  "isChecked": true,
+                  "complaintId": "complaint-uuid-9876",
+                  "noticeId": "notice-uuid-1111",
+                  "pollId": "poll-uuid-2222"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 (알림 ID 누락 등)"
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "404": {
+            "description": "알림을 찾을 수 없거나 권한 없음"
+          }
+        }
+      }
+    },
+    "/api/poll-scheduler/ping": {
+      "get": {
+        "tags": [
+          "Poll-scheduler"
+        ],
+        "summary": "Poll 스케줄러 상태 확인",
+        "description": "서버에 스케줄러가 정상 작동 중인지 확인하기 위한 개발/운영용 엔드포인트입니다. 프론트에서는 사용하지 않습니다.",
+        "responses": {
+          "200": {
+            "description": "정상적으로 동작하는 경우",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Poll scheduler is running."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "스케줄러 비정상 응답",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Scheduler not responding"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Api"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Auth 관련 API"
+    },
+    {
+      "name": "Users",
+      "description": "Users 관련 API"
+    },
+    {
+      "name": "Complaints",
+      "description": "Complaints 관련 API"
+    },
+    {
+      "name": "Notices",
+      "description": "Notices 관련 API"
+    },
+    {
+      "name": "Comments",
+      "description": "Comments 관련 API"
+    },
+    {
+      "name": "Notifications",
+      "description": "Notifications 관련 API"
+    },
+    {
+      "name": "Poll-scheduler",
+      "description": "Poll-scheduler 관련 API"
+    },
+    {
+      "name": "Api",
+      "description": "Api 관련 API"
+    }
+  ]
+}

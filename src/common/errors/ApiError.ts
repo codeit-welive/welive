@@ -23,13 +23,13 @@ export type ErrorCode =
  *
  * export const getProject: RequestHandler = async (req, res, next) => {
  *   const projectId = Number(req.params.projectId);
- * 
+ *
  *   // 잘못된 요청
  *   if (isNaN(projectId)) return next(ApiError.badRequest('projectId가 유효하지 않습니다.'));
  *   const project = await prisma.project.findUnique({
  *     where: { id: projectId },
  *   });
- * 
+ *
  *   // 리소스 없음
  *   if (!project) return next(ApiError.notFound('해당 프로젝트를 찾을 수 없습니다.'));
  *   res.json({ success: true, data: project });
@@ -71,7 +71,7 @@ export default class ApiError extends Error {
   }
 
   /**
-   * 정적 팩토리 메서드 
+   * 정적 팩토리 메서드
    */
 
   static badRequest = (msg = '잘못된 요청입니다.', details?: unknown) => new ApiError(400, msg, 'BAD_REQUEST', details);

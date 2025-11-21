@@ -1,0 +1,362 @@
+import prisma from '#core/prisma';
+import { GetChatRoomListDto, GetMessageListDto, ChatUserRole } from './dto/chats.dto';
+
+// ==================== Select 상수 ====================
+
+/**
+ * 채팅방 기본 필드 Select
+ */
+const CHAT_ROOM_BASE_SELECT = {
+  id: true,
+  apartmentId: true,
+  residentId: true,
+  lastMessage: true,
+  lastMessageAt: true,
+  unreadCountAdmin: true,
+  unreadCountResident: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+/**
+ * 입주민 정보 Select
+ */
+const RESIDENT_SELECT = {
+  select: {
+    name: true,
+    building: true,
+    unitNumber: true,
+  },
+} as const;
+
+/**
+ * 아파트 정보 Select (관리자 정보 포함)
+ */
+const APARTMENT_SELECT = {
+  select: {
+    apartmentName: true,
+    admin: {
+      select: {
+        name: true,
+      },
+    },
+  },
+} as const;
+
+/**
+ * 채팅방 전체 정보 Select (관계 포함)
+ */
+const CHAT_ROOM_WITH_RELATIONS_SELECT = {
+  ...CHAT_ROOM_BASE_SELECT,
+  resident: RESIDENT_SELECT,
+  apartment: APARTMENT_SELECT,
+} as const;
+
+/**
+ * 채팅방 목록용 Select (아파트 정보 제외)
+ */
+const CHAT_ROOM_LIST_SELECT = {
+  ...CHAT_ROOM_BASE_SELECT,
+  resident: RESIDENT_SELECT,
+} as const;
+
+/**
+ * 메시지 Select
+ */
+const MESSAGE_SELECT = {
+  id: true,
+  chatRoomId: true,
+  senderId: true,
+  content: true,
+  isReadByAdmin: true,
+  isReadByResident: true,
+  createdAt: true,
+  sender: {
+    select: {
+      id: true,
+      name: true,
+      role: true,
+    },
+  },
+} as const;
+
+// ==================== 채팅방 조회 ====================
+
+/**
+ * 사용자 ID로 채팅방 조회
+ * @description User → Resident → ChatRoom 관계를 통해 채팅방 조회
+ * @param userId - 사용자 ID
+ * @returns 채팅방 정보 또는 null
+ */
+export const getByUserId = async (userId: string) => {
+  return await prisma.chatRoom.findFirst({
+    where: {
+      resident: {
+        user: {
+          id: userId,
+        },
+      },
+    },
+    select: CHAT_ROOM_WITH_RELATIONS_SELECT,
+  });
+};
+
+/**
+ * residentId로 채팅방 조회
+ * @description 입주민 ID로 채팅방 존재 여부 확인 (중복 생성 방지용)
+ * @param residentId - 입주민 ID
+ * @returns 채팅방 정보 또는 null
+ */
+export const getByResidentId = async (residentId: string) => {
+  return await prisma.chatRoom.findUnique({
+    where: {
+      residentId,
+    },
+    select: CHAT_ROOM_WITH_RELATIONS_SELECT,
+  });
+};
+
+/**
+ * 채팅방 ID + 사용자 권한으로 조회 (USER용)
+ * @description 입주민이 자신의 채팅방만 조회할 수 있도록 권한 체크 포함
+ * @param chatRoomId - 채팅방 ID
+ * @param userId - 사용자 ID
+ * @returns 권한이 있으면 채팅방 정보, 없거나 존재하지 않으면 null
+ */
+export const getByIdWithUserAuth = async (chatRoomId: string, userId: string) => {
+  return await prisma.chatRoom.findFirst({
+    where: {
+      id: chatRoomId,
+      resident: {
+        user: {
+          id: userId,
+        },
+      },
+    },
+    select: CHAT_ROOM_WITH_RELATIONS_SELECT,
+  });
+};
+
+/**
+ * 채팅방 ID + 관리자 권한으로 조회 (ADMIN용)
+ * @description 관리자가 자신이 관리하는 아파트의 채팅방만 조회
+ * @param chatRoomId - 채팅방 ID
+ * @param adminId - 관리자 ID
+ * @returns 권한이 있으면 채팅방 정보, 없거나 존재하지 않으면 null
+ */
+export const getByIdWithAdminAuth = async (chatRoomId: string, adminId: string) => {
+  return await prisma.chatRoom.findFirst({
+    where: {
+      id: chatRoomId,
+      apartment: {
+        adminId,
+      },
+    },
+    select: CHAT_ROOM_WITH_RELATIONS_SELECT,
+  });
+};
+
+/**
+ * 관리자 ID로 채팅방 목록 조회
+ * @description 관리자가 관리하는 아파트의 모든 채팅방 목록 (페이지네이션 + 필터링)
+ * @param data - 채팅방 목록 조회 DTO
+ * @returns 채팅방 목록
+ */
+export const getListByAdminId = async (data: GetChatRoomListDto) => {
+  return await prisma.chatRoom.findMany({
+    where: {
+      apartment: {
+        adminId: data.adminId,
+      },
+      ...(data.unreadOnly && { unreadCountAdmin: { gt: 0 } }),
+    },
+    select: CHAT_ROOM_LIST_SELECT,
+    skip: (data.page - 1) * data.limit,
+    take: data.limit,
+    orderBy: { lastMessageAt: 'desc' },
+  });
+};
+
+/**
+ * 관리자의 채팅방 총 개수 조회 (필터링 적용)
+ * @description 관리자가 관리하는 아파트의 채팅방 총 개수 (unreadOnly 필터 적용)
+ * @param data - 채팅방 목록 조회 DTO
+ * @returns 필터링된 채팅방 총 개수
+ */
+export const getCountByAdminId = async (data: GetChatRoomListDto) => {
+  return await prisma.chatRoom.count({
+    where: {
+      apartment: {
+        adminId: data.adminId,
+      },
+      ...(data.unreadOnly && { unreadCountAdmin: { gt: 0 } }),
+    },
+  });
+};
+
+// ==================== 입주민 조회 ====================
+
+/**
+ * User ID로 Resident 정보 조회
+ * @description User → Resident 변환 (채팅방 생성 시 apartmentId, residentId 추출용)
+ * @param userId - 사용자 ID
+ * @returns Resident 정보 (id, apartmentId) 또는 null
+ */
+export const getResidentByUserId = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      resident: {
+        select: {
+          id: true,
+          apartmentId: true,
+        },
+      },
+    },
+  });
+
+  return user?.resident || null;
+};
+
+/**
+ * Resident ID + 관리자 ID로 입주민 조회 (권한 검증용)
+ * @description 관리자가 자신의 아파트 입주민인지 확인
+ * @param residentId - 입주민 ID
+ * @param adminId - 관리자 ID
+ * @returns Resident 정보 또는 null (다른 아파트 소속이면 null)
+ */
+export const getResidentByIdWithApartmentCheck = async (residentId: string, adminId: string) => {
+  return await prisma.resident.findFirst({
+    where: {
+      id: residentId,
+      apartment: {
+        adminId,
+      },
+    },
+    select: {
+      id: true,
+      apartmentId: true,
+    },
+  });
+};
+
+// ==================== 채팅방 생성 ====================
+
+/**
+ * 채팅방 생성
+ * @description 새로운 1:1 채팅방 생성
+ * @param apartmentId - 아파트 ID
+ * @param residentId - 입주민 ID
+ * @returns 생성된 채팅방 ID
+ */
+export const createChatRoom = async (apartmentId: string, residentId: string) => {
+  return await prisma.chatRoom.create({
+    data: {
+      apartmentId,
+      residentId,
+    },
+    select: CHAT_ROOM_WITH_RELATIONS_SELECT,
+  });
+};
+
+// ==================== 메시지 조회 ====================
+
+/**
+ * 채팅방의 메시지 목록 조회
+ * @description 채팅방의 메시지 목록을 페이지네이션하여 조회 (최신순)
+ * @param data - 메시지 목록 조회 DTO
+ * @returns 메시지 목록
+ */
+export const getMessageListByChatRoomId = async (data: GetMessageListDto) => {
+  return await prisma.chatMessage.findMany({
+    where: { chatRoomId: data.chatRoomId },
+    select: MESSAGE_SELECT,
+    skip: (data.page - 1) * data.limit,
+    take: data.limit,
+    orderBy: { createdAt: 'desc' },
+  });
+};
+
+/**
+ * 채팅방의 메시지 총 개수 조회
+ * @description 페이지네이션을 위한 전체 메시지 개수
+ * @param chatRoomId - 채팅방 ID
+ * @returns 메시지 총 개수
+ */
+export const getMessageCountByChatRoomId = async (chatRoomId: string) => {
+  return await prisma.chatMessage.count({
+    where: { chatRoomId },
+  });
+};
+
+// ==================== 메시지 생성 ====================
+
+/**
+ * 메시지 생성
+ * @description 새로운 메시지를 생성하고 채팅방의 lastMessage/lastMessageAt/unreadCount 업데이트
+ * @param data - 메시지 생성 데이터
+ * @param data.chatRoomId - 채팅방 ID
+ * @param data.senderId - 발신자 ID
+ * @param data.content - 메시지 내용
+ * @param data.isReadByAdmin - 관리자 읽음 여부
+ * @param data.isReadByResident - 입주민 읽음 여부
+ * @returns 생성된 메시지 정보
+ */
+export const createMessage = async (data: {
+  chatRoomId: string;
+  senderId: string;
+  content: string;
+  isReadByAdmin: boolean;
+  isReadByResident: boolean;
+}) => {
+  return await prisma.$transaction(async (tx) => {
+    const message = await tx.chatMessage.create({
+      data,
+      select: MESSAGE_SELECT,
+    });
+
+    await tx.chatRoom.update({
+      where: { id: data.chatRoomId },
+      data: {
+        lastMessage: data.content,
+        lastMessageAt: new Date(),
+        ...(data.isReadByAdmin ? {} : { unreadCountAdmin: { increment: 1 } }),
+        ...(data.isReadByResident ? {} : { unreadCountResident: { increment: 1 } }),
+      },
+    });
+
+    return message;
+  });
+};
+
+// ==================== 메시지 읽음 처리 ====================
+
+/**
+ * 채팅방의 읽지 않은 메시지를 모두 읽음 처리
+ * @description 역할에 따라 isReadByAdmin 또는 isReadByResident 업데이트
+ * @param chatRoomId - 채팅방 ID
+ * @param role - 사용자 역할 ("ADMIN" | "USER")
+ * @returns 읽음 처리된 메시지 개수
+ */
+export const patchMessageListAsRead = async (chatRoomId: string, role: ChatUserRole) => {
+  return await prisma.$transaction(async (tx) => {
+    const result = await tx.chatMessage.updateMany({
+      where: {
+        chatRoomId,
+        ...(role === 'ADMIN' ? { isReadByAdmin: false } : { isReadByResident: false }),
+      },
+      data: {
+        ...(role === 'ADMIN' ? { isReadByAdmin: true } : { isReadByResident: true }),
+      },
+    });
+    await tx.chatRoom.update({
+      where: {
+        id: chatRoomId,
+      },
+      data: {
+        ...(role === 'ADMIN' ? { unreadCountAdmin: 0 } : { unreadCountResident: 0 }),
+      },
+    });
+    return result.count;
+  });
+};

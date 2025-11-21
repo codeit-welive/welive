@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-plugin-prettier';
 
 export default tseslint.config(
-  { ignores: ['node_modules/**', 'dist/**',] },
+  { ignores: ['node_modules/**', 'dist/**'] },
 
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -23,16 +23,18 @@ export default tseslint.config(
     },
     rules: {
       // 포맷
-      'prettier/prettier': 'error',
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
 
       // 문자열: 홑따옴표 우선, 이스케이프 필요 시 큰따옴표 허용
-      quotes: ['error', 'single', { avoidEscape: true }],
+      'quotes': ['error', 'single', { avoidEscape: true }],
+      'quoteProps': 'consistent',
 
       // console 허용: error, warn만
       'no-console': 'off',
 
       // 미사용 변수 무시 설정
       'no-unused-vars': 'off',
+
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -43,7 +45,7 @@ export default tseslint.config(
       ],
 
       // 네이밍 컨벤션
-      camelcase: 'off',
+      'camelcase': 'off',
       '@typescript-eslint/naming-convention': [
         'error',
         { selector: 'class', format: ['PascalCase'] },
@@ -53,13 +55,13 @@ export default tseslint.config(
         {
           selector: 'variable',
           types: ['boolean'],
-          format: ['camelCase'],
+          format: ['camelCase', 'UPPER_CASE'],
         },
       ],
 
       // 스타일 룰
-      eqeqeq: 'error',
-      semi: ['error', 'always'],
+      'eqeqeq': 'error',
+      'semi': ['error', 'always'],
       'space-in-parens': ['error', 'never'],
       'array-bracket-spacing': ['error', 'never'],
       'object-curly-spacing': ['error', 'always'],

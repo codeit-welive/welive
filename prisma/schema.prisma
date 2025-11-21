@@ -30,6 +30,16 @@ enum ApprovalStatus {
   REJECTED
 }
 
+enum ResidentStatus {
+  RESIDENCE
+  NO_RESIDENCE
+}
+
+enum IsHouseholder {
+  HOUSEHOLDER
+  MEMBER
+}
+
 enum BoardType {
   NOTICE
   POLL
@@ -99,27 +109,27 @@ model User {
   createdAt  DateTime   @default(now())
   joinStatus JoinStatus @default(PENDING)
 
-  // SuperAdmmin은 Apartment 관련 정보를 받지 않기에, 백엔드 로직에서 User/Admin에 대해서 필수 처리
-  apartmentId   String?
-  apartment     Apartment?     @relation(fields: [apartmentId], references: [id])
-  resident      Resident?
+  apartment Apartment? @relation("ApartmentAdmin")
+
+  residentId String?   @unique
+  resident   Resident? @relation("UserResident", fields: [residentId], references: [id], onDelete: Cascade)
+
   notifications Notification[]
   complaints    Complaint[]    @relation("ComplaintUser")
   comments      Comment[]
   pollVotes     PollVote[]
   notices       Notice[]
   polls         Poll[]
+  chatMessages  ChatMessage[]  @relation("ChatMessageSender")
 }
 
 model Apartment {
-  id   String @id @default(uuid())
-  name String
+  id            String @id @default(uuid())
+  apartmentName String @unique
 
-  address     String
-  description String?
-
-  // apartmentManagementNumber로 쓰이는 곳도 있음
-  officeNumber     String? // 관리사무소 번호
+  apartmentAddress          String
+  description               String?
+  apartmentManagementNumber String? @unique // 관리사무소 번호
 
   startComplexNumber String // 아파트 단지 시작번호
   endComplexNumber   String // 아파트 단지 끝번호
@@ -129,36 +139,39 @@ model Apartment {
   endFloorNumber     String // 아파트 최상층
   startHoNumber      String // 아파트 시작 호수
   endHoNumber        String // 아파트 끝 호수
+  createdAt          DateTime @default(now())
 
-  createdAt DateTime @default(now())
+  adminId String? @unique
+  admin   User?   @relation("ApartmentAdmin", fields: [adminId], references: [id], onDelete: Cascade)
 
-  adminId    String?     @unique
-  admin      User?       @relation(fields: [adminId], references: [id])
   residents  Resident[]
   notices    Notice[]
   complaints Complaint[]
   polls      Poll[]
   events     Event[]
-
-  boards Board[]
+  boards     Board[]
+  chatRooms  ChatRoom[]
 }
 
 // User랑 별개로 존재
 model Resident {
-  id             String         @id @default(uuid())
-  name           String
-  contact        String
-  dong           Int
-  ho             Int
-  householdType  String // 세대주/세대원 -- ENUM?
-  isRegistered   Boolean        @default(false)
-  approvalStatus ApprovalStatus @default(PENDING)
-  createdAt      DateTime       @default(now())
+  id              String         @id @default(uuid())
+  name            String
+  contact         String         @unique
+  building        String
+  unitNumber      String
+  isRegistered    Boolean        @default(false)
+  approvalStatus  ApprovalStatus @default(PENDING)
+  residenceStatus ResidentStatus @default(RESIDENCE)
+  isHouseholder   IsHouseholder  @default(MEMBER)
+  createdAt       DateTime       @default(now())
 
-  userId      String?   @unique
-  user        User?     @relation(fields: [userId], references: [id])
+  user User? @relation("UserResident")
+
   apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  chatRoom ChatRoom?
 }
 
 // ------------------------------
@@ -169,14 +182,15 @@ model Board {
   id          String    @id @default(uuid())
   type        BoardType
   apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
 
   notices    Notice[]
   complaints Complaint[]
   polls      Poll[]
+  Comment    Comment[]
 
   // 아파트별 게시판 1개 보장
-  @@unique([apartmentId, type]) 
+  @@unique([apartmentId, type])
 }
 
 model Notice {
@@ -195,9 +209,6 @@ model Notice {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
-
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
@@ -205,6 +216,10 @@ model Notice {
   board   Board  @relation(fields: [boardId], references: [id])
 
   comments Comment[]
+
+  apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  apartmentId String?
+  Event       Event?
 }
 
 model Complaint {
@@ -217,15 +232,8 @@ model Complaint {
 
   status ComplaintStatus @default(PENDING)
 
-  // API 상태 수정에서 제공
-  dong Int?
-  ho   Int?
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
 
   userId String
   user   User   @relation("ComplaintUser", fields: [userId], references: [id])
@@ -234,22 +242,22 @@ model Complaint {
   board   Board  @relation(fields: [boardId], references: [id])
 
   comments Comment[]
+
+  apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  apartmentId String?
 }
 
 model Poll {
-  id      String @id @default(uuid())
-  title   String
-  content String
-
+  id        String     @id @default(uuid())
+  title     String
+  content   String
   startDate DateTime
   endDate   DateTime
+  status    PollStatus @default(PENDING)
 
   buildingPermission Int      @default(0)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
-
-  apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -259,6 +267,10 @@ model Poll {
 
   options PollOption[]
   votes   PollVote[]
+
+  apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  apartmentId String?
+  Event       Event?
 }
 
 // ------------------------------
@@ -266,25 +278,27 @@ model Poll {
 // ------------------------------
 
 model PollOption {
-  id     String     @id @default(uuid())
+  id     String @id @default(uuid())
   title  String
   pollId String
-  poll   Poll       @relation(fields: [pollId], references: [id])
-  votes  PollVote[]
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  votes PollVote[]
 }
 
 model PollVote {
-  id       String     @id @default(uuid())
-  userId   String
-  user     User       @relation(fields: [userId], references: [id])
-  pollId   String
-  poll     Poll       @relation(fields: [pollId], references: [id])
-  optionId String
-  option   PollOption @relation(fields: [optionId], references: [id])
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  optionId String?
+  option   PollOption? @relation(fields: [optionId], references: [id])
 
   createdAt DateTime @default(now())
 
-  // 투표에 1회만 참여 가능
   @@unique([pollId, userId])
 }
 
@@ -304,6 +318,12 @@ model Comment {
   boardType BoardType // 응답/요청 DTO
   boardId   String
   board     Board     @relation(fields: [boardId], references: [id])
+
+  noticeId String?
+  Notice   Notice? @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+
+  complaintId String?
+  Complaint   Complaint? @relation(fields: [complaintId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
@@ -333,14 +353,59 @@ model Event {
   createdAt DateTime @default(now())
 
   apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
 
+  // notice 또는 poll 중 하나만 존재하게 백엔드 로직에서 처리
   noticeId String? @unique
-  notice   Notice? @relation(fields: [noticeId], references: [id])
+  notice   Notice? @relation(fields: [noticeId], references: [id], onDelete: Cascade)
 
-  pollId   String? @unique
-  poll     Poll?   @relation(fields: [pollId], references: [id])
+  pollId String? @unique
+  poll   Poll?   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+}
 
-  // noticeId와 pollId 중 하나만 값이 존재하도록 보장(XOR)
-  @@check("((noticeId IS NULL AND pollId IS NOT NULL) OR (noticeId IS NOT NULL AND pollId IS NULL))")
+// ------------------------------
+// CHAT
+// ------------------------------
+
+model ChatRoom {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  residentId String   @unique
+  resident   Resident @relation(fields: [residentId], references: [id], onDelete: Cascade)
+
+  messages ChatMessage[]
+
+  lastMessageAt DateTime?
+  lastMessage   String?   @db.Text
+
+  unreadCountAdmin    Int @default(0)
+  unreadCountResident Int @default(0)
+
+  @@index([apartmentId])
+  @@index([residentId])
+  @@index([lastMessageAt])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chatRoomId String
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  isReadByAdmin    Boolean @default(false)
+  isReadByResident Boolean @default(false)
+
+  @@index([chatRoomId, createdAt])
+  @@index([senderId])
 }

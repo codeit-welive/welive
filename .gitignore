@@ -4,4 +4,6 @@ dist
 .env.production
 .env.test
 .DS_Store
-prisma/migrations
+coverage
+logs/access.log
+test-logs/

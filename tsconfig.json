@@ -2,11 +2,12 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "CommonJS",
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "resolveJsonModule": true,
 
     "baseUrl": ".",
     "paths": {
@@ -17,12 +18,13 @@
       "#helpers/*": ["src/common/helpers/*"],
       "#aws/*": ["src/core/aws/*"],
       "#middlewares/*": ["src/core/middlewares/*"],
-      "#utils/*": ["src/common/utils/*"],
+      "#utils/*": ["src/core/utils/*"],
       "#sse/*": ["src/core/sse/*"],
-      "#crons/*": ["src/crons/*"]
+      "#sanitize/*": ["src/core/sanitize/*"],
+      "#jobs/*": ["src/jobs/*"]
     },
-    "typeRoots": ["./src/common/types", "./node_modules/@types"]
+    "typeRoots": ["./src/@types", "./node_modules/@types"]
   },
-  "include": ["src"],
+  "include": ["src", "tests"],
   "exclude": ["node_modules", "dist"]
 }

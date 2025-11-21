@@ -1,27 +1,31 @@
-import dotenv from 'dotenv';
-import fs from 'fs';
-
-/**
- * 환경 변수 로드
- */
-const envPath = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
-if (fs.existsSync(envPath)) dotenv.config({ path: envPath });
-else dotenv.config();
-
 import express, { Application, Request, Response, NextFunction } from 'express';
-import cors from 'cors';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import swaggerUi from 'swagger-ui-express';
+import fs from 'fs';
+import path from 'path';
 
+import env from '#core/env';
 import routes from '#core/router';
-import env, { CORS_ORIGINS } from '#core/env';
+import { logger } from '#core/logger';
+import corsMiddleware from '#core/middlewares/cors';
+import httpLogger from '#core/httpLogger';
 import { errorHandler } from '#middlewares/errorHandler';
 import ApiError from '#errors/ApiError';
 
 const app: Application = express();
+
+const swaggerPath = path.join(process.cwd(), 'swagger', 'swagger.json');
+if (!fs.existsSync(swaggerPath)) {
+  logger.system.warn('❌ Swagger 문서가 존재하지 않습니다. 먼저 swagger:generate 스크립트를 실행하세요.');
+  process.exit(1);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const swaggerDoc = require(swaggerPath);
 
 /**
  * 보안/기본 설정
@@ -77,17 +81,15 @@ app.use(limiter);
  */
 app.use(compression());
 
-/** CORS (화이트리스트 기반) */
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin) return cb(null, true);
-      if (CORS_ORIGINS.includes(origin)) return cb(null, true);
-      return cb(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-  })
-);
+/**
+ * CORS (화이트리스트 기반)
+ */
+app.use(corsMiddleware);
+
+/**
+ * HTTP 요청 로거 (morgan + pino)
+ */
+app.use(httpLogger);
 
 /**
  * Body & Cookie 파서
@@ -100,6 +102,18 @@ app.use(cookieParser());
  * API 라우터
  */
 app.use('/api', routes);
+
+/**
+ * Swagger
+ */
+app.use(
+  '/api/docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDoc, {
+    explorer: true,
+    customSiteTitle: 'WeLive API Docs',
+  })
+);
 
 /**
  * 404 핸들러

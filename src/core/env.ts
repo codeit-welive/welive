@@ -1,113 +1,159 @@
+/**
+ * @file #core/env.ts
+ * @description 환경 변수 로더 및 검증기
+ *
+ * @usage
+ * 환경 변수는 기본적으로 `env` 객체를 통해 접근하는 것을 권장합니다.
+ *
+ * ```ts
+ * import env from '#core/env';
+ * console.log(env.NODE_ENV);
+ * console.log(env.BASE_URL);
+ * ```
+ *
+ */
+
 import { config as load } from 'dotenv';
+import fs from 'fs';
 import { z } from 'zod';
 
-load();
+/**
+ * dotenv 로드
+ */
+if (process.env.__DOTENV_LOADED__ !== 'true' && process.env.SKIP_DOTENV !== 'true') {
+  if (process.env.NODE_ENV === 'test' && fs.existsSync('.env.test')) {
+    load({ path: '.env.test', override: true, quiet: true });
+  } else {
+    load({ override: true, quiet: true });
+  }
+  process.env.__DOTENV_LOADED__ = 'true';
+}
 
 /**
  * 유틸 함수
  */
 const trimTrailingSlash = (s: string) => s.replace(/\/+$/, '');
-const trimLeadingSlash = (s: string) => s.replace(/^\/+/, '');
-const joinUrl = (a: string, b: string) => `${trimTrailingSlash(a)}/${trimLeadingSlash(b)}`;
+const normalizeOrigin = (s: string) => trimTrailingSlash(s).toLowerCase();
+
+/**
+ * RUNTIME FLAGS
+ */
+const NODE_ENV = process.env.NODE_ENV ?? 'development';
+const IS_PROD = NODE_ENV === 'production';
 
 /**
  * 환경 변수 스키마
  */
-const schema = z.object({
+const baseSchema = z.object({
   // DATABASE
-  DATABASE_URL: z.string().url(),
-  DATABASE_URL_DEV: z.string().url().optional(),
+  DATABASE_URL: z.url(),
 
   // PORT
   PORT: z.coerce.number().int().positive().default(3001),
   FE_PORT: z.coerce.number().int().positive().optional(),
 
   // API ORIGINS
-  BASE_URL: z.string().url(),
-  BASE_URL_DEV: z.string().url().optional(),
+  BASE_URL: z.url(),
 
   // FRONT ORIGIN
-  FRONT_URL: z.string().url(),
-  FRONT_URL_DEV: z.string().url().optional(),
-
-  // FILE URL (S3 기반)
-  FILE_BASE_URL: z.string().url().optional(),
-  FILE_BASE_URL_DEV: z.string().url().optional(),
+  FRONT_URL: z.url(),
 
   // RUNTIME
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   CORS_ORIGIN: z.string().default(''),
   ACCESS_TOKEN_SECRET: z.string().min(10),
   REFRESH_TOKEN_SECRET: z.string().min(10),
-  INVITATION_TOKEN_SECRET: z.string().min(10),
   PASSWORD_PEPPER: z.string().min(10),
-
-  // AWS S3
-  AWS_ACCESS_KEY_ID: z.string().min(10),
-  AWS_SECRET_ACCESS_KEY: z.string().min(10),
-  AWS_REGION: z.string().min(2),
-  AWS_S3_BUCKET_NAME: z.string().min(3),
-  AWS_S3_BASE_URL: z.string().url(),
+  DEFAULT_AVATAR_URL: z.url(),
 });
 
+/**
+ * AWS 스키마(production)
+ */
+const awsSchema =
+  process.env.NODE_ENV === 'test'
+    ? z.object({
+        AWS_REGION: z.string().optional(),
+        AWS_S3_BUCKET_NAME: z.string().optional(),
+        AWS_S3_BASE_URL: z.string().optional(),
+      })
+    : z.object({
+        AWS_REGION: z.string().min(2),
+        AWS_S3_BUCKET_NAME: z.string().min(3),
+        AWS_S3_BASE_URL: z.url(),
+      });
+
+/**
+ * Parse
+ */
+const schema = baseSchema.merge(awsSchema);
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
   console.error('❌ Invalid environment variables:');
   for (const i of parsed.error.issues) console.error(`- ${i.path.join('.')}: ${i.message}`);
-  throw new Error('Invalid environment variables');
+  if (process.env.NODE_ENV !== 'test') {
+    process.exit(1);
+  } else {
+    throw new Error('Invalid environment variables (test mode)');
+  }
 }
 
 const env = parsed.data;
 
 /**
- * RUNTIME FLAGS
+ * Environment Resolution
  */
-export const IS_DEV = env.NODE_ENV === 'development';
-export const IS_PROD = env.NODE_ENV === 'production';
-export const IS_TEST = env.NODE_ENV === 'test';
+const BASE_URL = env.BASE_URL;
+const FRONT_URL = env.FRONT_URL;
+const PORT = env.PORT;
+
+const ACCESS_TOKEN_SECRET = env.ACCESS_TOKEN_SECRET;
+const REFRESH_TOKEN_SECRET = env.REFRESH_TOKEN_SECRET;
+const PASSWORD_PEPPER = env.PASSWORD_PEPPER;
+const DEFAULT_AVATAR_URL = env.DEFAULT_AVATAR_URL;
 
 /**
- * DATABASE
+ * AWS CONFIG
  */
-export const DB_URL = trimTrailingSlash(IS_DEV && env.DATABASE_URL_DEV ? env.DATABASE_URL_DEV : env.DATABASE_URL);
+type EnvWithAws = typeof env & {
+  AWS_REGION?: string;
+  AWS_S3_BUCKET_NAME?: string;
+  AWS_S3_BASE_URL?: string;
+};
 
-/**
- * API ORIGIN
- */
-export const APP_ORIGIN = trimTrailingSlash(IS_DEV && env.BASE_URL_DEV ? env.BASE_URL_DEV : env.BASE_URL);
-
-/**
- * FRONT ORIGIN
- */
-export const FRONT_ORIGIN = trimTrailingSlash(IS_DEV && env.FRONT_URL_DEV ? env.FRONT_URL_DEV : env.FRONT_URL);
-
-/**
- * FILE BASE URL (S3 기준)
- */
-const rawFileBase = (IS_DEV ? env.FILE_BASE_URL_DEV : env.FILE_BASE_URL) || env.AWS_S3_BASE_URL;
-export const FILE_BASE_URL = trimTrailingSlash(rawFileBase);
-
-if (IS_PROD && !FILE_BASE_URL) {
-  console.warn('⚠️ FILE_BASE_URL is empty in production. Public file URLs may be broken.');
-}
+const AWS_CONFIG = {
+  region: (env as EnvWithAws).AWS_REGION,
+  bucketName: (env as EnvWithAws).AWS_S3_BUCKET_NAME,
+  baseUrl: (env as EnvWithAws).AWS_S3_BASE_URL,
+  enabled: NODE_ENV !== 'test', // 테스트에서만 비활성
+};
 
 /**
  * CORS ORIGINS
  */
-export const CORS_ORIGINS = env.CORS_ORIGIN.split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
-if (!CORS_ORIGINS.includes(FRONT_ORIGIN)) CORS_ORIGINS.push(FRONT_ORIGIN);
+const CORS_ORIGINS = Array.from(
+  new Set(
+    env.CORS_ORIGIN.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map(normalizeOrigin)
+  )
+);
 
-/**
- * AWS S3
- */
-export const AWS_CONFIG = {
-  accessKeyId: env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-  region: env.AWS_REGION,
-  bucketName: env.AWS_S3_BUCKET_NAME,
-  baseUrl: env.AWS_S3_BASE_URL,
+// FRONT_URL이 명시되어 있고, 목록에 없으면 추가
+const normalizedFront = normalizeOrigin(env.FRONT_URL);
+if (env.FRONT_URL && !CORS_ORIGINS.includes(normalizedFront)) {
+  CORS_ORIGINS.push(normalizedFront);
+}
+
+export default {
+  NODE_ENV,
+  BASE_URL,
+  FRONT_URL,
+  PORT,
+  AWS_CONFIG,
+  CORS_ORIGINS,
+  ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET,
+  PASSWORD_PEPPER,
+  DEFAULT_AVATAR_URL,
 };
-
-export default env;
