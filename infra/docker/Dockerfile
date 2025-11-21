@@ -24,7 +24,7 @@ RUN npm run build
 FROM base AS prod-deps
 COPY package*.json ./
 RUN npm ci --omit=dev \
-  && npm i --no-save prisma@6.17.1
+  && npm i --no-save prisma@6.17.1 @prisma/client
 
 # ---------- runtime ----------
 FROM base AS runtime
