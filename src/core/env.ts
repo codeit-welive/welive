@@ -58,9 +58,6 @@ const baseSchema = z.object({
   // FRONT ORIGIN
   FRONT_URL: z.url(),
 
-  // FILE URL (optional in dev/test)
-  FILE_BASE_URL: z.url().optional(),
-
   // RUNTIME
   CORS_ORIGIN: z.string().default(''),
   ACCESS_TOKEN_SECRET: z.string().min(10),
@@ -72,21 +69,18 @@ const baseSchema = z.object({
 /**
  * AWS 스키마(production)
  */
-const awsSchema = IS_PROD
-  ? z.object({
-      AWS_ACCESS_KEY_ID: z.string().min(10),
-      AWS_SECRET_ACCESS_KEY: z.string().min(10),
-      AWS_REGION: z.string().min(2),
-      AWS_S3_BUCKET_NAME: z.string().min(3),
-      AWS_S3_BASE_URL: z.url(),
-    })
-  : z.object({
-      AWS_ACCESS_KEY_ID: z.string().optional(),
-      AWS_SECRET_ACCESS_KEY: z.string().optional(),
-      AWS_REGION: z.string().optional(),
-      AWS_S3_BUCKET_NAME: z.string().optional(),
-      AWS_S3_BASE_URL: z.string().optional(),
-    });
+const awsSchema =
+  process.env.NODE_ENV === 'test'
+    ? z.object({
+        AWS_REGION: z.string().optional(),
+        AWS_S3_BUCKET_NAME: z.string().optional(),
+        AWS_S3_BASE_URL: z.string().optional(),
+      })
+    : z.object({
+        AWS_REGION: z.string().min(2),
+        AWS_S3_BUCKET_NAME: z.string().min(3),
+        AWS_S3_BASE_URL: z.url(),
+      });
 
 /**
  * Parse
@@ -118,42 +112,20 @@ const PASSWORD_PEPPER = env.PASSWORD_PEPPER;
 const DEFAULT_AVATAR_URL = env.DEFAULT_AVATAR_URL;
 
 /**
- * FILE URL
- */
-const rawFileBase = env.FILE_BASE_URL?.trim();
-
-let FILE_BASE_URL: string;
-
-if (rawFileBase) {
-  FILE_BASE_URL = trimTrailingSlash(rawFileBase);
-} else if (IS_PROD) {
-  console.error('❌ Missing FILE_BASE_URL in production environment');
-  process.exit(1);
-} else {
-  FILE_BASE_URL = `http://localhost:${PORT}/uploads`;
-}
-
-/**
  * AWS CONFIG
  */
 type EnvWithAws = typeof env & {
-  AWS_ACCESS_KEY_ID?: string;
-  AWS_SECRET_ACCESS_KEY?: string;
   AWS_REGION?: string;
   AWS_S3_BUCKET_NAME?: string;
   AWS_S3_BASE_URL?: string;
 };
 
-const AWS_CONFIG = IS_PROD
-  ? {
-      accessKeyId: (env as EnvWithAws).AWS_ACCESS_KEY_ID,
-      secretAccessKey: (env as EnvWithAws).AWS_SECRET_ACCESS_KEY,
-      region: (env as EnvWithAws).AWS_REGION,
-      bucketName: (env as EnvWithAws).AWS_S3_BUCKET_NAME,
-      baseUrl: (env as EnvWithAws).AWS_S3_BASE_URL,
-      enabled: true,
-    }
-  : { enabled: false };
+const AWS_CONFIG = {
+  region: (env as EnvWithAws).AWS_REGION,
+  bucketName: (env as EnvWithAws).AWS_S3_BUCKET_NAME,
+  baseUrl: (env as EnvWithAws).AWS_S3_BASE_URL,
+  enabled: NODE_ENV !== 'test', // 테스트에서만 비활성
+};
 
 /**
  * CORS ORIGINS
@@ -178,7 +150,6 @@ export default {
   BASE_URL,
   FRONT_URL,
   PORT,
-  FILE_BASE_URL,
   AWS_CONFIG,
   CORS_ORIGINS,
   ACCESS_TOKEN_SECRET,

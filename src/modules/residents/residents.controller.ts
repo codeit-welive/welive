@@ -27,7 +27,7 @@ export const getResidentListHandler: RequestHandler = async (req, res, next) => 
 
     return res.status(200).json(result);
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
@@ -62,7 +62,11 @@ export const patchResidentHandler: RequestHandler = async (req, res, next) => {
 
     return res.status(200).json(result);
   } catch (err) {
-    next(err);
+    // 대상 없음(P2025) → 404
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      return next(ApiError.notFound('입주민을 찾을 수 없습니다.'));
+    }
+    return next(err);
   }
 };
 
@@ -79,7 +83,11 @@ export const deleteResidentHandler: RequestHandler = async (req, res, next) => {
 
     return res.status(200).send({ message: '작업이 성공적으로 완료되었습니다' });
   } catch (err) {
-    next(err);
+    // 대상 없음(P2025) → 404
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      return next(ApiError.notFound('입주민을 찾을 수 없습니다.'));
+    }
+    return next(err);
   }
 };
 
@@ -96,12 +104,16 @@ export const createResidentHandler: RequestHandler = async (req, res, next) => {
 
     res.status(201).json(result);
   } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === 'P2002') {
-        const errorFields = err.meta?.target as string[];
-        next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      const errorFields = err.meta?.target as string[] | undefined;
+
+      if (Array.isArray(errorFields)) {
+        return next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
       }
+
+      // err.meta.target 정보가 없을 때는 포괄적인 409로 처리
+      return next(new ApiError(409, '이미 존재하는 값이 있습니다.'));
     }
-    next(err);
+    return next(err);
   }
 };

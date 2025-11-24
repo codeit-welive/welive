@@ -24,6 +24,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ role }: SidebarProps) {
+
   const menuByRole: Record<UserRole, SidebarItem[]> = {
     resident: [
       {
@@ -105,14 +106,12 @@ export default function Sidebar({ role }: SidebarProps) {
       <nav className='py-[11px] text-sm'>
         {menu.map((item) => {
           const isActive = pathname?.split('/').slice(0, 3).join('/') === item.path;
+          const className = `flex items-center gap-3 rounded-md px-2 py-2 ${
+            isActive ? 'text-main font-semibold' : 'hover:text-main text-gray-700'
+          }`;
+
           return (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`flex items-center gap-3 rounded-md px-2 py-2 ${
-                isActive ? 'text-main font-semibold' : 'hover:text-main text-gray-700'
-              }`}
-            >
+            <Link key={item.path} href={item.path} className={className}>
               <span>{item.icon}</span>
               <span>{item.label}</span>
             </Link>

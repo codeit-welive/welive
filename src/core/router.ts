@@ -46,5 +46,6 @@ router.use('/options', optionRouter);
 router.use('/event', eventRouter);
 router.use('/apartments', apartmentRouter);
 router.use('/notifications', notificationsRouter);
+router.use('/chats', chatRouter);
 
 export default router;

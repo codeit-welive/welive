@@ -119,7 +119,14 @@ export const getResidentListForDownload = async (adminId: string, query: Residen
  */
 export const createMany = async (data: ResidentCsvDto[], apartmentId: string) => {
   return await prisma.resident.createMany({
-    data: data.map((item) => ({ ...item, apartmentId })),
+    data: data.map((item) => ({
+      building: item.building,
+      unitNumber: item.unitNumber,
+      name: item.name,
+      contact: item.contact,
+      apartmentId,
+      isHouseholder: item.isHouseholder === '세대주' ? 'HOUSEHOLDER' : 'MEMBER',
+    })),
     skipDuplicates: true,
   });
 };

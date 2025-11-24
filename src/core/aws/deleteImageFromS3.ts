@@ -21,10 +21,6 @@ export const deleteImageFromS3 = async (url: string): Promise<void> => {
 
     const s3 = new S3Client({
       region: env.AWS_CONFIG.region!,
-      credentials: {
-        accessKeyId: env.AWS_CONFIG.accessKeyId!,
-        secretAccessKey: env.AWS_CONFIG.secretAccessKey!,
-      },
     });
 
     await s3.send(
