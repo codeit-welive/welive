@@ -10,7 +10,10 @@
  */
 
 import { v4 as uuid } from 'uuid';
-import prisma from '../src/core/prisma';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient({
+  log: ['warn', 'error'],
+});
 
 // ------------------------------
 // UTILS
