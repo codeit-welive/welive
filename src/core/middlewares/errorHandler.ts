@@ -20,6 +20,7 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
    * - development/test: 실제 에러 메시지 그대로 출력
    */
   const payload = {
+    success: false,
     code: isAPI ? err.code : 'INTERNAL_ERROR',
     message:
       ENV === 'production'
