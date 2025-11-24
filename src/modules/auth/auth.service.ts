@@ -20,7 +20,7 @@ import { searchResultToResponse } from './utils/searchResultMapper';
 import { generateAccessToken, generateRefreshToken } from './utils/tokenUtils';
 import ApiError from '#errors/ApiError';
 import { JoinStatus, UserRole } from '@prisma/client';
-import { checkDuplicateUser } from './utils/checkDuplicate';
+import { checkDuplicateApartment, checkDuplicateUser } from './utils/checkDuplicate';
 
 export const registSuperAdmin = async (data: SignupSuperAdminRequestDto) => {
   await checkDuplicateUser(data.username, data.email, data.contact);
@@ -34,6 +34,7 @@ export const registSuperAdmin = async (data: SignupSuperAdminRequestDto) => {
 
 export const registAdmin = async (data: SignupAdminRequestDto) => {
   await checkDuplicateUser(data.username, data.email, data.contact);
+  await checkDuplicateApartment(data.apartmentName);
   const { userData, apartmentData } = await adminDataMapper(data);
   const createdUser = await createAdmin(userData, apartmentData);
 
