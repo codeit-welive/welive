@@ -37,7 +37,6 @@ export const uploadImageToS3 = async (buffer: Buffer): Promise<string> => {
         Bucket: env.AWS_CONFIG.bucketName!,
         Key: key,
         Body: buffer,
-        ACL: 'public-read',
         ContentType: 'image/webp',
       })
     );
