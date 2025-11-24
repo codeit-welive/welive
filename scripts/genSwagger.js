@@ -1,6 +1,6 @@
-import path from 'path';
-import fs from 'fs';
-import swaggerAutogen from 'swagger-autogen';
+const path = require('path');
+const fs = require('fs');
+const swaggerAutogen = require('swagger-autogen');
 
 const root = process.cwd();
 const outDir = path.join(root, 'swagger');
@@ -26,14 +26,18 @@ const baseDoc = {
   security: [{ AccessTokenCookie: [] }],
 };
 
-// 도메인 목록
 // prettier-ignore
 const domains = [
   'auth',
   'users',
+  'apartments',
+  'residents',
   'complaints',
+  'polls',
   'notices',
   'comments',
+  'notifications',
+  'events',
   'notifications',
   'poll-scheduler',
 ];
@@ -49,30 +53,37 @@ const modules = [
   },
 ];
 
-const genForModule = async (modFile: string) => {
+const genForModule = async (modFile) => {
   const tmp = path.join(outDir, `.tmp_${path.basename(modFile, '.ts')}.json`);
-  await swaggerAutogen({ openapi: '3.0.0' })(tmp, [modFile], baseDoc);
+  await swaggerAutogen(tmp, [modFile], baseDoc);
   const json = JSON.parse(fs.readFileSync(tmp, 'utf-8'));
   fs.rmSync(tmp, { force: true });
-  return json as { paths?: Record<string, any> };
+  return json.paths || {};
 };
 
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const generateSwagger = async () => {
   fs.mkdirSync(outDir, { recursive: true });
-  const finalSpec: any = { ...baseDoc, paths: {}, tags: [] };
+
+  const finalSpec = { ...baseDoc, paths: {}, tags: [] };
 
   for (const m of modules) {
-    const { paths = {} } = await genForModule(m.file);
+    const paths = await genForModule(m.file);
     const tagName = capitalize(m.prefix.split('/').pop() || 'Default');
-    finalSpec.tags.push({ name: tagName, description: `${tagName} 관련 API` });
+
+    finalSpec.tags.push({
+      name: tagName,
+      description: `${tagName} 관련 API`,
+    });
 
     for (const [p, val] of Object.entries(paths)) {
       const prefixed = `${m.prefix}${p}`.replace(/\/+/g, '/');
+
       for (const method of Object.keys(val)) {
         if (!val[method].tags) val[method].tags = [tagName];
       }
+
       finalSpec.paths[prefixed] = val;
     }
   }
