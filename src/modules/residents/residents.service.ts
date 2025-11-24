@@ -38,9 +38,6 @@ export const patchResident = async (residentId: string, data: ResidentPatchReque
   if (!apartment) throw ApiError.notFound('아파트를 찾을 수 없습니다');
 
   const updatedResident = await update(residentId, data, apartment.id);
-  if (!updatedResident) {
-    throw ApiError.notFound('입주민을 찾을 수 없습니다.');
-  }
 
   const [mappedResident] = residentDataMapper([updatedResident]);
   return mappedResident;
