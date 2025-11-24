@@ -225,7 +225,7 @@ describe('[Auth] 통합 테스트', () => {
       .set('Cookie', [`refresh_token=${refreshToken}`]);
 
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('message', '작업이 성공적으로 완료되었습니다 ');
+    expect(res.body).toHaveProperty('message', '작업이 성공적으로 완료되었습니다');
   });
 
   /**
@@ -285,7 +285,7 @@ describe('[Auth] 통합 테스트', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      message: '작업이 성공적으로 완료되었습니다 ',
+      message: '작업이 성공적으로 완료되었습니다',
     });
 
     const updated = await prisma.user.findUnique({
@@ -308,7 +308,7 @@ describe('[Auth] 통합 테스트', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      message: '작업이 성공적으로 완료되었습니다 ',
+      message: '작업이 성공적으로 완료되었습니다',
     });
 
     const updated = await prisma.user.findUnique({
@@ -366,7 +366,7 @@ describe('[Auth] 통합 테스트', () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      message: '작업이 성공적으로 완료되었습니다 ',
+      message: '작업이 성공적으로 완료되었습니다',
     });
 
     const updated = await prisma.user.findUnique({
