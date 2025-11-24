@@ -301,8 +301,9 @@ export const patchUserStatusHandler: RequestHandler = async (req, res, next) => 
 export const cleanupHandler: RequestHandler = async (req, res, next) => {
   try {
     const role = req.user.role;
+    const adminId = req.user.id;
 
-    await cleanupRejectedUsers(role);
+    await cleanupRejectedUsers(role, adminId);
     return res.status(200).json({ message: '작업이 성공적으로 완료되었습니다' });
   } catch (err) {
     next(err);

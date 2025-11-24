@@ -58,6 +58,19 @@ export const findDuplicateUser = async (data: { username: string; email: string;
   });
 };
 
+/**
+ * 중복 아파트 확인
+ * @description 아파트 이름이 중복되는 아파트가 있는지 확인
+ * @param apartmentName 아파트 이름
+ * @returns 중복된 아파트 정보 또는 null
+ */
+export const findDuplicateApartment = async (apartmentName: string) => {
+  return prisma.apartment.findFirst({
+    where: { apartmentName },
+    select: { id: true },
+  });
+};
+
 export const createUser = async (userData: SignupUserRequestDto) => {
   return prisma.$transaction(async (tx) => {
     // 아파트가 존재하는지 확인
@@ -103,6 +116,11 @@ export const findResidentByContact = async (contact: string) => {
   });
 };
 
+/**
+ * @description 아파트 이름으로 아파트 동, 호수 정보 조회
+ * @param apartmentName 아파트 이름
+ * @returns 아파트 동, 호수 정보
+ */
 export const getApartmentRangeByName = async (apartmentName: string) => {
   return prisma.apartment.findUnique({
     where: { apartmentName },
@@ -129,6 +147,15 @@ export const getPasswordByUsername = async (username: string) => {
   });
 };
 
+/**
+ * 아이디로 유저 정보 조회
+ * @description
+ * - 관리자는 apartment 필드 포함
+ * - 사용자는 resident 필드 포함
+ * @param username 아이디
+ * @param role 사용자 역할
+ * @returns 유저 정보
+ */
 export const getUserByUsername = async (username: string, role: UserRole) => {
   return prisma.user.findUniqueOrThrow({
     where: { username },
@@ -175,6 +202,14 @@ export const getRoleById = async (userId: string) => {
   });
 };
 
+/**
+ * 관리자 가입 상태 수정
+ * @description
+ *  - 관리자 ID가 주어지면 해당 관리자만 수정
+ *  - 관리자 ID가 주어지지 않으면 가입 대기 중인 모든 관리자 수정
+ * @param adminId 관리자 ID
+ * @param status 변경하려는 상태
+ */
 export const patchAdminStatusRepo = async (adminId: string, status: JoinStatus) => {
   if (adminId) {
     return prisma.user.update({
@@ -192,6 +227,14 @@ export const patchAdminStatusRepo = async (adminId: string, status: JoinStatus) 
   }
 };
 
+/**
+ * 유저 가입 상태 수정
+ * @description
+ *  - userId로 특정 유저의 가입 상태 수정
+ *  - resident 테이블의 approvalStatus도 함께 수정
+ * @param status 변경하려는 상태
+ * @param userId 유저 ID
+ */
 export const patchUserStatusRepo = async (status: JoinStatus, userId: string) => {
   return prisma.user.update({
     where: { id: userId },
@@ -204,6 +247,15 @@ export const patchUserStatusRepo = async (status: JoinStatus, userId: string) =>
   });
 };
 
+/**
+ * 유저 가입 상태 일괄 변경
+ * @description
+ *  - adminApartmentName 아파트에 속한 가입 대기 중인 모든 유저의 상태를 변경
+ *  - resident 테이블의 approvalStatus도 함께 수정
+ * @param status 변경하려는 상태
+ * @param adminApartmentName 아파트 이름
+ * @returns
+ */
 export const patchUserListStatusRepo = async (status: JoinStatus, adminApartmentName: string) => {
   return await prisma.$transaction(async (tx) => {
     await tx.user.updateMany({
@@ -260,11 +312,14 @@ export const getApartmentNameByAdminId = async (adminId: string) => {
   });
 };
 
-export const deleteRejectedUser = async (targetRole: UserRole) => {
+export const deleteRejectedUser = async (targetRole: UserRole, apartmentName: string | undefined) => {
   await prisma.user.deleteMany({
     where: {
       joinStatus: JoinStatus.REJECTED,
       role: targetRole,
+      ...(apartmentName && {
+        resident: { apartment: { apartmentName } },
+      }),
     },
   });
 };

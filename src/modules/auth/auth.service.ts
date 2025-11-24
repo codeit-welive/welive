@@ -20,7 +20,7 @@ import { searchResultToResponse } from './utils/searchResultMapper';
 import { generateAccessToken, generateRefreshToken } from './utils/tokenUtils';
 import ApiError from '#errors/ApiError';
 import { JoinStatus, UserRole } from '@prisma/client';
-import { checkDuplicateUser } from './utils/checkDuplicateUser';
+import { checkDuplicateUser } from './utils/checkDuplicate';
 
 export const registSuperAdmin = async (data: SignupSuperAdminRequestDto) => {
   await checkDuplicateUser(data.username, data.email, data.contact);
@@ -114,7 +114,7 @@ export const patchUserListStatus = async (status: JoinStatus, adminId: string) =
   await patchUserListStatusRepo(status, adminApartmentName);
 };
 
-export const cleanupRejectedUsers = async (role: UserRole) => {
+export const cleanupRejectedUsers = async (role: UserRole, adminId: string | undefined) => {
   const ROLE_CLEANUP_MAP: Record<UserRole, UserRole | null> = {
     SUPER_ADMIN: UserRole.ADMIN,
     ADMIN: UserRole.USER,
@@ -125,5 +125,10 @@ export const cleanupRejectedUsers = async (role: UserRole) => {
 
   if (!targetRole) throw ApiError.forbidden('권한이 없습니다');
 
-  await deleteRejectedUser(targetRole);
+  let apartment;
+  if (adminId) {
+    apartment = await getApartmentNameByAdminId(adminId);
+    if (!apartment) throw ApiError.notFound('아파트를 찾을 수 없습니다');
+  }
+  await deleteRejectedUser(targetRole, apartment?.apartment?.apartmentName);
 };
