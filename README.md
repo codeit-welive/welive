@@ -493,8 +493,8 @@ WeLive 서버는 Express 5 기반으로, 다음과 같은 다층 보안 요소�
 - 시연 영상: 갱신 예정
 - 저장소: https://github.com/codeit-welive/welive
 - 산출물:
-  - 1. 요구사항 분석: 갱신 예정
-  - 2. 설계: 갱신 예정
-  - 3. 구현: 갱신 예정
-  - 4. 테스트: 갱신 예정
-  - 5. 배포 및 유지보수: 갱신 예정
+  - 1. 요구사항 분석: [링크](https://docs.google.com/document/d/11Kl92rqan2iA_5K8Q_3UCQXxkDiuzfVb10B0d-X-JTQ/edit?usp=sharing)
+  - 2. 설계: [링크](https://docs.google.com/document/d/1cymp9U-yK94KXXUE7jiBzh5EP23w9luxXiKN50FrFGA/edit?usp=sharing)
+  - 3. 구현: [링크](https://docs.google.com/document/d/1hgKMj29_KXsSXFceEgQGOPSlGxUAqYg32ujF5OWZd2U/edit?usp=sharing)
+  - 4. 테스트: [링크](https://docs.google.com/document/d/1Dnkksd0Oa1b5dHiuudu5tm-BDBxiOFkTnExfLzwxJVw/edit?usp=sharing)
+  - 5. 배포 및 유지보수: [링크](https://docs.google.com/document/d/1Pq4H3DNUBoLCKIp0Jdt3oD8kg3pb66YLEaR4uXr8KJg/edit?usp=sharing)
