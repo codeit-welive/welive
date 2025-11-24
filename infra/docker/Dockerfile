@@ -17,14 +17,6 @@ COPY src ./src
 # Prisma Client 생성
 RUN npx prisma generate --schema=prisma/schema.prisma
 
-# Swagger 문서 생성
-RUN npm run swagger:generate
-
-# Swagger를 dist로 복사
-RUN mkdir -p dist/swagger swagger \
-  && cp swagger/swagger.json dist/swagger/ \
-  && cp swagger/swagger.json swagger/
-
 # 빌드
 RUN npm run build
 
