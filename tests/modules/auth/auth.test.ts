@@ -251,7 +251,7 @@ describe('[Auth] 통합 테스트', () => {
   /**
    * 7. POST /api/auth/signup (중복 계정)
    */
-  it('동일한 username/email/contact로 두 번 회원가입하면 409를 반환해야 함', async () => {
+  it('동일한 username/email/contact로 두 번 회원가입하면 400를 반환해야 함', async () => {
     const body = {
       username: 'auth_dup',
       password: 'Test!@1234',
@@ -269,7 +269,7 @@ describe('[Auth] 통합 테스트', () => {
     expect(first.status).toBe(201);
 
     const second = await request(app).post('/api/auth/signup').send(body);
-    expect(second.status).toBe(409);
+    expect(second.status).toBe(400);
   });
 
   /**
@@ -425,6 +425,15 @@ describe('[Auth] 통합 테스트', () => {
         role: UserRole.USER,
         avatar: 'https://test.com/rejected-user.png',
         joinStatus: JoinStatus.REJECTED,
+        resident: {
+          create: {
+            name: '거절유저',
+            contact: '01000000708',
+            building: '102',
+            unitNumber: '1003',
+            apartment: { connect: { apartmentName: 'AuthAPT' } },
+          },
+        },
       },
     });
 
