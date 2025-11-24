@@ -5,28 +5,24 @@ WORKDIR /app
 RUN apk add --no-cache openssl libc6-compat
 
 # ---------- build (TS → CJS) ----------
-# 의존성
+# dependencies
 COPY package*.json ./
 RUN npm ci
 
-# Prisma 스키마/소스 복사
+# sources
 COPY prisma ./prisma
 COPY tsconfig*.json ./
 COPY src ./src
+COPY scripts ./scripts
 
-# Prisma Client 생성
+# generate prisma client
 RUN npx prisma generate --schema=prisma/schema.prisma
 
-# Swagger 문서 생성
-RUN npm run swagger:generate
-
-# Swagger를 dist로 복사
-RUN mkdir -p dist/swagger swagger \
-  && cp swagger/swagger.json dist/swagger/ \
-  && cp swagger/swagger.json swagger/
-
-# 빌드
+# build TS → JS
 RUN npm run build
+
+# generate swagger (CJS)
+RUN npm run swagger:generate
 
 # ---------- runtime ----------
 FROM node:20-alpine AS runtime
@@ -42,10 +38,11 @@ RUN addgroup -S app && adduser -S app -G app
 RUN mkdir -p /app/logs && chown -R app:app /app/logs
 USER app
 
-# deps / app
+# copy built artifacts + prisma
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/swagger ./swagger
 COPY package*.json ./
 
 EXPOSE 3001
