@@ -126,10 +126,11 @@ export const cleanupRejectedUsers = async (role: UserRole, adminId: string | und
 
   if (!targetRole) throw ApiError.forbidden('권한이 없습니다');
 
-  let apartment;
+  let apartmentName;
   if (adminId) {
-    apartment = await getApartmentNameByAdminId(adminId);
+    const apartment = await getApartmentNameByAdminId(adminId);
     if (!apartment) throw ApiError.notFound('아파트를 찾을 수 없습니다');
+    apartmentName = apartment?.apartment?.apartmentName;
   }
-  await deleteRejectedUser(targetRole, apartment?.apartment?.apartmentName);
+  await deleteRejectedUser(targetRole, apartmentName);
 };
