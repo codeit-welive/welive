@@ -67,12 +67,14 @@ export const login = async (data: LoginDto) => {
     role: createdUser.role,
     joinStatus: createdUser.joinStatus,
     isActive: createdUser.isActive,
+    apartmentId: createdUser.apartmentId,
   });
   const refreshToken = generateRefreshToken({
     id: createdUser.id,
     role: createdUser.role,
     joinStatus: createdUser.joinStatus,
     isActive: createdUser.isActive,
+    apartmentId: createdUser.apartmentId,
   });
   return { user: createdUser, accessToken, refreshToken };
 };
