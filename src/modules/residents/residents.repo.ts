@@ -26,9 +26,13 @@ const selectResidentFields = {
 };
 
 export const getList = async (query: ResidentListRequestQueryDto, adminId: string) => {
+  const { user, ...rest } = selectResidentFields;
   return await prisma.resident.findMany({
     where: buildWhereCondition(query, adminId),
-    select: selectResidentFields,
+    select: {
+      ...rest,
+      ...(query.isRegistered ? { user: { select: { id: true, email: true } } } : {}),
+    },
     skip: (query.page - 1) * query.limit,
     take: query.limit,
   });

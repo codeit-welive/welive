@@ -312,14 +312,39 @@ export const getApartmentNameByAdminId = async (adminId: string) => {
   });
 };
 
+/**
+ * 거절 유저 삭제
+ * @description
+ *  - targetRole 역할을 가진 거절된 유저 삭제
+ *  - 관리자의 경우 자신의 아파트 소속만 삭제
+ *  - resident 테이블의 isRegistered 필드도 false로 변경
+ *  - 관리자가 삭제될 경우 아파트도 삭제됨
+ * @param targetRole
+ * @param apartmentName
+ */
 export const deleteRejectedUser = async (targetRole: UserRole, apartmentName: string | undefined) => {
-  await prisma.user.deleteMany({
-    where: {
-      joinStatus: JoinStatus.REJECTED,
-      role: targetRole,
-      ...(apartmentName && {
-        resident: { apartment: { apartmentName } },
-      }),
-    },
+  await prisma.$transaction(async (tx) => {
+    if (apartmentName) {
+      await tx.resident.updateMany({
+        where: {
+          user: {
+            joinStatus: JoinStatus.REJECTED,
+            role: targetRole,
+            resident: { apartment: { apartmentName } },
+          },
+        },
+        data: { isRegistered: false },
+      });
+    }
+
+    await tx.user.deleteMany({
+      where: {
+        joinStatus: JoinStatus.REJECTED,
+        role: targetRole,
+        ...(apartmentName && {
+          resident: { apartment: { apartmentName } },
+        }),
+      },
+    });
   });
 };
