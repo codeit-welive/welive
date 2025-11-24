@@ -11,7 +11,6 @@ import {
   patchUserListStatusRepo,
   getApartmentNameByAdminId,
   deleteRejectedUser,
-  isUserDuplicate,
 } from './auth.repo';
 import { SignupSuperAdminRequestDto, SignupAdminRequestDto, SignupUserRequestDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -21,8 +20,10 @@ import { searchResultToResponse } from './utils/searchResultMapper';
 import { generateAccessToken, generateRefreshToken } from './utils/tokenUtils';
 import ApiError from '#errors/ApiError';
 import { JoinStatus, UserRole } from '@prisma/client';
+import { checkDuplicateUser } from './utils/checkDuplicateUser';
 
 export const registSuperAdmin = async (data: SignupSuperAdminRequestDto) => {
+  await checkDuplicateUser(data.username, data.email, data.contact);
   const createdSuperAdmin = await createSuperAdmin({
     ...data,
     password: await hashPassword(data.password),
@@ -32,6 +33,7 @@ export const registSuperAdmin = async (data: SignupSuperAdminRequestDto) => {
 };
 
 export const registAdmin = async (data: SignupAdminRequestDto) => {
+  await checkDuplicateUser(data.username, data.email, data.contact);
   const { userData, apartmentData } = await adminDataMapper(data);
   const createdUser = await createAdmin(userData, apartmentData);
 
@@ -39,11 +41,7 @@ export const registAdmin = async (data: SignupAdminRequestDto) => {
 };
 
 export const registUser = async (data: SignupUserRequestDto) => {
-  const duplicate = await isUserDuplicate(data);
-  if (duplicate) {
-    throw ApiError.conflict('이미 존재하는 사용자입니다.');
-  }
-
+  await checkDuplicateUser(data.username, data.email, data.contact);
   const createdUser = await createUser({
     ...data,
     password: await hashPassword(data.password),
