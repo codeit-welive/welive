@@ -22,7 +22,7 @@ const prisma = new PrismaClient({
 /**
  * PEPPER + 12345678a!
  */
-const HASHED_PASSWORD = '$2a$10$BTWt7pgku69fojJ0gQA/9uZ3ZXLIdLfZT0BLKbGwqW8vc.q/PGjO6';
+const HASHED_PASSWORD = '$2a$10$jG891zudtakclLJpgenJz.Z4y8X/qq5Xke.rKQCeWRDbC6D7vdfqG';
 
 /**
  * 자정으로 시간 고정하는 유틸
