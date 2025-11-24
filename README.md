@@ -78,7 +78,7 @@
 | **유효성 검증**             | Zod(DTO·Body·Query·Params, CSV 데이터 검증 포함)                                                                  |
 | **입력 정화(Sanitize)**     | isomorphic-dompurify + jsdom                                                                                      |
 | **파일 업로드/이미지 처리** | multer, sharp                                                                                                     |
-| **AWS 연동**                | AWS SDK v3 (@aws-sdk/client-s3, credential-providers, s3-request-presigner) — S3 Presigned URL 업로드             |
+| **AWS 연동**                | AWS SDK v3 (@aws-sdk/client-s3, credential-providers, s3-request-presigner) — S3 업로드                           |
 | **보안/안정화**             | helmet(CSP 포함), hpp, express-rate-limit, CORS(화이트리스트 기반), bcrypt(+pepper), jsonwebtoken(access/refresh) |
 | **로그/모니터링**           | Pino(애플리케이션 로그), Morgan(HTTP 요청 로그)                                                                   |
 | **환경변수 관리**           | dotenv, dotenv-cli, cross-env                                                                                     |
@@ -200,8 +200,6 @@ welive/
 ```
 
 ---
-
-## ⚙️ 실행 방법
 
 ## ⚙️ 실행 방법
 
