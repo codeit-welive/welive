@@ -61,23 +61,30 @@ export const validateCreateResidentRequestBody: RequestHandler = (req, res, next
 export const validateCsvHeader: RequestHandler = async (req, res, next) => {
   try {
     if (!req.file) return next(new ApiError(400, '파일이 첨부되지 않았습니다.'));
-    // 간단 확장자 검사
-    if (!req.file.originalname.toLowerCase().endsWith('.csv')) {
+
+    // 확장자 검사
+    if (!req.file.originalname.toLowerCase().endsWith('.csv'))
       return next(new ApiError(400, 'CSV 파일만 업로드할 수 있습니다.'));
-    }
 
-    // 헤더 검사
-    const headers = await extractHeaderFromBuffer(req.file.buffer);
-    if (headers.length !== CSV_HEADERS.length) {
-      return next(new ApiError(400, '잘못된 형식의 CSV 파일입니다'));
-    }
+    // buffer.toString() 기반 정적 헤더 추출
+    const raw = req.file.buffer.toString('utf-8');
+    const text = raw.replace(/^\uFEFF/, ''); // BOM 제거
+    const lines = text.split(/\r?\n/);
 
-    // 헤더 목록에 없는 항목이 있는지 검사
-    const missingHeaders = CSV_HEADERS.filter((h) => !headers.includes(h));
-    if (missingHeaders.length > 0) {
-      return next(new ApiError(400, '잘못된 형식의 CSV 파일입니다'));
-    }
-    next();
+    if (lines.length === 0) return next(new ApiError(400, '잘못된 형식의 CSV 파일입니다'));
+
+    const headerLine = lines[0].trim();
+    if (!headerLine) return next(new ApiError(400, '잘못된 형식의 CSV 파일입니다'));
+
+    const headers = headerLine.split(',').map((h) => h.trim());
+
+    // 개수 검사
+    if (headers.length !== CSV_HEADERS.length) return next(new ApiError(400, '잘못된 형식의 CSV 파일입니다'));
+
+    // 헤더 목록 검사
+    const missing = CSV_HEADERS.filter((h) => !headers.includes(h));
+    if (missing.length > 0) return next(new ApiError(400, '잘못된 형식의 CSV 파일입니다'));
+    return next();
   } catch (err) {
     next(err);
   }

@@ -4,6 +4,7 @@ import type { Configuration } from 'webpack';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
+    domains: ['example.com'],
     remotePatterns: [
       {
         protocol: 'https',

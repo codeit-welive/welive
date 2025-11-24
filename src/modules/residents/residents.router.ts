@@ -23,7 +23,7 @@ const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 // 입주민 업로드 템플릿 다운로드
-router.get('/file/template', downloadResidentTemplate);
+router.get('/file/template', authMiddleware, requireRole(['ADMIN']), downloadResidentTemplate);
 
 router
   .route('/file')
