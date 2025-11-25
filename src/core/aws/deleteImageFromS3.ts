@@ -4,6 +4,7 @@
  */
 
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { fromInstanceMetadata } from '@aws-sdk/credential-providers';
 import env from '#core/env';
 import { logger } from '#core/logger';
 
@@ -21,10 +22,7 @@ export const deleteImageFromS3 = async (url: string): Promise<void> => {
 
     const s3 = new S3Client({
       region: env.AWS_CONFIG.region!,
-      credentials: {
-        accessKeyId: env.AWS_CONFIG.accessKeyId!,
-        secretAccessKey: env.AWS_CONFIG.secretAccessKey!,
-      },
+      credentials: fromInstanceMetadata(),
     });
 
     await s3.send(

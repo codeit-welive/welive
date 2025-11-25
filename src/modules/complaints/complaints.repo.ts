@@ -29,9 +29,14 @@ export const getComplaintBoardIdByUserId = async (userId: string) => {
     },
     select: {
       id: true,
+      apartment: {
+        select: {
+          adminId: true,
+        },
+      },
     },
   });
-  return board?.id;
+  return board;
 };
 
 /**

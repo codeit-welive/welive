@@ -30,21 +30,21 @@ describe('[Core] 전역 에러 핸들러', () => {
     const res = await request(app).get('/bad');
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe('BAD_REQUEST');
-    expect(res.body.error.message).toMatch(/테스트 요청 오류/);
-    expect(res.body.error.details).toEqual({ field: 'name' });
+    expect(res.body.code).toBe('BAD_REQUEST');
+    expect(res.body.message).toMatch(/테스트 요청 오류/);
+    expect(res.body.details).toEqual({ field: 'name' });
   });
 
   it('일반 Error는 500 상태 코드와 INTERNAL_ERROR 코드를 반환해야 함', async () => {
     const res = await request(app).get('/crash');
     expect(res.status).toBe(500);
-    expect(res.body.error.code).toBe('INTERNAL_ERROR');
+    expect(res.body.code).toBe('INTERNAL_ERROR');
   });
 
   it('정의되지 않은 라우트는 404를 반환해야 함', async () => {
     const res = await request(app).get('/unknown');
     expect(res.status).toBe(404);
-    expect(res.body.error.code).toBe('NOT_FOUND');
+    expect(res.body.code).toBe('NOT_FOUND');
   });
 
   it('production 환경에서는 내부 에러 메시지를 숨겨야 함', async () => {
@@ -59,7 +59,7 @@ describe('[Core] 전역 에러 핸들러', () => {
 
     const res = await request(appProd).get('/crash');
     expect(res.status).toBe(500);
-    expect(res.body.error.message).toBe('서버 내부 오류가 발생했습니다.');
+    expect(res.body.message).toBe('서버 내부 오류가 발생했습니다.');
 
     // 환경 복원
     process.env.NODE_ENV = 'test';

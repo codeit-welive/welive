@@ -9,8 +9,12 @@
  * 7. 실행
  */
 
+import 'dotenv/config';
 import { v4 as uuid } from 'uuid';
-import prisma from '../src/core/prisma';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient({
+  log: ['warn', 'error'],
+});
 
 // ------------------------------
 // UTILS
@@ -19,7 +23,7 @@ import prisma from '../src/core/prisma';
 /**
  * PEPPER + 12345678a!
  */
-const HASHED_PASSWORD = '$2a$10$BTWt7pgku69fojJ0gQA/9uZ3ZXLIdLfZT0BLKbGwqW8vc.q/PGjO6';
+const HASHED_PASSWORD = '$2a$10$jG891zudtakclLJpgenJz.Z4y8X/qq5Xke.rKQCeWRDbC6D7vdfqG';
 
 /**
  * 자정으로 시간 고정하는 유틸
@@ -33,7 +37,11 @@ const END_DATE_PAST = new Date(d(2025, 6, 12).getTime() + ONE_DAY - 1);
 const START_DATE_FUTURE = new Date(NOW.getTime() - ONE_DAY); // 어제 시작
 const END_DATE_FUTURE = new Date(NOW.getTime() + ONE_DAY * 7); // 일주일 뒤 종료
 
-const DEFAULT_AVATAR = 'https://example.com/default-avatar.png';
+const DEFAULT_AVATAR = process.env.DEFAULT_AVATAR_URL;
+if (!DEFAULT_AVATAR) {
+  console.log('❌ Cannot load env: DEFAULT_AVATAR_URL is missing');
+  process.exit(1);
+}
 const DEFAULT_ADDRESS = '서울특별시 강남구 위리브로 12';
 
 // ------------------------------

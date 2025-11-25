@@ -1,3 +1,35 @@
+/**
+ * @file app.ts
+ * @description Express 애플리케이션 초기화 및 전역 미들웨어 구성
+ *
+ * @architecture
+ * - 보안 중심 구성(Helmet, HPP, RateLimit)
+ * - CORS 화이트리스트 기반
+ * - gzip 압축 및 HTTP 로깅(pino + morgan)
+ * - Swagger 문서 로드 (빌드 시 생성된 swagger.json 사용)
+ *
+ * @routing
+ * - dev/test: 모든 API 경로에 `/api` 프리픽스 적용
+ * - prod: 프리픽스 제거 (역프록시 레이어에서 직접 노출)
+ *
+ * @order 중요성
+ * 1) 전역 보안 미들웨어 (helmet, hpp)
+ * 2) 네트워크/프록시 설정 (trust proxy)
+ * 3) 요청 제한(rate-limit)
+ * 4) 압축(compression) 및 CORS
+ * 5) HTTP 로깅
+ * 6) Body Parsing
+ * 7) API_PREFIX 적용 (prod는 `/api` 없음)
+ * 8) 라우터(routes) 연결
+ * 9) Swagger 문서 연결
+ * 10) 404 → 글로벌 에러 핸들러
+ *
+ * @notes
+ * - Swagger 문서가 없으면 서버를 중단해 빠르게 오류 확인
+ * - API Prefix는 배포 환경에서 경로 단순화 목적
+ * - 모든 설정과 순서는 보안·성능·일관성을 기준으로 설계됨
+ */
+
 import express, { Application, Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp';
@@ -87,6 +119,14 @@ app.use(compression());
 app.use(corsMiddleware);
 
 /**
+ * Preflight 처리
+ * - prod 전용
+ */
+if (env.NODE_ENV === 'production') {
+  app.options(/.*/, corsMiddleware);
+}
+
+/**
  * HTTP 요청 로거 (morgan + pino)
  */
 app.use(httpLogger);
@@ -99,15 +139,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 /**
+ * API Prefix
+ * - prod: none
+ * - dev/test: /api
+ */
+const API_PREFIX = env.NODE_ENV === 'production' ? '' : '/api';
+
+/**
  * API 라우터
  */
-app.use('/api', routes);
+app.use(API_PREFIX, routes);
 
 /**
  * Swagger
  */
 app.use(
-  '/api/docs',
+  `${API_PREFIX}/docs`,
   swaggerUi.serve,
   swaggerUi.setup(swaggerDoc, {
     explorer: true,

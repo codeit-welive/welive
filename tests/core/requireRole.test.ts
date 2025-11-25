@@ -24,13 +24,13 @@ describe('[Auth] requireRole (문자열 기반 권한 체크)', () => {
 
     const res = await request(noAuthApp).get('/admin');
     expect(res.status).toBe(401);
-    expect(res.body.error.message).toMatch(/로그인이 필요/);
+    expect(res.body.message).toMatch(/로그인이 필요/);
   });
 
   it('권한이 부족한 사용자는 403을 반환해야 함', async () => {
     const res = await request(app).get('/admin');
     expect(res.status).toBe(403);
-    expect(res.body.error.message).toMatch(/접근 권한/);
+    expect(res.body.message).toMatch(/접근 권한/);
   });
 
   it('허용된 권한이면 접근 가능해야 함', async () => {

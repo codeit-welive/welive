@@ -47,7 +47,7 @@ export default function Navibar() {
   async function handleLogout() {
     try {
       const res = await axiosInstance.post('/auth/logout');
-      if (res.status === 200 || res.status === 201) {
+      if (res.status === 200 || res.status === 204) {
         clearUser();
         router.replace('/');
       } else {
@@ -151,6 +151,7 @@ export default function Navibar() {
               width={36}
               height={36}
               priority
+              unoptimized
               className='rounded-full object-cover'
             />
             <p className='text-gray-500'>{user?.name ?? '사용자'}</p>

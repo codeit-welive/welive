@@ -10,6 +10,7 @@
 import * as SSE from './index';
 import type { NotificationPayload } from './types';
 import { logger } from '#core/logger';
+import env from '#core/env';
 
 /**
  * 전체 클라이언트에 알림 전송
@@ -34,6 +35,8 @@ export const sendSseNotification = (payload: NotificationPayload): void => {
  * - 민원 처리 완료, 투표 결과 등 사용자별 이벤트에서 사용
  */
 export const sendSseToUser = (userId: string, payload: NotificationPayload): void => {
+  if (env.NODE_ENV === 'test' && process.env.__ALLOW_SSE_TEST__ !== 'true') return;
+
   if (typeof SSE.sendToUser !== 'function') {
     logger.sse.warn(`SSE 라우터가 초기화되지 않아 개별 전송을 건너뜁니다. (userId=${userId})`);
     return;

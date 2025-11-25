@@ -13,6 +13,7 @@ export const generateAccessToken = (user: TokenPayload): string => {
       role: user.role,
       joinStatus: user.joinStatus,
       isActive: user.isActive,
+      apartmentId: user.apartmentId,
     };
     return jwt.sign(payload, env.ACCESS_TOKEN_SECRET, {
       expiresIn: '1h',
@@ -47,6 +48,7 @@ export const generateRefreshToken = (user: TokenPayload): string => {
       role: user.role,
       joinStatus: user.joinStatus,
       isActive: user.isActive,
+      apartmentId: user.apartmentId, // apartmentId 포함
     };
     return jwt.sign(payload, env.REFRESH_TOKEN_SECRET, {
       expiresIn: '14d',

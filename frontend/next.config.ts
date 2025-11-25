@@ -4,7 +4,15 @@ import type { Configuration } from 'webpack';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['sprint-be-project.s3.ap-northeast-2.amazonaws.com'],
+    domains: ['example.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'welive-profile-image-prod.s3.ap-northeast-2.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
   webpack(config: Configuration) {
     config.module?.rules?.push({

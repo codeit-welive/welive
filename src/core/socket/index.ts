@@ -83,7 +83,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-        logger.system.error(`❌ 채팅방 입장 에러: ${errorMessage}`);
+        logger.system.warn(`❌ 채팅방 입장 에러: ${errorMessage}`);
         socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
@@ -111,7 +111,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-        logger.system.error(`❌ 채팅방 퇴장 에러: ${errorMessage}`);
+        logger.system.warn(`❌ 채팅방 퇴장 에러: ${errorMessage}`);
         socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
@@ -140,14 +140,38 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
           role: user.role as any,
         });
 
-        // 4. 브로드캐스팅
+        // 4. 브로드캐스팅 (본인 포함 - 메시지는 모든 참여자가 받아야 함)
         io.to(chatRoomId).emit(SOCKET_EVENTS_SEND.NEW_MESSAGE, savedMessage);
 
-        // 5. 로깅
+        // 5. ✅ Room에 입장하지 않은 Admin에게도 메시지 전달
+        // Resident가 메시지를 보냈을 때, 채팅방에 입장하지 않은 같은 아파트의 Admin에게도 알림
+        if (user.role === 'USER') {
+          const senderApartmentId = (socket as AuthenticatedSocket).apartmentId;
+
+          // apartmentId 검증 (JWT에 apartmentId가 없는 경우 방어)
+          if (!senderApartmentId) {
+            logger.system.warn(`⚠️ apartmentId가 없는 Resident의 메시지 전송: User ${user.id}`);
+          } else {
+            io.sockets.sockets.forEach((clientSocket) => {
+              const authSocket = clientSocket as AuthenticatedSocket;
+              // Admin이면서 + 같은 아파트이면서 + Room에 입장하지 않은 경우에만 메시지 전달
+              if (
+                authSocket.user &&
+                authSocket.user.role === 'ADMIN' &&
+                authSocket.apartmentId === senderApartmentId && // JWT에서 가져온 apartmentId 비교
+                !clientSocket.rooms.has(chatRoomId)
+              ) {
+                clientSocket.emit(SOCKET_EVENTS_SEND.NEW_MESSAGE, savedMessage);
+              }
+            });
+          }
+        }
+
+        // 6. 로깅
         logger.system.info(`💬 메시지 전송: User ${user.id} (${user.role}) → Room ${chatRoomId}`);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-        logger.system.error(`❌ 메시지 전송 에러: ${errorMessage}`);
+        logger.system.warn(`❌ 메시지 전송 에러: ${errorMessage}`);
         socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
@@ -171,8 +195,8 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         // 3. DB 읽음 처리
         const updatedCount = await patchMessageListAsRead(chatRoomId, user.role as any);
 
-        // 4. 브로드캐스팅
-        io.to(chatRoomId).emit(SOCKET_EVENTS_SEND.MESSAGES_READ, {
+        // 4. 브로드캐스팅 (본인 제외 - 상대방에게만 알림)
+        socket.to(chatRoomId).emit(SOCKET_EVENTS_SEND.MESSAGES_READ, {
           chatRoomId,
           role: user.role,
           updatedCount,
@@ -182,7 +206,42 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         logger.system.info(`👁️ 읽음 처리: User ${user.id} (${user.role}) → Room ${chatRoomId} (${updatedCount}개)`);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-        logger.system.error(`❌ 읽음 처리 에러: ${errorMessage}`);
+        logger.system.warn(`❌ 읽음 처리 에러: ${errorMessage}`);
+        socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
+      }
+    });
+
+    /**
+     * 타이핑 중 이벤트
+     * @event typing
+     * @description 클라이언트가 메시지를 입력 중일 때 실행
+     */
+    socket.on(SOCKET_EVENTS_RECEIVE.TYPING, async (data: { chatRoomId: string; isTyping: boolean }) => {
+      try {
+        // 1. 데이터 추출
+        const { chatRoomId, isTyping } = data;
+        const { user } = socket as AuthenticatedSocket;
+
+        // 2. Room 입장 확인 (메모리)
+        if (!socket.rooms.has(chatRoomId)) {
+          throw ApiError.forbidden(CHAT_ERROR_MESSAGES.MUST_JOIN_ROOM_FIRST);
+        }
+
+        // 3. 같은 Room의 다른 사용자들에게만 브로드캐스트 (본인 제외)
+        socket.to(chatRoomId).emit(SOCKET_EVENTS_SEND.USER_TYPING, {
+          chatRoomId,
+          userId: user.id,
+          userName: user.name,
+          isTyping,
+        });
+
+        // 4. 로깅
+        logger.system.info(
+          `⌨️ 타이핑: User ${user.id} (${user.name}) → Room ${chatRoomId} (${isTyping ? '입력 중' : '중지'})`
+        );
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+        logger.system.warn(`❌ 타이핑 이벤트 에러: ${errorMessage}`);
         socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });

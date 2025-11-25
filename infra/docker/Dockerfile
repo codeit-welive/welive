@@ -1,50 +1,51 @@
 # ---------- base ----------
-FROM node:20-alpine AS base
+FROM node:20-alpine AS build
 WORKDIR /app
 # bcrypt / Prisma 등 네이티브 모듈 호환
 RUN apk add --no-cache openssl libc6-compat
 
-# ---------- deps (dev 포함: 빌드용) ----------
-FROM base AS deps
+# ---------- build (TS → CJS) ----------
+# dependencies
 COPY package*.json ./
 RUN npm ci
-COPY tsconfig*.json ./
-COPY prisma ./prisma
-COPY src ./src
 
-# Prisma Client 생성
+# sources
+COPY prisma ./prisma
+COPY tsconfig*.json ./
+COPY src ./src
+COPY scripts ./scripts
+
+# generate prisma client
 RUN npx prisma generate --schema=prisma/schema.prisma
 
-# ---------- build (TS → CJS) ----------
-FROM deps AS build
+# build TS → JS
 RUN npm run build
 
-# ---------- prod-deps (런타임: prod deps + prisma CLI만 추가) ----------
-FROM base AS prod-deps
-COPY package*.json ./
-RUN npm ci --omit=dev \
-  && npm i --no-save prisma@6.17.1
+# generate swagger (CJS)
+RUN npm run swagger:generate
 
 # ---------- runtime ----------
-FROM base AS runtime
+FROM node:20-alpine AS runtime
+WORKDIR /app
+
+RUN apk add --no-cache openssl libc6-compat
+
 ENV NODE_ENV=production
 ENV PORT=3001
 
 # non-root
 RUN addgroup -S app && adduser -S app -G app
+RUN mkdir -p /app/logs && chown -R app:app /app/logs
 USER app
 
-# deps / app
-COPY --from=prod-deps /app/node_modules ./node_modules
-COPY --from=build     /app/dist         ./dist
-COPY --from=build     /app/prisma       ./prisma
-COPY package*.json ./ 
+# copy built artifacts + prisma
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/swagger ./swagger
+COPY package*.json ./
 
 EXPOSE 3001
-
-# 헬스체크
-HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:3001/api || exit 1
 
 # 마이그레이션 후 기동
 CMD sh -c "npx prisma migrate deploy --schema=prisma/schema.prisma && node dist/index.js"

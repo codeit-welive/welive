@@ -18,7 +18,7 @@ describe('[Auth] authMiddleware', () => {
   it('토큰이 없으면 401을 반환해야 함', async () => {
     const res = await request(app).get('/protected');
     expect(res.status).toBe(401);
-    expect(res.body.error.message).toMatch(/로그인이 필요/);
+    expect(res.body.message).toMatch(/로그인이 필요/);
   });
 
   it('유효한 토큰이면 접근 가능해야 함', async () => {
@@ -38,6 +38,6 @@ describe('[Auth] authMiddleware', () => {
   it('위조된 토큰이면 401을 반환해야 함', async () => {
     const res = await request(app).get('/protected').set('Cookie', [`access_token=fake.jwt.token`]);
     expect(res.status).toBe(401);
-    expect(res.body.error.message).toMatch(/Access Token.*유효/);
+    expect(res.body.message).toMatch(/Access Token.*유효/);
   });
 });

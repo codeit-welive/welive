@@ -15,7 +15,8 @@ import {
   verifyApartmentAdmin,
 } from './complaints.util';
 import { ComplaintStatus, UserRole } from '@prisma/client';
-import { COMPLAINT_ERROR_MESSAGES } from '#constants/complaint.constant';
+import { COMPLAINT_ERROR_MESSAGES, COMPLAINT_STATUS_NOTIFICATIONS } from '#constants/complaint.constant';
+import { createAndSendNotification } from '#core/utils/notificationHelper';
 
 /**
  * 민원 생성
@@ -25,14 +26,29 @@ import { COMPLAINT_ERROR_MESSAGES } from '#constants/complaint.constant';
  * @throws ApiError.forbidden - 게시판 권한 없음 (다른 아파트 게시판에 작성 시도)
  */
 export const createComplaint = async (data: ComplaintCreateDto) => {
-  // 사용자의 게시판 권한 검증
-  const userBoardId = await validateComplaintBoard(data.userId);
-  if (data.boardId !== userBoardId) {
+  // 사용자의 게시판 권한 검증 (adminId도 함께 조회)
+  const userBoard = await validateComplaintBoard(data.userId);
+
+  if (data.boardId !== userBoard.id) {
     throw ApiError.forbidden(COMPLAINT_ERROR_MESSAGES.NO_BOARD_PERMISSION);
+  }
+  if (!userBoard.apartment.adminId) {
+    throw ApiError.forbidden(COMPLAINT_ERROR_MESSAGES.NO_ADMIN_PERMISSION);
   }
 
   // 민원 생성
-  await ComplaintRepo.create(data);
+  const complaint = await ComplaintRepo.create(data);
+
+  // 관리자에게 알림 전송
+  createAndSendNotification(
+    {
+      content: '새로운 민원이 작성되었습니다.',
+      notificationType: 'COMPLAINT_REQ',
+      recipientId: data.userId,
+      complaintId: complaint.id,
+    },
+    userBoard.apartment.adminId
+  );
 };
 
 /**
@@ -49,12 +65,12 @@ export const createComplaint = async (data: ComplaintCreateDto) => {
 export const getComplaintList = async (userId: string, role: UserRole, query: ComplaintListQuery) => {
   // 사용자의 게시판 ID 조회
   if (role === UserRole.USER) {
-    const boardId = await validateComplaintBoard(userId);
+    const userBoard = await validateComplaintBoard(userId);
 
     // 민원 목록 + 전체 개수 병렬 조회
     const [complaints, totalCount] = await Promise.all([
-      ComplaintRepo.getList(boardId, query),
-      ComplaintRepo.getCount(boardId, query),
+      ComplaintRepo.getList(userBoard.id, query),
+      ComplaintRepo.getCount(userBoard.id, query),
     ]);
 
     // 응답 형식 변환
@@ -107,8 +123,8 @@ export const getComplaint = async (complaintId: string, userId: string, role: Us
   // 2. 권한 검증 (조회수 증가 전에 수행)
   if (role === UserRole.USER) {
     // USER의 경우: 같은 아파트 검증
-    const userBoardId = await validateComplaintBoard(userId);
-    if (complaint.boardId !== userBoardId) {
+    const userBoard = await validateComplaintBoard(userId);
+    if (complaint.boardId !== userBoard.id) {
       throw ApiError.forbidden(COMPLAINT_ERROR_MESSAGES.NO_COMPLAINT_ACCESS);
     }
 
@@ -178,6 +194,20 @@ export const patchComplaintStatus = async (complaintId: string, data: ComplaintP
 
   // 상태 업데이트
   const updatedComplaint = await ComplaintRepo.patchStatus(complaintId, data.status);
+
+  // 민원 작성자에게 상태 변경 알림 전송
+  const notification = COMPLAINT_STATUS_NOTIFICATIONS[data.status];
+  if (notification) {
+    createAndSendNotification(
+      {
+        content: notification.content,
+        notificationType: notification.type,
+        recipientId: data.userId,
+        complaintId: updatedComplaint.id,
+      },
+      updatedComplaint.userId
+    );
+  }
 
   return mapComplaintToDetailResponse(updatedComplaint);
 };
