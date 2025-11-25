@@ -57,8 +57,7 @@ export const createAndSendNotification = async (data: CreateNotificationData, se
     sendSseToUser(sendToUserId, payload);
   } catch (error) {
     // 알림 DB 생성 실패는 로깅만 하고 에러를 던지지 않음
-    logger.sse.error(
-      error as Error,
+    logger.sse.warn(
       `알림 DB 생성 실패: ${data.notificationType} - ${error instanceof Error ? error.message : String(error)}`
     );
   }
