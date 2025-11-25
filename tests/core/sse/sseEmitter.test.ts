@@ -5,6 +5,7 @@ import { logger } from '#core/logger';
 import { NotificationType } from '@prisma/client';
 
 process.env.TEST_ALLOW_ACCESS_LOG = 'true';
+process.env.__ALLOW_SSE_TEST__ = 'true';
 
 jest.mock('#core/logger', () => {
   const mock = {
@@ -74,5 +75,6 @@ describe('[SSE Emitter] 브리지 기능 검증', () => {
 
   afterAll(() => {
     delete process.env.TEST_ALLOW_ACCESS_LOG;
+    delete process.env.__ALLOW_SSE_TEST__;
   });
 });

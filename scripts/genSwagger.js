@@ -40,6 +40,7 @@ const domains = [
   'events',
   'notifications',
   'poll-scheduler',
+  'chats',
 ];
 
 const modules = [

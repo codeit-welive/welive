@@ -83,7 +83,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-        logger.system.error(`❌ 채팅방 입장 에러: ${errorMessage}`);
+        logger.system.warn(`❌ 채팅방 입장 에러: ${errorMessage}`);
         socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
@@ -111,7 +111,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-        logger.system.error(`❌ 채팅방 퇴장 에러: ${errorMessage}`);
+        logger.system.warn(`❌ 채팅방 퇴장 에러: ${errorMessage}`);
         socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
@@ -171,7 +171,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         logger.system.info(`💬 메시지 전송: User ${user.id} (${user.role}) → Room ${chatRoomId}`);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-        logger.system.error(`❌ 메시지 전송 에러: ${errorMessage}`);
+        logger.system.warn(`❌ 메시지 전송 에러: ${errorMessage}`);
         socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
@@ -206,7 +206,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         logger.system.info(`👁️ 읽음 처리: User ${user.id} (${user.role}) → Room ${chatRoomId} (${updatedCount}개)`);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-        logger.system.error(`❌ 읽음 처리 에러: ${errorMessage}`);
+        logger.system.warn(`❌ 읽음 처리 에러: ${errorMessage}`);
         socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
@@ -241,7 +241,7 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
         );
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-        logger.system.error(`❌ 타이핑 이벤트 에러: ${errorMessage}`);
+        logger.system.warn(`❌ 타이핑 이벤트 에러: ${errorMessage}`);
         socket.emit(SOCKET_EVENTS_SEND.ERROR_EVENT, { message: errorMessage });
       }
     });
