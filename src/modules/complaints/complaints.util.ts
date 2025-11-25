@@ -14,10 +14,10 @@ import { COMPLAINT_ERROR_MESSAGES } from '#constants/complaint.constant';
  * @returns 민원 게시판 ID
  * @throws ApiError.forbidden - 게시판 없음 (사용자가 아파트에 속하지 않음)
  */
-export const validateComplaintBoard = async (userId: string): Promise<string> => {
+export const validateComplaintBoard = async (userId: string) => {
   const boardId = await ComplaintRepo.getComplaintBoardIdByUserId(userId);
 
-  if (!boardId) {
+  if (!boardId?.id) {
     throw ApiError.forbidden(COMPLAINT_ERROR_MESSAGES.BOARD_NOT_FOUND);
   }
 

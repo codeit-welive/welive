@@ -35,3 +35,26 @@ export const COMPLAINT_ERROR_MESSAGES = {
   // 400 Bad Request
   NO_UPDATE_DATA: '수정할 내용이 없습니다.',
 } as const;
+
+/**
+ * 민원 상태별 알림 설정
+ * @description 민원 상태 변경 시 작성자에게 전송되는 알림 메시지 및 타입
+ */
+export const COMPLAINT_STATUS_NOTIFICATIONS = {
+  PENDING: {
+    type: 'COMPLAINT_PENDING' as const,
+    content: '민원 상태가 대기 중으로 변경되었습니다.',
+  },
+  IN_PROGRESS: {
+    type: 'COMPLAINT_IN_PROGRESS' as const,
+    content: '민원이 처리 중입니다.',
+  },
+  RESOLVED: {
+    type: 'COMPLAINT_RESOLVED' as const,
+    content: '민원이 처리 완료되었습니다.',
+  },
+  REJECTED: {
+    type: 'COMPLAINT_REJECTED' as const,
+    content: '민원이 반려되었습니다.',
+  },
+} as const;
