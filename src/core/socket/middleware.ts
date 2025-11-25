@@ -38,7 +38,7 @@ export const socketAuthMiddleware = (socket: Socket, next: (err?: ApiError) => v
 
     next();
   } catch (error) {
-    logger.system.error(`❌ Socket 인증 실패:(Socket ID: ${socket.id})`);
+    (error as Error, logger.system.error(error as Error, `❌ Socket 인증 실패:(Socket ID: ${socket.id})`));
     next(error as ApiError);
   }
 };
