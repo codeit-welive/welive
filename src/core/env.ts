@@ -39,7 +39,6 @@ const normalizeOrigin = (s: string) => trimTrailingSlash(s).toLowerCase();
  * RUNTIME FLAGS
  */
 const NODE_ENV = process.env.NODE_ENV ?? 'development';
-const IS_PROD = NODE_ENV === 'production';
 
 /**
  * 환경 변수 스키마
