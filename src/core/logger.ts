@@ -166,3 +166,5 @@ export const logger = Object.assign(baseLogger, {
  * logger.system.warn('일부 모듈 응답 지연');
  * logger.system.error(new Error('auth 모듈 응답 없음'), '오케스트레이터 예외 발생');
  */
+
+export default logger;
