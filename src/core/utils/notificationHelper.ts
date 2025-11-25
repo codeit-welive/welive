@@ -34,7 +34,7 @@ export interface CreateNotificationData {
  * - `sendToUserId`: 실제로 SSE를 받을 사용자 (알림 수신자)
  * - 알림 생성/전송 실패 시에도 에러를 던지지 않음 (로깅만 수행)
  */
-export async function createAndSendNotification(data: CreateNotificationData, sendToUserId: string): Promise<void> {
+export const createAndSendNotification = async (data: CreateNotificationData, sendToUserId: string): Promise<void> => {
   try {
     // 1. 알림 DB 생성
     const notification = await prisma.notification.create({
@@ -62,4 +62,4 @@ export async function createAndSendNotification(data: CreateNotificationData, se
       `알림 DB 생성 실패: ${data.notificationType} - ${error instanceof Error ? error.message : String(error)}`
     );
   }
-}
+};
