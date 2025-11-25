@@ -151,6 +151,7 @@ export default function Navibar() {
               width={36}
               height={36}
               priority
+              unoptimized
               className='rounded-full object-cover'
             />
             <p className='text-gray-500'>{user?.name ?? '사용자'}</p>

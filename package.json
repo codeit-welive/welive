@@ -47,6 +47,7 @@
   "homepage": "https://github.com/codeit-welive/welive#readme",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.911.0",
+    "@aws-sdk/credential-providers": "^3.936.0",
     "@aws-sdk/s3-request-presigner": "^3.911.0",
     "@prisma/client": "^6.17.1",
     "axios": "^1.12.2",
