@@ -40,7 +40,6 @@ const END_DATE_FUTURE = new Date(NOW.getTime() + ONE_DAY * 7); // 일주일 뒤 
 const DEFAULT_AVATAR = process.env.DEFAULT_AVATAR_URL;
 if (!DEFAULT_AVATAR) {
   console.log('❌ Cannot load env: DEFAULT_AVATAR_URL is missing');
-  await prisma.$disconnect();
   process.exit(1);
 }
 const DEFAULT_ADDRESS = '서울특별시 강남구 위리브로 12';
