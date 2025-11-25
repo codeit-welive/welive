@@ -1,4 +1,5 @@
 import prisma from '#core/prisma';
+import { PatchApartmentBodyDto } from './dto/auth.dto';
 import { SignupSuperAdminRequestDto, UserDto, ApartmentDto, SignupUserRequestDto } from './dto/register.dto';
 import { ApprovalStatus, BoardType, JoinStatus, UserRole } from '@prisma/client';
 
@@ -312,6 +313,28 @@ export const getApartmentNameByAdminId = async (adminId: string) => {
   });
 };
 
+export const patchApartmentInfoRepo = async (
+  adminId: string,
+  apartmentData: Partial<PatchApartmentBodyDto>,
+  userData: Partial<PatchApartmentBodyDto>
+) => {
+  return prisma.$transaction(async (tx) => {
+    await tx.apartment.update({
+      where: { adminId },
+      data: apartmentData,
+    });
+    await tx.user.update({
+      where: { id: adminId },
+      data: userData,
+    });
+  });
+};
+
+export const deleteApartmentRepo = async (adminId: string) => {
+  return await prisma.user.delete({
+    where: { id: adminId },
+  });
+};
 /**
  * 거절 유저 삭제
  * @description

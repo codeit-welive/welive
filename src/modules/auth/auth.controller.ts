@@ -8,6 +8,8 @@ import {
   patchUserStatus,
   patchUserListStatus,
   cleanupRejectedUsers,
+  patchApartmentInfo,
+  deleteApartmentInfo,
 } from './auth.service';
 import ApiError from '#errors/ApiError';
 import { Prisma } from '@prisma/client';
@@ -283,6 +285,61 @@ export const patchUserStatusHandler: RequestHandler = async (req, res, next) => 
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === 'P2025') {
         return next(new ApiError(404, '해당 사용자를 찾을 수 없습니다', 'NOT_FOUND'));
+      }
+    }
+    return next(err);
+  }
+};
+
+/**
+ * 아파트 정보 수정 핸들러
+ * @param adminId 관리자 ID
+ * @param data 검증된 요청 바디
+ *  - contact: 관리자 연락처
+ *  - name: 관리자 이름
+ *  - email: 관리자 이메일
+ *  - description: 아파트 설명
+ *  - apartmentName: 아파트 이름
+ *  - apartmentAddress: 아파트 주소
+ *  - apartmentManagementNumber: 아파트 관리번호
+ * @param return 200 - 작업 성공 메시지
+ * @throws
+ *  - ApiError(404) 해당 아파트를 찾을 수 없는 경우
+ */
+export const patchApartmentHandler: RequestHandler = async (req, res, next) => {
+  try {
+    const adminId = res.locals.validatedParams.adminId;
+    const data = res.locals.validatedBody;
+
+    await patchApartmentInfo(adminId, data);
+    return res.status(200).json({ message: '작업이 성공적으로 완료되었습니다' });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === 'P2025') {
+        return next(new ApiError(404, '해당 아파트를 찾을 수 없습니다', 'NOT_FOUND'));
+      }
+    }
+    return next(err);
+  }
+};
+
+/**
+ * 아파트 정보 삭제 핸들러
+ * @param adminId 관리자 ID
+ * @returns 200 - 작업 성공 메시지
+ * @throws
+ *  - ApiError(404) 해당 아파트를 찾을 수 없는 경우
+ */
+export const deleteApartmentHandler: RequestHandler = async (req, res, next) => {
+  try {
+    const adminId = res.locals.validatedParams.adminId;
+
+    await deleteApartmentInfo(adminId);
+    res.status(200).json({ message: '작업이 성공적으로 완료되었습니다' });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === 'P2025') {
+        return next(new ApiError(404, '해당 아파트를 찾을 수 없습니다', 'NOT_FOUND'));
       }
     }
     return next(err);
