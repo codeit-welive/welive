@@ -5,8 +5,14 @@ import { z } from 'zod';
 export const residentListRequestQuerySchema = z.object({
   building: z.string().optional(),
   unitNumber: z.string().optional(),
-  residenceStatus: z.enum(ResidentStatus).optional(),
-  isRegistered: z.coerce.boolean().optional(),
+  isHouseholder: z.enum(IsHouseholder).optional(),
+  isRegistered: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((val) => {
+      if (!val) return undefined;
+      return val === 'true' ? true : false;
+    }),
   keyword: z.string().default(''),
   limit: z.coerce.number().int().min(1).default(PAGINATION.DEFAULT_LIMIT),
   page: z.coerce.number().int().min(1).default(PAGINATION.DEFAULT_PAGE),

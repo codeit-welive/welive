@@ -21,13 +21,13 @@ describe('[Core] 전체 라우트 트리', () => {
     const res = await request(app).get('/unknown');
     expect(res.status).toBe(404);
     expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe('NOT_FOUND');
+    expect(res.body.code).toBe('NOT_FOUND');
   });
 
   it('미인증 상태에서 보호된 SSE 라우트 접근 시 401 UNAUTHORIZED를 반환해야 함', async () => {
     const res = await request(app).get('/api/notifications/sse');
     expect(res.status).toBe(401);
-    expect(res.body.error.message).toMatch(/로그인이 필요/);
+    expect(res.body.message).toMatch(/로그인이 필요/);
   });
 
   /* 

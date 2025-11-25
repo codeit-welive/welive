@@ -39,7 +39,8 @@ export const getResidentListHandler: RequestHandler = async (req, res, next) => 
 export const getResidentHandler: RequestHandler = async (req, res, next) => {
   try {
     const residentId = res.locals.validatedParams.id;
-    const result = await getResident(residentId);
+    const adminId = req.user.id;
+    const result = await getResident(residentId, adminId);
 
     return res.status(200).json(result);
   } catch (err) {
@@ -56,7 +57,8 @@ export const patchResidentHandler: RequestHandler = async (req, res, next) => {
   try {
     const residentId = res.locals.validatedParams.id;
     const data = res.locals.validatedBody;
-    const result = await patchResident(residentId, data);
+    const adminId = req.user.id;
+    const result = await patchResident(residentId, data, adminId);
 
     return res.status(200).json(result);
   } catch (err) {
@@ -76,7 +78,8 @@ export const patchResidentHandler: RequestHandler = async (req, res, next) => {
 export const deleteResidentHandler: RequestHandler = async (req, res, next) => {
   try {
     const residentId = res.locals.validatedParams.id;
-    await removeResident(residentId);
+    const adminId = req.user.id;
+    await removeResident(residentId, adminId);
 
     return res.status(200).send({ message: '작업이 성공적으로 완료되었습니다' });
   } catch (err) {
