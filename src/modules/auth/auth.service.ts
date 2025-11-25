@@ -22,7 +22,7 @@ import { searchResultToResponse } from './utils/searchResultMapper';
 import { generateAccessToken, generateRefreshToken } from './utils/tokenUtils';
 import ApiError from '#errors/ApiError';
 import { JoinStatus, UserRole } from '@prisma/client';
-import { checkDuplicateApartment, checkDuplicateUser } from './utils/checkDuplicate';
+import { checkDuplicateApartment, checkDuplicateUser } from '#helpers/checkDuplicate';
 import { PatchApartmentBodyDto } from './dto/auth.dto';
 
 export const registSuperAdmin = async (data: SignupSuperAdminRequestDto) => {
@@ -122,6 +122,7 @@ export const patchApartmentInfo = async (adminId: string, data: PatchApartmentBo
   const { contact, name, email, ...rest } = data;
   const apartmentData = rest;
   const userData = { contact, name, email };
+
   await patchApartmentInfoRepo(adminId, apartmentData, userData);
 };
 

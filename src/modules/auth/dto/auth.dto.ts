@@ -46,23 +46,20 @@ export const patchApartmentBodySchema = z.object({
     .max(
       ACCOUNT_VALIDATION.CONTACT_MAX_LENGTH,
       `전화번호는 최대 ${ACCOUNT_VALIDATION.CONTACT_MAX_LENGTH}자 이하여야 합니다.`
-    )
-    .optional(),
+    ),
   name: z
     .string()
     .min(ACCOUNT_VALIDATION.NAME_MIN_LENGTH, `이름은 최소 ${ACCOUNT_VALIDATION.NAME_MIN_LENGTH}자 이상이어야 합니다.`)
-    .max(ACCOUNT_VALIDATION.NAME_MAX_LENGTH, `이름은 최대 ${ACCOUNT_VALIDATION.NAME_MAX_LENGTH}자 이하여야 합니다.`)
-    .optional(),
-  email: emailWithMX.optional(),
-  description: z.string().max(255).optional(),
-  apartmentName: z.string().max(APARTMENT_VALIDATION.APARTMENT_NAME_MAX_LENGTH).optional(),
-  apartmentAddress: z.string().max(255).optional(),
+    .max(ACCOUNT_VALIDATION.NAME_MAX_LENGTH, `이름은 최대 ${ACCOUNT_VALIDATION.NAME_MAX_LENGTH}자 이하여야 합니다.`),
+  email: emailWithMX,
+  description: z.string().max(255),
+  apartmentName: z.string().max(APARTMENT_VALIDATION.APARTMENT_NAME_MAX_LENGTH),
+  apartmentAddress: z.string().max(255),
   apartmentManagementNumber: z
     .string()
     .regex(/^\d+$/, '숫자만 입력해주세요. 하이픈(-)은 제외해주세요.')
     .min(APARTMENT_VALIDATION.OFFICE_NUMBER_MIN_LENGTH)
-    .max(APARTMENT_VALIDATION.OFFICE_NUMBER_MAX_LENGTH)
-    .optional(),
+    .max(APARTMENT_VALIDATION.OFFICE_NUMBER_MAX_LENGTH),
 });
 
 export type PatchApartmentBodyDto = z.infer<typeof patchApartmentBodySchema>;

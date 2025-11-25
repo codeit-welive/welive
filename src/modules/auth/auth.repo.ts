@@ -37,41 +37,6 @@ export const createAdmin = async (userData: UserDto, apartmentData: ApartmentDto
   });
 };
 
-/**
- * 중복 유저 확인
- * @description 아이디, 이메일, 연락처 중 하나라도 중복되는 유저가 있는지 확인
- * @param data
- *  - username: 아이디
- *  - email: 이메일
- *  - contact: 연락처
- * @returns 중복된 유저 정보 또는 null
- */
-export const findDuplicateUser = async (data: { username: string; email: string; contact: string }) => {
-  return prisma.user.findFirst({
-    where: {
-      OR: [{ username: data.username }, { email: data.email }, { contact: data.contact }],
-    },
-    select: {
-      username: true,
-      email: true,
-      contact: true,
-    },
-  });
-};
-
-/**
- * 중복 아파트 확인
- * @description 아파트 이름이 중복되는 아파트가 있는지 확인
- * @param apartmentName 아파트 이름
- * @returns 중복된 아파트 정보 또는 null
- */
-export const findDuplicateApartment = async (apartmentName: string) => {
-  return prisma.apartment.findFirst({
-    where: { apartmentName },
-    select: { id: true },
-  });
-};
-
 export const createUser = async (userData: SignupUserRequestDto) => {
   return prisma.$transaction(async (tx) => {
     // 아파트가 존재하는지 확인

@@ -54,7 +54,7 @@ export const createResident = async (data: ResidentCreateRequestBodyDto, adminId
   const apartment = await getApartmentIdByAdminId(adminId);
   if (!apartment) throw ApiError.notFound('아파트를 찾을 수 없습니다');
 
-  const resident = await create(data, apartment.id);
+  const resident = await create(data, adminId);
   const [mappedResident] = residentDataMapper([resident]);
   return mappedResident;
 };

@@ -13,7 +13,6 @@ import {
 } from './auth.service';
 import ApiError from '#errors/ApiError';
 import { Prisma } from '@prisma/client';
-import { mapUniqueConstraintError } from '#helpers/mapPrismaError';
 import env from '#core/env';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from './utils/tokenUtils';
 
@@ -317,6 +316,9 @@ export const patchApartmentHandler: RequestHandler = async (req, res, next) => {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === 'P2025') {
         return next(new ApiError(404, '해당 아파트를 찾을 수 없습니다', 'NOT_FOUND'));
+      }
+      if (err.code === 'P2002') {
+        return next(new ApiError(409, '이미 존재하는 아파트 이름 또는 유저 정보입니다', 'CONFLICT'));
       }
     }
     return next(err);
