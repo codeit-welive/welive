@@ -120,8 +120,11 @@ app.use(corsMiddleware);
 
 /**
  * Preflight 처리
+ * - prod 전용
  */
-app.options(/.*/, corsMiddleware);
+if (env.NODE_ENV === 'production') {
+  app.options(/.*/, corsMiddleware);
+}
 
 /**
  * HTTP 요청 로거 (morgan + pino)
