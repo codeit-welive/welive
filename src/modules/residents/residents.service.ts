@@ -20,8 +20,11 @@ export const getResidentList = async (query: ResidentListRequestQueryDto, adminI
   };
 };
 
-export const getResident = async (residentId: string) => {
-  const resident = await getById(residentId);
+export const getResident = async (residentId: string, adminId: string) => {
+  const apartment = await getApartmentIdByAdminId(adminId);
+  if (!apartment) throw ApiError.notFound('아파트를 찾을 수 없습니다');
+
+  const resident = await getById(residentId, apartment.id);
   if (!resident) {
     throw ApiError.notFound('입주민을 찾을 수 없습니다.');
   }
@@ -30,27 +33,28 @@ export const getResident = async (residentId: string) => {
   return mappedResident;
 };
 
-export const patchResident = async (residentId: string, data: ResidentPatchRequestBodyDto) => {
-  const updatedResident = await update(residentId, data);
-  if (!updatedResident) {
-    throw ApiError.notFound('입주민을 찾을 수 없습니다.');
-  }
+export const patchResident = async (residentId: string, data: ResidentPatchRequestBodyDto, adminId: string) => {
+  const apartment = await getApartmentIdByAdminId(adminId);
+  if (!apartment) throw ApiError.notFound('아파트를 찾을 수 없습니다');
+
+  const updatedResident = await update(residentId, data, apartment.id);
 
   const [mappedResident] = residentDataMapper([updatedResident]);
   return mappedResident;
 };
 
-export const removeResident = async (residentId: string) => {
-  await remove(residentId);
+export const removeResident = async (residentId: string, adminId: string) => {
+  const apartment = await getApartmentIdByAdminId(adminId);
+  if (!apartment) throw ApiError.notFound('아파트를 찾을 수 없습니다');
+
+  await remove(residentId, apartment.id);
 };
 
 export const createResident = async (data: ResidentCreateRequestBodyDto, adminId: string) => {
-  const apartmentId = await getApartmentIdByAdminId(adminId);
-  if (!apartmentId) {
-    throw ApiError.notFound('아파트를 찾을 수 없습니다');
-  }
+  const apartment = await getApartmentIdByAdminId(adminId);
+  if (!apartment) throw ApiError.notFound('아파트를 찾을 수 없습니다');
 
-  const resident = await create(data, apartmentId.id);
+  const resident = await create(data, apartment.id);
   const [mappedResident] = residentDataMapper([resident]);
   return mappedResident;
 };

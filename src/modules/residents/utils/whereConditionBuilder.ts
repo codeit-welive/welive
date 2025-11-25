@@ -6,8 +6,8 @@ export const buildWhereCondition = (query: ResidentListRequestQueryDto, adminId:
   const whereCondition = {
     ...(query.building && { building: query.building }),
     ...(query.unitNumber && { unitNumber: query.unitNumber }),
-    ...(query.residenceStatus && { residenceStatus: query.residenceStatus }),
-    ...(query.isRegistered && { isRegistered: query.isRegistered }),
+    ...(query.isHouseholder && { isHouseholder: query.isHouseholder }),
+    ...(query.isRegistered !== undefined && { isRegistered: query.isRegistered }),
     apartment: { adminId },
     OR: [{ name: { contains: query.keyword, mode } }, { contact: { contains: query.keyword, mode } }],
   };

@@ -11,9 +11,9 @@ export const isValidateApartmentRange = async (apartmentName: string, userDong: 
   const userFloorNumber = parseInt(userHo.slice(0, -2), 10);
   const userHoNumber = parseInt(userHo.slice(-2), 10);
 
-  if (userComplexNumber < parseInt(apartmentRange.endComplexNumber)) {
-    if (userDongNumber < parseInt(apartmentRange.endDongNumber)) {
-      if (userFloorNumber < parseInt(apartmentRange.endFloorNumber)) {
+  if (userComplexNumber <= parseInt(apartmentRange.endComplexNumber)) {
+    if (userDongNumber <= parseInt(apartmentRange.endDongNumber)) {
+      if (userFloorNumber <= parseInt(apartmentRange.endFloorNumber)) {
         if (userHoNumber <= parseInt(apartmentRange.endHoNumber)) {
           return { valid: true };
         }
