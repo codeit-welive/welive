@@ -35,30 +35,30 @@ export interface CreateNotificationData {
  * - 알림 생성/전송 실패 시에도 에러를 던지지 않음 (로깅만 수행)
  */
 export const createAndSendNotification = async (data: CreateNotificationData, sendToUserId: string): Promise<void> => {
+  let notification;
+
+  // 1. 알림 DB 생성
   try {
-    // 1. 알림 DB 생성
-    const notification = await prisma.notification.create({
-      data,
-    });
-
-    // 2. SSE 페이로드 구성
-    const payload: NotificationPayload = {
-      notificationId: notification.id,
-      content: notification.content,
-      notificationType: notification.notificationType,
-      notifiedAt: notification.notifiedAt.toISOString(),
-      isChecked: notification.isChecked,
-      complaintId: notification.complaintId,
-      noticeId: notification.noticeId,
-      pollId: notification.pollId,
-    };
-
-    // 3. SSE 전송 (내부에서 에러 처리 및 로깅됨)
-    sendSseToUser(sendToUserId, payload);
+    notification = await prisma.notification.create({ data });
   } catch (error) {
-    // 알림 DB 생성 실패는 로깅만 하고 에러를 던지지 않음
     logger.sse.warn(
       `알림 DB 생성 실패: ${data.notificationType} - ${error instanceof Error ? error.message : String(error)}`
     );
+    return; // DB 실패 시 SSE 전송도 의미 없으므로 종료
   }
+
+  // 2. SSE 페이로드 구성
+  const payload: NotificationPayload = {
+    notificationId: notification.id,
+    content: notification.content,
+    notificationType: notification.notificationType,
+    notifiedAt: notification.notifiedAt.toISOString(),
+    isChecked: notification.isChecked,
+    complaintId: notification.complaintId,
+    noticeId: notification.noticeId,
+    pollId: notification.pollId,
+  };
+
+  // 3. SSE 전송 (sendSseToUser 내부에서 에러 핸들링함)
+  sendSseToUser(sendToUserId, payload);
 };
