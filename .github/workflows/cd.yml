@@ -54,7 +54,7 @@ jobs:
         working-directory: frontend
         run: |
           cat > .env.production <<'ENV'
-          NEXT_PUBLIC_API_URL=/api
+          NEXT_PUBLIC_API_URL=https://welive.mimu.live/api
           ENV
 
       - name: Build frontend

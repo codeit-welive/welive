@@ -4,6 +4,7 @@
  */
 
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { fromInstanceMetadata } from '@aws-sdk/credential-providers';
 import { randomUUID } from 'crypto';
 import env from '#core/env';
 import { logger } from '#core/logger';
@@ -22,6 +23,7 @@ export const uploadImageToS3 = async (buffer: Buffer): Promise<string> => {
     // S3 클라이언트 생성
     const s3 = new S3Client({
       region: env.AWS_CONFIG.region!,
+      credentials: fromInstanceMetadata(),
     });
 
     // 파일명 생성
@@ -35,7 +37,6 @@ export const uploadImageToS3 = async (buffer: Buffer): Promise<string> => {
         Bucket: env.AWS_CONFIG.bucketName!,
         Key: key,
         Body: buffer,
-        ACL: 'public-read',
         ContentType: 'image/webp',
       })
     );

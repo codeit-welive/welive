@@ -171,6 +171,9 @@
         ],
         "summary": "[사용자] 유저 정보 수정",
         "description": "현재 로그인한 사용자의 정보를 수정합니다. 비밀번호 변경 또는 아바타 이미지 업로드가 가능합니다.",
+        "consumes": [
+          "multipart/form-data"
+        ],
         "responses": {
           "200": {
             "description": "유저 정보 수정 성공",
@@ -223,6 +226,156 @@
             }
           }
         }
+      }
+    },
+    "/api/apartments/public": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Apartments"
+        ]
+      }
+    },
+    "/api/apartments/public/{id}": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Apartments"
+        ]
+      }
+    },
+    "/api/apartments/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Apartments"
+        ]
+      }
+    },
+    "/api/apartments/{id}": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Apartments"
+        ]
+      }
+    },
+    "/api/residents/file/template": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Residents"
+        ]
+      }
+    },
+    "/api/residents/file": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Residents"
+        ]
+      }
+    },
+    "/api/residents/from-file": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Residents"
+        ]
+      }
+    },
+    "/api/residents/{id}": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Residents"
+        ]
+      },
+      "delete": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Residents"
+        ]
+      },
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Residents"
+        ]
+      }
+    },
+    "/api/residents/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Residents"
+        ]
+      },
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Residents"
+        ]
       }
     },
     "/api/complaints/": {
@@ -621,6 +774,65 @@
         }
       }
     },
+    "/api/polls/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Polls"
+        ]
+      },
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Polls"
+        ]
+      }
+    },
+    "/api/polls/{pollId}": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Polls"
+        ]
+      },
+      "delete": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Polls"
+        ]
+      },
+      "patch": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Polls"
+        ]
+      }
+    },
     "/api/notices/": {
       "get": {
         "description": "",
@@ -854,6 +1066,8 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "type": "string",
+            "description": "읽음 처리할 알림의 UUID",
             "schema": {
               "type": "object",
               "properties": {
@@ -866,8 +1080,7 @@
                   "example": "uuid"
                 }
               }
-            },
-            "description": "읽음 처리할 알림의 UUID"
+            }
           }
         ],
         "responses": {
@@ -898,6 +1111,43 @@
             "description": "알림을 찾을 수 없거나 권한 없음"
           }
         }
+      }
+    },
+    "/api/events/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ]
+      },
+      "put": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ]
+      }
+    },
+    "/api/events/{eventId}": {
+      "delete": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Events"
+        ]
       }
     },
     "/api/poll-scheduler/ping": {
@@ -1331,8 +1581,20 @@
       "description": "Users 관련 API"
     },
     {
+      "name": "Apartments",
+      "description": "Apartments 관련 API"
+    },
+    {
+      "name": "Residents",
+      "description": "Residents 관련 API"
+    },
+    {
       "name": "Complaints",
       "description": "Complaints 관련 API"
+    },
+    {
+      "name": "Polls",
+      "description": "Polls 관련 API"
     },
     {
       "name": "Notices",
@@ -1341,6 +1603,14 @@
     {
       "name": "Comments",
       "description": "Comments 관련 API"
+    },
+    {
+      "name": "Notifications",
+      "description": "Notifications 관련 API"
+    },
+    {
+      "name": "Events",
+      "description": "Events 관련 API"
     },
     {
       "name": "Notifications",
