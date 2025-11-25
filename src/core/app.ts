@@ -121,7 +121,7 @@ app.use(corsMiddleware);
 /**
  * Preflight 처리
  */
-app.options('*', corsMiddleware);
+app.options(/.*/, corsMiddleware);
 
 /**
  * HTTP 요청 로거 (morgan + pino)
