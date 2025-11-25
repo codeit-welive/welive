@@ -8,14 +8,21 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/shared/store/auth.store';
 import { useChatStore } from '@/shared/store/chat.store';
-import { getMyChatRoom, createMyChatRoom, getChatRoomList, createChatRoomByAdmin, getMessageList, getChatRoom } from '../api/chat.api';
+import {
+  getMyChatRoom,
+  createMyChatRoom,
+  getChatRoomList,
+  createChatRoomByAdmin,
+  getMessageList,
+  getChatRoom,
+} from '../api/chat.api';
 import type { ChatMessage, ChatRoom } from '../api/chat.types';
 import { useChatSocket } from '../model/useChatSocket';
 import { useTypingIndicator } from '../model/useTypingIndicator';
 import { ChatMessageList, ChatInput } from '../ui';
 import axios from '@/shared/lib/axios';
 import type { residentInfoType } from '@/entities/resident-info/type';
-import { getSocket } from '../lib/socket';
+import { getSocket, getCurrentSocket } from '../lib/socket';
 
 export function FloatingChatPanel() {
   const { user } = useAuthStore();
@@ -51,13 +58,14 @@ export function FloatingChatPanel() {
 
   // ==================== Socket 재연결 시도 ====================
 
-  // 채팅 패널이 열릴 때 Socket 재연결 시도
+  // 채팅 패널이 열릴 때 Socket 재연결 시도 (인증된 사용자만)
   useEffect(() => {
-    if (isOpen) {
-      // getSocket()은 Socket이 disconnect 상태면 자동으로 재연결 시도
-      getSocket();
-    }
-  }, [isOpen]);
+    // 인증 초기화 완료 및 로그인 사용자만 Socket 연결
+    if (!user?.id || !isOpen) return;
+
+    // getSocket()은 Socket이 disconnect 상태면 자동으로 재연결 시도
+    getSocket();
+  }, [user?.id, isOpen]);
 
   // ==================== Socket.io 연결 ====================
 
@@ -108,7 +116,7 @@ export function FloatingChatPanel() {
                   lastMessageAt: message.createdAt,
                   unreadCountResident: newUnreadCount,
                 }
-              : prev
+              : prev,
           );
         }
       },
@@ -119,35 +127,27 @@ export function FloatingChatPanel() {
         if (isAdmin && data.role === 'USER') {
           setChatRooms((prev) =>
             prev.map((room) =>
-              room.id === data.chatRoomId
-                ? { ...room, unreadCountAdmin: 0 }
-                : room
-            )
+              room.id === data.chatRoomId ? { ...room, unreadCountAdmin: 0 } : room,
+            ),
           );
 
           // 현재 화면에 표시된 메시지들의 읽음 상태 업데이트
           setMessages((prev) =>
             prev.map((msg) =>
-              msg.chatRoomId === data.chatRoomId
-                ? { ...msg, isReadByResident: true }
-                : msg
-            )
+              msg.chatRoomId === data.chatRoomId ? { ...msg, isReadByResident: true } : msg,
+            ),
           );
         }
 
         // Resident가 받는 경우: Admin이 읽었다는 알림 → Resident의 안읽음 표시 제거
         if (isResident && data.role === 'ADMIN' && chatRoom?.id === data.chatRoomId) {
-          setChatRoom((prev) =>
-            prev ? { ...prev, unreadCountResident: 0 } : prev
-          );
+          setChatRoom((prev) => (prev ? { ...prev, unreadCountResident: 0 } : prev));
 
           // 현재 화면에 표시된 메시지들의 읽음 상태 업데이트
           setMessages((prev) =>
             prev.map((msg) =>
-              msg.chatRoomId === data.chatRoomId
-                ? { ...msg, isReadByAdmin: true }
-                : msg
-            )
+              msg.chatRoomId === data.chatRoomId ? { ...msg, isReadByAdmin: true } : msg,
+            ),
           );
         }
       },
@@ -161,7 +161,7 @@ export function FloatingChatPanel() {
   // ==================== 타이핑 인디케이터 ====================
 
   const { isOtherUserTyping, emitTyping } = useTypingIndicator({
-    socket: getSocket(),
+    socket: getCurrentSocket(), // 이미 생성된 socket만 사용 (없으면 null)
     chatRoomId: isAdmin ? selectedRoom?.id : chatRoom?.id,
     currentUserId: user?.id,
   });
@@ -227,9 +227,7 @@ export function FloatingChatPanel() {
     if (isAdmin && selectedRoom && selectedRoom.unreadCountAdmin > 0) {
       markAsRead();
       setChatRooms((prev) =>
-        prev.map((room) =>
-          room.id === selectedRoom.id ? { ...room, unreadCountAdmin: 0 } : room
-        )
+        prev.map((room) => (room.id === selectedRoom.id ? { ...room, unreadCountAdmin: 0 } : room)),
       );
       return;
     }
@@ -249,7 +247,16 @@ export function FloatingChatPanel() {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, isJoinedRoom, isAdmin, isResident, selectedRoom?.id, selectedRoom?.unreadCountAdmin, chatRoom?.unreadCountResident, messages.length]);
+  }, [
+    isOpen,
+    isJoinedRoom,
+    isAdmin,
+    isResident,
+    selectedRoom?.id,
+    selectedRoom?.unreadCountAdmin,
+    chatRoom?.unreadCountResident,
+    messages.length,
+  ]);
 
   // ==================== Admin: 채팅방 선택 시 메시지 로드 ====================
 
@@ -328,7 +335,8 @@ export function FloatingChatPanel() {
   // ==================== Resident: 채팅방 조회/생성 (로그인 시) ====================
 
   useEffect(() => {
-    if (!isResident || !user) return;
+    // 인증 초기화 완료 및 로그인 사용자만 Socket 연결
+    if (!user?.id || !isResident) return;
 
     const initChatRoom = async () => {
       try {
@@ -347,7 +355,7 @@ export function FloatingChatPanel() {
     };
 
     initChatRoom();
-  }, [isResident, user]);
+  }, [isResident, user?.id]);
 
   // ==================== Resident: 메시지 불러오기 (패널 열 때) ====================
 
@@ -442,7 +450,7 @@ export function FloatingChatPanel() {
     <>
       {/* 슬라이드 패널 */}
       <div
-        className={`fixed right-6 top-20 bottom-6 z-50 w-full max-w-md bg-white shadow-2xl rounded-lg transition-all duration-300 ease-out origin-bottom-right ${
+        className={`fixed top-20 right-6 bottom-6 z-50 w-full max-w-md origin-bottom-right rounded-lg bg-white shadow-2xl transition-all duration-300 ease-out ${
           isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
         }`}
       >
@@ -458,16 +466,26 @@ export function FloatingChatPanel() {
                   <div className='flex items-center gap-2'>
                     <button
                       onClick={() => setShowCreateModal(true)}
-                      className='rounded-md bg-blue-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-600 transition-colors'
+                      className='rounded-md bg-blue-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-600'
                     >
                       + 새 채팅
                     </button>
                     <button
                       onClick={closeChat}
-                      className='flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors'
+                      className='flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600'
                     >
-                      <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                      <svg
+                        className='h-5 w-5'
+                        fill='none'
+                        viewBox='0 0 24 24'
+                        stroke='currentColor'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={2}
+                          d='M6 18L18 6M6 6l12 12'
+                        />
                       </svg>
                     </button>
                   </div>
@@ -476,13 +494,25 @@ export function FloatingChatPanel() {
                 {/* 채팅방 목록 */}
                 <div className='flex-1 overflow-y-auto bg-gray-50'>
                   {isLoading ? (
-                    <div className='flex items-center justify-center p-8 text-sm text-gray-500'>로딩 중...</div>
+                    <div className='flex items-center justify-center p-8 text-sm text-gray-500'>
+                      로딩 중...
+                    </div>
                   ) : chatRooms.length === 0 ? (
-                    <div className='flex flex-col items-center justify-center h-full text-gray-400'>
-                      <svg className='w-16 h-16 mb-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} d='M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' />
+                    <div className='flex h-full flex-col items-center justify-center text-gray-400'>
+                      <svg
+                        className='mb-4 h-16 w-16'
+                        fill='none'
+                        viewBox='0 0 24 24'
+                        stroke='currentColor'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={1.5}
+                          d='M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'
+                        />
                       </svg>
-                      <p className='text-sm font-medium mb-1'>채팅방이 없습니다</p>
+                      <p className='mb-1 text-sm font-medium'>채팅방이 없습니다</p>
                       <p className='text-xs text-gray-400'>새 채팅을 시작해보세요</p>
                     </div>
                   ) : (
@@ -490,24 +520,29 @@ export function FloatingChatPanel() {
                       <button
                         key={room.id}
                         onClick={() => handleSelectRoom(room)}
-                        className='w-full border-b border-gray-200 px-5 py-4 text-left transition-all hover:bg-white bg-white mb-1'
+                        className='mb-1 w-full border-b border-gray-200 bg-white px-5 py-4 text-left transition-all hover:bg-white'
                       >
-                        <div className='flex items-center justify-between mb-1'>
+                        <div className='mb-1 flex items-center justify-between'>
                           <div className='flex items-center gap-2'>
-                            <div className='font-semibold text-gray-900 text-sm'>{room.resident.name}</div>
+                            <div className='text-sm font-semibold text-gray-900'>
+                              {room.resident.name}
+                            </div>
                             {room.unreadCountAdmin > 0 && (
-                              <span className='inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-semibold rounded-full'>
+                              <span className='inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-semibold text-white'>
                                 {room.unreadCountAdmin > 99 ? '99+' : room.unreadCountAdmin}
                               </span>
                             )}
                           </div>
                           {room.lastMessageAt && (
                             <div className='text-xs text-gray-400'>
-                              {new Date(room.lastMessageAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                              {new Date(room.lastMessageAt).toLocaleDateString('ko-KR', {
+                                month: 'short',
+                                day: 'numeric',
+                              })}
                             </div>
                           )}
                         </div>
-                        <div className='text-xs text-gray-600 mb-1.5'>
+                        <div className='mb-1.5 text-xs text-gray-600'>
                           {room.resident.building}동 {room.resident.unitNumber}호
                         </div>
                         {room.lastMessage && (
@@ -522,29 +557,41 @@ export function FloatingChatPanel() {
 
             {/* 채팅 화면 */}
             {selectedRoom && (
-              <div className='flex w-full h-full flex-col bg-white'>
+              <div className='flex h-full w-full flex-col bg-white'>
                 {/* 헤더 */}
                 <div className='flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3.5'>
                   <button
                     onClick={() => setSelectedRoom(null)}
-                    className='flex items-center justify-center w-8 h-8 rounded-full text-gray-600 hover:bg-gray-100 transition-colors'
+                    className='flex h-8 w-8 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100'
                   >
-                    <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+                    <svg className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M15 19l-7-7 7-7'
+                      />
                     </svg>
                   </button>
                   <div className='flex-1'>
-                    <div className='font-semibold text-gray-900 text-sm mb-0.5'>{selectedRoom.resident.name}</div>
+                    <div className='mb-0.5 text-sm font-semibold text-gray-900'>
+                      {selectedRoom.resident.name}
+                    </div>
                     <div className='text-xs text-gray-600'>
                       {selectedRoom.resident.building}동 {selectedRoom.resident.unitNumber}호
                     </div>
                   </div>
                   <button
                     onClick={closeChat}
-                    className='flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors'
+                    className='flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600'
                   >
-                    <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                    <svg className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M6 18L18 6M6 6l12 12'
+                      />
                     </svg>
                   </button>
                 </div>
@@ -567,7 +614,9 @@ export function FloatingChatPanel() {
                 <ChatInput
                   onSend={handleSendMessage}
                   disabled={!isConnected || !isJoinedRoom}
-                  placeholder={isConnected && isJoinedRoom ? '메시지를 입력하세요...' : '연결 중...'}
+                  placeholder={
+                    isConnected && isJoinedRoom ? '메시지를 입력하세요...' : '연결 중...'
+                  }
                   onTyping={emitTyping}
                 />
               </div>
@@ -583,10 +632,12 @@ export function FloatingChatPanel() {
               <div className='flex items-center gap-3'>
                 <div>
                   <h2 className='font-bold'>관리자 채팅</h2>
-                  <p className='text-xs text-blue-100'>{chatRoom?.apartment?.apartmentName || '아파트'} 관리사무소</p>
+                  <p className='text-xs text-blue-100'>
+                    {chatRoom?.apartment?.apartmentName || '아파트'} 관리사무소
+                  </p>
                 </div>
                 {chatRoom && chatRoom.unreadCountResident > 0 && (
-                  <span className='inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-red-500 text-white text-xs font-bold rounded-full shadow-md'>
+                  <span className='inline-flex h-6 min-w-[24px] items-center justify-center rounded-full bg-red-500 px-2 text-xs font-bold text-white shadow-md'>
                     {chatRoom.unreadCountResident > 99 ? '99+' : chatRoom.unreadCountResident}
                   </span>
                 )}
@@ -623,7 +674,9 @@ export function FloatingChatPanel() {
                 <ChatInput
                   onSend={handleSendMessage}
                   disabled={!isConnected || !isJoinedRoom}
-                  placeholder={isConnected && isJoinedRoom ? '메시지를 입력하세요...' : '연결 중...'}
+                  placeholder={
+                    isConnected && isJoinedRoom ? '메시지를 입력하세요...' : '연결 중...'
+                  }
                   onTyping={emitTyping}
                 />
               </>
@@ -633,11 +686,14 @@ export function FloatingChatPanel() {
 
         {/* Admin: 채팅방 생성 모달 */}
         {showCreateModal && (
-          <div className='absolute inset-0 z-10 flex items-center justify-center bg-black bg-opacity-50'>
+          <div className='bg-opacity-50 absolute inset-0 z-10 flex items-center justify-center bg-black'>
             <div className='w-11/12 max-w-md rounded-lg bg-white p-4'>
               <div className='mb-3 flex items-center justify-between'>
                 <h3 className='font-bold text-gray-800'>새 채팅방 만들기</h3>
-                <button onClick={() => setShowCreateModal(false)} className='text-gray-500 hover:text-gray-700'>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className='text-gray-500 hover:text-gray-700'
+                >
                   ✕
                 </button>
               </div>
