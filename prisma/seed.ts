@@ -9,6 +9,7 @@
  * 7. 실행
  */
 
+import 'dotenv/config';
 import { v4 as uuid } from 'uuid';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient({
@@ -36,7 +37,12 @@ const END_DATE_PAST = new Date(d(2025, 6, 12).getTime() + ONE_DAY - 1);
 const START_DATE_FUTURE = new Date(NOW.getTime() - ONE_DAY); // 어제 시작
 const END_DATE_FUTURE = new Date(NOW.getTime() + ONE_DAY * 7); // 일주일 뒤 종료
 
-const DEFAULT_AVATAR = 'https://example.com/default-avatar.png';
+const DEFAULT_AVATAR = process.env.DEFAULT_AVATAR_URL;
+if (!DEFAULT_AVATAR) {
+  console.log('❌ Cannot load env: DEFAULT_AVATAR_URL is missing');
+  await prisma.$disconnect();
+  process.exit(1);
+}
 const DEFAULT_ADDRESS = '서울특별시 강남구 위리브로 12';
 
 // ------------------------------
