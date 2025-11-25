@@ -13,16 +13,6 @@ export const createPollBodySchema = z.object({
   options: z.array(z.object({ title: z.string().min(1).max(50) })),
 });
 
-// .refine(
-//   (data) => {
-//     const now = new Date();
-//     return data.startDate < now && now < data.endDate;
-//   },
-//   {
-//     message: '현재 시간은 startDate와 endDate 사이여야 합니다',
-//     path: ['startDate'],
-//   }
-
 export type createPollBodyDTO = z.infer<typeof createPollBodySchema>;
 
 export const pollListQuerySchema = z.object({
