@@ -82,7 +82,7 @@ router.use('/poll-scheduler', pollSchedulerRouter);
  * ================================
  */
 import eventRouter from '#modules/events/events.router';
-router.use('/events', eventRouter);
+router.use('/event', eventRouter);
 
 /**
  * ================================
