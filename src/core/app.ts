@@ -119,6 +119,14 @@ app.use(compression());
 app.use(corsMiddleware);
 
 /**
+ * Preflight 처리
+ * - prod 전용
+ */
+if (env.NODE_ENV === 'production') {
+  app.options(/.*/, corsMiddleware);
+}
+
+/**
  * HTTP 요청 로거 (morgan + pino)
  */
 app.use(httpLogger);
