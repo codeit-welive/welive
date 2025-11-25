@@ -59,9 +59,7 @@ startAllJobs();
 /**
  * 서버 시작
  */
-const HOST = env.NODE_ENV === 'production' ? '127.0.0.1' : '0.0.0.0';
-
-server.listen(PORT, HOST, () => {
+server.listen(PORT, () => {
   logger.system.info(`✅ Server running on http://localhost:${PORT}`);
 });
 
