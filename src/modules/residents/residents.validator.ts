@@ -12,8 +12,10 @@ import { extractHeaderFromBuffer } from './utils/csvUtil';
 
 export const validateResidentListRequestQuery: RequestHandler = (req, res, next) => {
   try {
+    console.log(req.query);
     const validatedQuery = residentListRequestQuerySchema.parse(req.query);
     res.locals.validatedQuery = validatedQuery;
+    console.log(validatedQuery);
 
     next();
   } catch (err) {

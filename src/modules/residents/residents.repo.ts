@@ -44,41 +44,41 @@ export const getCount = async (query: ResidentListRequestQueryDto, adminId: stri
   });
 };
 
-export const getById = async (residentId: string, apartmentId: string) => {
+export const getById = async (residentId: string, adminId: string) => {
   return await prisma.resident.findUnique({
     where: {
       id: residentId,
-      apartmentId,
+      apartment: { adminId },
     },
     select: selectResidentFields,
   });
 };
 
-export const update = async (residentId: string, data: ResidentPatchRequestBodyDto, apartmentId: string) => {
+export const update = async (residentId: string, data: ResidentPatchRequestBodyDto, adminId: string) => {
   return await prisma.resident.update({
     where: {
       id: residentId,
-      apartmentId,
+      apartment: { adminId },
     },
     data,
     select: selectResidentFields,
   });
 };
 
-export const remove = async (residentId: string, apartmentId: string) => {
+export const remove = async (residentId: string, adminId: string) => {
   return await prisma.resident.delete({
     where: {
       id: residentId,
-      apartmentId,
+      apartment: { adminId },
     },
   });
 };
 
-export const create = async (data: ResidentCreateRequestBodyDto, apartmentId: string) => {
+export const create = async (data: ResidentCreateRequestBodyDto, adminId: string) => {
   return await prisma.resident.create({
     data: {
       ...data,
-      apartmentId,
+      apartment: { connect: { adminId } },
     },
     select: selectResidentFields,
   });
