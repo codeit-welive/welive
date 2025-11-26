@@ -46,11 +46,11 @@ const domains = [
 const modules = [
   ...domains.map((d) => ({
     file: path.join(root, 'src/modules', d, `${d}.router.ts`),
-    prefix: `/api/${d}`,
+    prefix: `/${d}`,
   })),
   {
     file: path.join(root, 'src/core/health', 'health.router.ts'),
-    prefix: '/api',
+    prefix: '/',
   },
 ];
 

@@ -22,21 +22,7 @@ Cloudflare의 프록시(Proxy ON)를 거쳐 Nginx로 전달됩니다.
 
 ---
 
-## 2) 백엔드 Express는 Prod에서 로컬바인딩(127.0.0.1)
-
-프로덕션 환경에서는 백엔드가 외부에서 직접 접근되지 않도록  
-아래와 같이 **로컬바인딩**을 적용합니다:
-
-```ts
-server.listen(PORT, "127.0.0.1");
-```
-
-외부에서 `:3001` 포트로 직접 접근할 수 없으며,  
-Cloudflare → Nginx → Backend 경로로만 호출됩니다.
-
----
-
-## 3) Swagger 접근 정책 분리
+## 2) Swagger 접근 정책 분리
 
 Swagger 문서는 다음과 같이 분리 운영됩니다:
 
@@ -124,7 +110,6 @@ sudo systemctl reload nginx
 
 # 🛡 보안 요약
 
-- 백엔드는 **127.0.0.1 로컬바인딩**으로 외부 접근 불가  
 - Cloudflare → Nginx → Backend 구조  
 - Swagger는 API 도메인에서만 공개, 프론트에서는 차단  
 - Cloudflare 원본 IP 복원(real_ip_header) 적용 → 정확한 로그 및 RateLimit 보장
