@@ -170,7 +170,7 @@ export function FloatingChatPanel() {
 
   // Admin 로그인 시 채팅방 목록 로드 (읽지 않은 메시지 카운트 계산용)
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!user?.id || !isAdmin) return;
 
     const loadChatRooms = async () => {
       try {
@@ -186,7 +186,7 @@ export function FloatingChatPanel() {
     };
 
     loadChatRooms();
-  }, [isAdmin]); // isOpen 제거 - 로그인 시 즉시 로드
+  }, [user?.id, isAdmin]);
 
   // ==================== 읽지 않은 메시지 수 업데이트 ====================
 
