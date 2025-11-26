@@ -19,6 +19,8 @@
     "build": "npm run clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "_section4": "Test",
     "test": "cross-env NODE_ICU_DATA=node_modules/full-icu NODE_ENCODING=utf8 NODE_ENV=test dotenv -e .env.test -- jest --runInBand",
+    "test:watch": "cross-env NODE_ICU_DATA=node_modules/full-icu NODE_ENCODING=utf8 NODE_ENV=test jest --watch",
+    "test:cov": "cross-env NODE_ICU_DATA=node_modules/full-icu NODE_ENCODING=utf8 NODE_ENV=test jest --coverage",
     "test:migrate": "ts-node -r tsconfig-paths/register scripts/test/migrateTestDB.ts",
     "test:reset": "ts-node -r tsconfig-paths/register scripts/test/resetTestDB.ts",
     "_section5": "Development",
