@@ -50,6 +50,13 @@ import ApiError from '#errors/ApiError';
 
 const app: Application = express();
 
+/**
+ * API Prefix
+ * - prod: none
+ * - dev/test: /api
+ */
+const API_PREFIX = env.NODE_ENV === 'production' ? '' : '/api';
+
 const swaggerPath = path.join(process.cwd(), 'swagger', 'swagger.json');
 if (!fs.existsSync(swaggerPath)) {
   logger.system.warn('❌ Swagger 문서가 존재하지 않습니다. 먼저 swagger:generate 스크립트를 실행하세요.');
@@ -107,11 +114,34 @@ const limiter = rateLimit({
 app.use(limiter);
 
 /**
+ * SSE는 압축되면 안 되므로 Content-Encoding 제거 처리
+ */
+app.use((req, res, next) => {
+  const accept = req.headers.accept || '';
+
+  // text/event-stream 요청이면 압축 OFF
+  if (accept.includes('text/event-stream')) {
+    res.setHeader('Content-Encoding', 'identity');
+  }
+
+  next();
+});
+
+/**
  * Compression (gzip)
  * - API 응답을 자동 압축
- * - 정적 파일은 Express static이 알아서 압축 캐싱 처리함
+ * - SSE 압축 제외
  */
-app.use(compression());
+// 기존: app.use(compression());
+const compressionMiddleware = compression();
+
+app.use((req, res, next) => {
+  // SSE 엔드포인트는 압축 스킵
+  if (req.path === `${API_PREFIX}/notifications/sse`) {
+    return next();
+  }
+  return compressionMiddleware(req, res, next);
+});
 
 /**
  * CORS (화이트리스트 기반)
@@ -137,13 +167,6 @@ app.use(httpLogger);
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-/**
- * API Prefix
- * - prod: none
- * - dev/test: /api
- */
-const API_PREFIX = env.NODE_ENV === 'production' ? '' : '/api';
 
 /**
  * API 라우터

@@ -49,13 +49,17 @@ const removeClient = (userId: string, client: SseClient): void => {
  * @desc 로그인한 사용자의 읽지 않은 알림을 실시간 전송
  * @access Private (JWT 쿠키 인증)
  */
-router.get('/sse', authMiddleware, async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   const userId = req.user.id;
+
+  const origin = env.CORS_ORIGINS && env.CORS_ORIGINS.length > 0 ? env.CORS_ORIGINS[0] : env.FRONT_URL;
 
   res.set({
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Credentials': 'true',
   });
   res.flushHeaders();
 
@@ -67,6 +71,9 @@ router.get('/sse', authMiddleware, async (req, res) => {
     where: { recipientId: userId, isChecked: false },
     orderBy: { notifiedAt: 'desc' },
   });
+
+  console.log('[SSE] unread count:', unread.length);
+  console.log('[SSE] userId:', userId);
 
   if (unread.length > 0) {
     const event: SseEvent = {

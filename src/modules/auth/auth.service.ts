@@ -11,6 +11,8 @@ import {
   patchUserListStatusRepo,
   getApartmentNameByAdminId,
   deleteRejectedUser,
+  patchApartmentInfoRepo,
+  deleteApartmentRepo,
 } from './auth.repo';
 import { SignupSuperAdminRequestDto, SignupAdminRequestDto, SignupUserRequestDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -20,7 +22,8 @@ import { searchResultToResponse } from './utils/searchResultMapper';
 import { generateAccessToken, generateRefreshToken } from './utils/tokenUtils';
 import ApiError from '#errors/ApiError';
 import { JoinStatus, UserRole } from '@prisma/client';
-import { checkDuplicateApartment, checkDuplicateUser } from './utils/checkDuplicate';
+import { checkDuplicateApartment, checkDuplicateUser } from '#helpers/checkDuplicate';
+import { PatchApartmentBodyDto } from './dto/auth.dto';
 
 export const registSuperAdmin = async (data: SignupSuperAdminRequestDto) => {
   await checkDuplicateUser(data.username, data.email, data.contact);
@@ -113,6 +116,18 @@ export const patchUserListStatus = async (status: JoinStatus, adminId: string) =
   const adminApartmentName = adminApartment?.apartment?.apartmentName as string;
 
   await patchUserListStatusRepo(status, adminApartmentName);
+};
+
+export const patchApartmentInfo = async (adminId: string, data: PatchApartmentBodyDto) => {
+  const { contact, name, email, ...rest } = data;
+  const apartmentData = rest;
+  const userData = { contact, name, email };
+
+  await patchApartmentInfoRepo(adminId, apartmentData, userData);
+};
+
+export const deleteApartmentInfo = async (adminId: string) => {
+  await deleteApartmentRepo(adminId);
 };
 
 export const cleanupRejectedUsers = async (role: UserRole, adminId: string | undefined) => {

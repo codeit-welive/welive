@@ -8,7 +8,6 @@ import { ResidentFileService } from './residents.file.service';
 import ApiError from '#errors/ApiError';
 import { filenameFormat } from './utils/csvUtil';
 import { Prisma } from '@prisma/client';
-import { mapUniqueConstraintError } from '#helpers/mapPrismaError';
 
 /**
  * [GET] /api/residents/file/template
@@ -69,8 +68,7 @@ export const uploadResidentListFile: RequestHandler = async (req, res, next) => 
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === 'P2002') {
-        const errorFields = err.meta?.target as string[];
-        return next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
+        return next(new ApiError(409, '이미 존재하는 연락처입니다', 'CONFLICT'));
       } else {
         return next(new ApiError(500, '입주민 등록 중 오류가 발생했습니다.'));
       }

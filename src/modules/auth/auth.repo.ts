@@ -1,4 +1,5 @@
 import prisma from '#core/prisma';
+import { PatchApartmentBodyDto } from './dto/auth.dto';
 import { SignupSuperAdminRequestDto, UserDto, ApartmentDto, SignupUserRequestDto } from './dto/register.dto';
 import { ApprovalStatus, BoardType, JoinStatus, UserRole } from '@prisma/client';
 
@@ -33,41 +34,6 @@ export const createAdmin = async (userData: UserDto, apartmentData: ApartmentDto
       },
     },
     select: UserSelectFields,
-  });
-};
-
-/**
- * 중복 유저 확인
- * @description 아이디, 이메일, 연락처 중 하나라도 중복되는 유저가 있는지 확인
- * @param data
- *  - username: 아이디
- *  - email: 이메일
- *  - contact: 연락처
- * @returns 중복된 유저 정보 또는 null
- */
-export const findDuplicateUser = async (data: { username: string; email: string; contact: string }) => {
-  return prisma.user.findFirst({
-    where: {
-      OR: [{ username: data.username }, { email: data.email }, { contact: data.contact }],
-    },
-    select: {
-      username: true,
-      email: true,
-      contact: true,
-    },
-  });
-};
-
-/**
- * 중복 아파트 확인
- * @description 아파트 이름이 중복되는 아파트가 있는지 확인
- * @param apartmentName 아파트 이름
- * @returns 중복된 아파트 정보 또는 null
- */
-export const findDuplicateApartment = async (apartmentName: string) => {
-  return prisma.apartment.findFirst({
-    where: { apartmentName },
-    select: { id: true },
   });
 };
 
@@ -312,6 +278,28 @@ export const getApartmentNameByAdminId = async (adminId: string) => {
   });
 };
 
+export const patchApartmentInfoRepo = async (
+  adminId: string,
+  apartmentData: Partial<PatchApartmentBodyDto>,
+  userData: Partial<PatchApartmentBodyDto>
+) => {
+  return prisma.$transaction(async (tx) => {
+    await tx.apartment.update({
+      where: { adminId },
+      data: apartmentData,
+    });
+    await tx.user.update({
+      where: { id: adminId },
+      data: userData,
+    });
+  });
+};
+
+export const deleteApartmentRepo = async (adminId: string) => {
+  return await prisma.user.delete({
+    where: { id: adminId },
+  });
+};
 /**
  * 거절 유저 삭제
  * @description

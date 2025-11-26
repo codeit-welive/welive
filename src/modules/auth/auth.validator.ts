@@ -6,7 +6,12 @@ import {
   signupUserRequestDtoSchema,
 } from './dto/register.dto';
 import { LoginDtoSchema } from './dto/login.dto';
-import { patchStatusParamSchema, patchStatusBodySchema } from './dto/auth.dto';
+import {
+  patchStatusParamSchema,
+  patchStatusBodySchema,
+  patchApartmentParamSchema,
+  patchApartmentBodySchema,
+} from './dto/auth.dto';
 import { isValidateApartmentRange } from './utils/isValidateApartmentRange';
 import ApiError from '#errors/ApiError';
 
@@ -76,5 +81,35 @@ export const validatePatchStatusBody: RequestHandler = async (req, res, next) =>
     next();
   } catch (err) {
     forwardZodError(err, '상태 변경', next);
+  }
+};
+
+export const validatePatchApartmentParam: RequestHandler = async (req, res, next) => {
+  try {
+    const validatedParams = patchApartmentParamSchema.parse(req.params);
+    res.locals.validatedParams = validatedParams;
+    next();
+  } catch (err) {
+    forwardZodError(err, '아파트 변경 파라미터', next);
+  }
+};
+
+export const validatePatchApartmentBody: RequestHandler = async (req, res, next) => {
+  try {
+    const validatedBody = await patchApartmentBodySchema.parseAsync(req.body);
+    res.locals.validatedBody = validatedBody;
+    next();
+  } catch (err) {
+    forwardZodError(err, '아파트 변경 바디', next);
+  }
+};
+
+export const validateDeleteApartmentParam: RequestHandler = async (req, res, next) => {
+  try {
+    const validatedParams = patchApartmentParamSchema.parse(req.params);
+    res.locals.validatedParams = validatedParams;
+    next();
+  } catch (err) {
+    forwardZodError(err, '아파트 삭제 파라미터', next);
   }
 };

@@ -2,7 +2,6 @@ import { RequestHandler } from 'express';
 import { createResident, getResident, getResidentList, patchResident, removeResident } from './residents.service';
 import { Prisma } from '@prisma/client';
 import ApiError from '#errors/ApiError';
-import { mapUniqueConstraintError } from '#helpers/mapPrismaError';
 
 /**
  * @description 입주민 명부 목록 조회 핸들러
@@ -66,6 +65,9 @@ export const patchResidentHandler: RequestHandler = async (req, res, next) => {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
       return next(ApiError.notFound('입주민을 찾을 수 없습니다.'));
     }
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      return next(new ApiError(409, '이미 존재하는 연락처입니다', 'CONFLICT'));
+    }
     return next(err);
   }
 };
@@ -85,7 +87,7 @@ export const deleteResidentHandler: RequestHandler = async (req, res, next) => {
   } catch (err) {
     // 대상 없음(P2025) → 404
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
-      return next(ApiError.notFound('입주민을 찾을 수 없습니다.'));
+      return next(new ApiError(404, '입주민을 찾을 수 없습니다', 'NOT_FOUND'));
     }
     return next(err);
   }
@@ -105,14 +107,7 @@ export const createResidentHandler: RequestHandler = async (req, res, next) => {
     res.status(201).json(result);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-      const errorFields = err.meta?.target as string[] | undefined;
-
-      if (Array.isArray(errorFields)) {
-        return next(new ApiError(409, mapUniqueConstraintError(errorFields).message));
-      }
-
-      // err.meta.target 정보가 없을 때는 포괄적인 409로 처리
-      return next(new ApiError(409, '이미 존재하는 값이 있습니다.'));
+      return next(new ApiError(409, '이미 존재하는 연락처입니다', 'CONFLICT'));
     }
     return next(err);
   }

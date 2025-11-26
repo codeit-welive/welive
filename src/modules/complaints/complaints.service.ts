@@ -44,7 +44,7 @@ export const createComplaint = async (data: ComplaintCreateDto) => {
     {
       content: '새로운 민원이 작성되었습니다.',
       notificationType: 'COMPLAINT_REQ',
-      recipientId: data.userId,
+      recipientId: userBoard.apartment.adminId,
       complaintId: complaint.id,
     },
     userBoard.apartment.adminId
@@ -202,7 +202,7 @@ export const patchComplaintStatus = async (complaintId: string, data: ComplaintP
       {
         content: notification.content,
         notificationType: notification.type,
-        recipientId: data.userId,
+        recipientId: updatedComplaint.userId,
         complaintId: updatedComplaint.id,
       },
       updatedComplaint.userId

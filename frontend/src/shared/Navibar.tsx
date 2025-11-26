@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+'use client';
+
+import { useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -6,6 +8,9 @@ import NotificationPanel from './NotificationPanel';
 import axiosInstance from './lib/axios';
 import { useAuthStore } from './store/auth.store';
 import { useRouter } from 'next/router';
+
+// 전역 알림 Store
+import { useNotificationStore } from '@/shared/store/notify.store';
 
 export interface Notification {
   notificationId: string;
@@ -20,16 +25,18 @@ export interface Notification {
 
 export default function Navibar() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Store 기반
+  const notifications = useNotificationStore((s) => s.notifications);
+  const removeNotification = useNotificationStore((s) => s.removeNotification);
+
   const user = useAuthStore((state) => state.user);
   const clearUser = useAuthStore((state) => state.clearUser);
   const router = useRouter();
   const role = useAuthStore((state) => state.user?.role);
 
-  // 읽지 않은 알림 개수
   const unreadCount = notifications.filter((n) => !n.isChecked).length;
 
-  // 역할별 링크
   const getLinkByRole = (role?: string) => {
     switch (role) {
       case 'SUPER_ADMIN':
@@ -43,7 +50,6 @@ export default function Navibar() {
     }
   };
 
-  // 로그아웃 처리
   async function handleLogout() {
     try {
       const res = await axiosInstance.post('/auth/logout');
@@ -59,49 +65,13 @@ export default function Navibar() {
     }
   }
 
-  // 알림 토글 함수
   const toggleNotification = () => setIsNotificationOpen((prev) => !prev);
 
-  // SSE 연결
-  useEffect(() => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '');
-    if (!baseUrl) {
-      console.error('BASE_URL is undefined');
-      return;
-    }
-
-    const eventSource = new EventSource(`${baseUrl}/notifications/sse`, {
-      withCredentials: true,
-    });
-
-    eventSource.addEventListener('alarm', (event) => {
-      try {
-        const newNotifications: Notification[] = JSON.parse(event.data);
-        setNotifications((prev) => {
-          const existingIds = new Set(prev.map((n) => n.notificationId));
-          const filtered = newNotifications.filter((n) => !existingIds.has(n.notificationId));
-          return filtered.length > 0 ? [...filtered, ...prev] : prev;
-        });
-      } catch (error) {
-        console.error('알림 데이터 파싱 에러:', error);
-      }
-    });
-
-    eventSource.onerror = (err) => {
-      console.error('SSE 연결 에러:', err);
-      eventSource.close();
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, []);
-
-  // 알람 읽음 함수
+  /* 읽음 처리 */
   async function markAsRead(notificationId: string) {
     try {
-      const response = await axiosInstance.patch(`/notifications/${notificationId}/read`);
-      return response.data;
+      await axiosInstance.patch(`/notifications/${notificationId}/read`);
+      removeNotification(notificationId);
     } catch (error) {
       console.error('알림읽음 처리함수 에러', error);
       throw error;
@@ -116,9 +86,8 @@ export default function Navibar() {
           <Image src='/img/logo.svg' alt='WeLive Logo' width={81} height={30} priority />
         </Link>
 
-        {/* 알림 및 유저 정보 */}
         <div className='flex items-center justify-center gap-10'>
-          {/* 알림 아이콘 */}
+          {/* 알림 */}
           <div className='relative'>
             <Image
               src='/img/Bell.svg'
@@ -129,21 +98,20 @@ export default function Navibar() {
               className='cursor-pointer text-gray-500'
               onClick={toggleNotification}
             />
-            {/* 빨간 점 표시 */}
             {unreadCount > 0 && (
               <span className='absolute bottom-0 left-5 h-2 w-2 -translate-x-1/2 translate-y-1/2 rounded-full border-2 border-white bg-red-500' />
             )}
+
             {isNotificationOpen && (
               <NotificationPanel
                 notifications={notifications}
-                setNotifications={setNotifications}
                 onClose={toggleNotification}
                 onMarkAsRead={markAsRead}
               />
             )}
           </div>
 
-          {/* 유저 이미지 및 이름 */}
+          {/* 유저 정보 */}
           <div className='flex items-center gap-2.5'>
             <Image
               src={user?.avatar ?? '/img/userImage.svg'}

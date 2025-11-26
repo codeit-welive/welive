@@ -29,7 +29,7 @@ import sseRouter from '#sse/index';
 import chatRouter from '#modules/chats/chats.router';
 
 router.use('/', healthRouter);
-router.use('/notifications', sseRouter); // SSE
+router.use('/notifications/sse', sseRouter); // SSE
 router.use('/chats', chatRouter); // Websocket entry
 
 /**

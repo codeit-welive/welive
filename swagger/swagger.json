@@ -23,145 +23,622 @@
   "paths": {
     "/api/auth/signup": {
       "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Auth"
-        ]
+        ],
+        "summary": "[일반 사용자] 회원가입",
+        "description": "사용자 정보를 입력받아 새로운 계정을 생성합니다. 역할에 따라 추가 정보를 입력받을 수 있습니다.",
+        "responses": {
+          "201": {
+            "description": "회원가입이 완료되었습니다",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "019ab901-0db2-75cf-b0f7-36175675dd74",
+                  "name": "홍길동",
+                  "email": "test@test.com",
+                  "joinStatus": "PENDING",
+                  "isActive": true,
+                  "role": "USER"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청(필수사항 누락 또는 잘못된 입력값)입니다"
+          },
+          "403": {
+            "description": "접근 권한이 없습니다(이미 로그인 상태이거나 비활성화된 계정입니다)"
+          },
+          "409": {
+            "description": "이미 사용 중인 정보(아이디, 이메일, 전화번호)입니다"
+          },
+          "500": {
+            "description": "회원가입을 진행하는 중 오류가 발생했습니다"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "username": "kristy0357",
+                "password": "8tczQ0r8e_zkbE0",
+                "contact": "0189758150",
+                "name": "송하은",
+                "email": "buster_oberrbrunner4@hotmail.com",
+                "role": "USER",
+                "apartmentName": "우진아파트",
+                "apartmentDong": "127",
+                "apartmentHo": "361"
+              }
+            }
+          }
+        }
       }
     },
     "/api/auth/signup/admin": {
       "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Auth"
-        ]
+        ],
+        "summary": "[관리자] 회원가입",
+        "description": "관리자 정보를 입력받아 새로운 계정을 생성합니다 역할에 따라 추가 정보를 입력받을 수 있습니다",
+        "responses": {
+          "201": {
+            "description": "회원가입이 완료되었습니다",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "019ab901-0db2-75cf-b0f7-36175675dd74",
+                  "name": "홍길동",
+                  "email": "test@test.com",
+                  "joinStatus": "PENDING",
+                  "isActive": true,
+                  "role": "ADMIN"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청(필수사항 누락 또는 잘못된 입력값)입니다"
+          },
+          "403": {
+            "description": "접근 권한이 없습니다(이미 로그인 상태이거나 비활성화된 계정입니다)"
+          },
+          "409": {
+            "description": "이미 사용 중인 정보(아이디, 이메일, 전화번호)입니다"
+          },
+          "500": {
+            "description": "회원가입을 진행하는 중 오류가 발생했습니다"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "username": "kristy0357",
+                "password": "8tczQ0r8e_zkbE0",
+                "contact": "0189758150",
+                "name": "송하은",
+                "email": "buster_oberrbrunner4@hotmail.com",
+                "description": "테스트 아파트 설명입니다.",
+                "startComplexNumber": "1",
+                "endComplexNumber": "19",
+                "startDongNumber": "1",
+                "endDongNumber": "15",
+                "startFloorNumber": "1",
+                "endFloorNumber": "84",
+                "startHoNumber": "1",
+                "endHoNumber": "8",
+                "role": "ADMIN",
+                "apartmentName": "다온아파트",
+                "apartmentAddress": "광주광역시 북구 9764 평택항8길",
+                "apartmentManagementNumber": "0429476502"
+              }
+            }
+          }
+        }
       }
     },
     "/api/auth/signup/super-admin": {
       "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Auth"
-        ]
+        ],
+        "summary": "[관리자] 회원가입",
+        "description": "관리자 정보를 입력받아 새로운 계정을 생성합니다 역할에 따라 추가 정보를 입력받을 수 있습니다",
+        "responses": {
+          "201": {
+            "description": "회원가입이 완료되었습니다",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "019ab901-0db2-75cf-b0f7-36175675dd74",
+                  "name": "홍길동",
+                  "email": "test@test.com",
+                  "joinStatus": "PENDING",
+                  "isActive": true,
+                  "role": "SUPER_ADMIN"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청(필수사항 누락 또는 잘못된 입력값)입니다"
+          },
+          "403": {
+            "description": "접근 권한이 없습니다(이미 로그인 상태이거나 비활성화된 계정입니다)"
+          },
+          "409": {
+            "description": "이미 사용 중인 정보(아이디, 이메일, 전화번호)입니다"
+          },
+          "500": {
+            "description": "회원가입을 진행하는 중 오류가 발생했습니다"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "username": "kristy0357",
+                "password": "8tczQ0r8e_zkbE0",
+                "contact": "0189758150",
+                "name": "송하은",
+                "email": "buster_oberrbrunner4@hotmail.com",
+                "description": "테스트 아파트 설명입니다.",
+                "startComplexNumber": "1",
+                "endComplexNumber": "19",
+                "startDongNumber": "1",
+                "endDongNumber": "15",
+                "startFloorNumber": "1",
+                "endFloorNumber": "84",
+                "startHoNumber": "1",
+                "endHoNumber": "8",
+                "role": "SUPER_ADMIN",
+                "joinStatus": "APPROVED"
+              }
+            }
+          }
+        }
       }
     },
     "/api/auth/login": {
       "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Auth"
-        ]
+        ],
+        "summary": "[모든 사용자] 로그인",
+        "description": "사용자 정보를 입력받아 로그인합니다.",
+        "responses": {
+          "200": {
+            "description": "로그인이 완료되었습니다",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "019ab901-0dd3-720b-8253-02d9eaa9805b",
+                  "name": "홍길동",
+                  "email": "test@test.com",
+                  "role": "USER",
+                  "joinStatus": "PENDING",
+                  "isActive": true,
+                  "apartmentId": "019ab901-0dd3-720b-8253-0426facdf3c6",
+                  "apartmentName": "테스트 아파트",
+                  "residentDong": "101동",
+                  "boardIds": {
+                    "COMPLAINT": "019ab901-0dd3-720b-8253-0b3a8047ddff",
+                    "NOTICE": "019ab901-0dd3-720b-8253-0d2e6dc9feae",
+                    "POLL": "019ab901-0dd3-720b-8253-10a44ca877ec"
+                  },
+                  "username": "user123",
+                  "contact": "010-1234-5678",
+                  "avatar": "https://example.com/avatar.jpg"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청(필수사항 누락 또는 잘못된 입력값)입니다"
+          },
+          "401": {
+            "description": "인증 실패(잘못된 이메일 또는 비밀번호)"
+          },
+          "403": {
+            "description": "접근 권한이 없습니다(이미 로그인 상태이거나 비활성화된 계정입니다)"
+          },
+          "404": {
+            "description": "사용자를 찾을 수 없습니다"
+          },
+          "500": {
+            "description": "로그인을 진행하는 중 오류가 발생했습니다"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "username": "kristy0357",
+                "password": "yYn3NNS_dVswd02"
+              }
+            }
+          }
+        }
       }
     },
     "/api/auth/logout": {
       "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Auth"
-        ]
+        ],
+        "summary": "[모든 사용자] 로그아웃",
+        "description": "",
+        "responses": {
+          "204": {
+            "description": "로그아웃이 완료되었습니다"
+          },
+          "401": {
+            "description": "로그아웃을 진행하는 중 오류가 발생했습니다"
+          }
+        }
       }
     },
     "/api/auth/refresh": {
       "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Auth"
-        ]
+        ],
+        "summary": "[모든 사용자] 토큰 갱신",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "토큰 갱신이 완료되었습니다",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "작업이 성공적으로 완료되었습니다"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "토큰 갱신을 진행하는 중 오류가 발생했습니다"
+          }
+        }
       }
     },
     "/api/auth/admins/{adminId}/status": {
       "patch": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Auth"
-        ]
+        ],
+        "summary": "[슈퍼 관리자] 관리자 가입 상태 변경(단건)",
+        "description": "경로 파라미터 adminId에 해당하는 관리자 가입 상태를 변경합니다.",
+        "parameters": [
+          {
+            "name": "adminId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "adminId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "관리자 가입 상태 변경이 완료되었습니다",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "작업이 성공적으로 완료되었습니다"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "관리자 가입 상태 변경 중 오류가 발생했습니다"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "status": "APPROVED"
+              }
+            }
+          }
+        }
       }
     },
     "/api/auth/admins/status": {
       "patch": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Auth"
-        ]
+        ],
+        "summary": "[슈퍼 관리자] 관리자 가입 상태 일괄 변경",
+        "description": "여러 관리자 계정의 가입 상태를 일괄로 변경합니다. 요청 바디에 status 값을 담아 전송하세요.",
+        "responses": {
+          "200": {
+            "description": "관리자 가입 상태 일괄 변경이 완료되었습니다",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "작업이 성공적으로 완료되었습니다"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "권한 없음(슈퍼 관리자 권한 필요)"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "status": "APPROVED"
+              }
+            }
+          }
+        }
       }
     },
     "/api/auth/residents/{residentId}/status": {
       "patch": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Auth"
-        ]
+        ],
+        "summary": "[관리자] 주민 가입 상태 변경(단건)",
+        "description": "경로 파라미터 residentId에 해당하는 주민의 가입 상태를 변경합니다.",
+        "parameters": [
+          {
+            "name": "residentId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "residentId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "주민 가입 상태 변경 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "작업이 성공적으로 완료되었습니다"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청(필수값 누락 또는 검증 실패)"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "status": "APPROVED"
+              }
+            }
+          }
+        }
       }
     },
     "/api/auth/residents/status": {
       "patch": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Auth"
-        ]
+        ],
+        "summary": "[관리자] 주민 가입 상태 일괄 변경",
+        "description": "여러 주민 계정의 가입 상태를 일괄로 변경합니다. 요청 바디에 status 값을 담아 전송하세요.",
+        "responses": {
+          "200": {
+            "description": "[관리자] 주민 가입 상태 일괄 변경이 완료되었습니다",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "작업이 성공적으로 완료되었습니다"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "권한 없음(관리자 권한 필요)"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "status": "APPROVED"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/admins/{adminID}": {
+      "delete": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "[슈퍼관리자] 관리자 정보(아파트 정보 포함) 삭제",
+        "description": "경로 파라미터 adminId에 해당하는 관리자의 계정 및 아파트 정보를 삭제합니다.",
+        "parameters": [
+          {
+            "name": "adminID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "adminId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "adminId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "관리자 정보(아파트 정보 포함) 삭제가 완료되었습니다",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "작업이 성공적으로 완료되었습니다"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "관리자 정보(아파트 정보 포함) 삭제 중 오류가 발생했습니다"
+          },
+          "403": {
+            "description": "권한 없음(슈퍼 관리자 권한 필요)"
+          },
+          "404": {
+            "description": "관리자를 찾을 수 없습니다"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "[슈퍼 관리자] 관리자 정보(아파트 정보) 수정",
+        "description": "경로 파라미터 adminId에 해당하는 관리자의 아파트 정보를 수정합니다.",
+        "parameters": [
+          {
+            "name": "adminID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "adminId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "adminId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "관리자 정보(아파트 정보) 수정이 완료되었습니다",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "작업이 성공적으로 완료되었습니다"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "관리자 정보(아파트 정보) 수정 중 오류가 발생했습니다"
+          },
+          "403": {
+            "description": "권한 없음(슈퍼 관리자 권한 필요)"
+          },
+          "404": {
+            "description": "관리자를 찾을 수 없습니다"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "contact": "0189758150",
+                "name": "송하은",
+                "email": "buster_oberrbrunner4@hotmail.com",
+                "description": "테스트 아파트 설명입니다.",
+                "apartmentName": "다온아파트",
+                "apartmentAddress": "광주광역시 북구 9764 평택항8길",
+                "apartmentManagementNumber": "0429476502"
+              }
+            }
+          }
+        }
       }
     },
     "/api/auth/cleanup": {
       "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Auth"
-        ]
+        ],
+        "summary": "[최고관리자/관리자] 거절 계정 일괄 정리",
+        "description": "거절된 관리자/사용자 계정을 일괄 정리합니다.",
+        "responses": {
+          "200": {
+            "description": "거절한 관리자/사용자 정보 일괄 정리가 완료되었습니다",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "작업이 성공적으로 완료되었습니다"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "거절한 관리자/사용자 정보 일괄 삭제 중 오류가 발생했습니다"
+          },
+          "403": {
+            "description": "권한 없음"
+          }
+        }
       }
     },
     "/api/users/me": {
@@ -230,152 +707,707 @@
     },
     "/api/apartments/public": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Apartments"
-        ]
+        ],
+        "summary": "[공개용/회원가입] 아파트 목록 조회",
+        "description": "아파트 목록을 조회합니다.",
+        "responses": {
+          "200": {
+            "description": "아파트 목록 조회 성공(공개)",
+            "content": {
+              "application/json": {
+                "example": {
+                  "apartments": [
+                    {
+                      "id": "019752f2-d1d3-771f-ae1c-1db22e1618f0",
+                      "name": "테스트아파트 (제한된 정보에 포함)",
+                      "address": "서울시 중구 필지구로 100 (제한된 정보에 포함)"
+                    }
+                  ],
+                  "totalCount": 0
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/apartments/public/{id}": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Apartments"
-        ]
+        ],
+        "summary": "[공개용/회원가입] 아파트 기본 정보 상세 조회",
+        "description": "경로 파라미터 id에 해당하는 아파트의 공개용(제한된) 기본 정보를 조회합니다.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "아파트 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "아파트 상세 조회 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "019752f2-d1d3-771f-ae1c-1db22e1618f0",
+                  "name": "테스트아파트 (제한된 정보에 포함)",
+                  "address": "서울시 중구 필지구로 100 (제한된 정보에 포함)",
+                  "officeNumber": "0262008700",
+                  "description": "테스트 아파트 설명입니다.",
+                  "startComplexNumber": "1",
+                  "endComplexNumber": "19",
+                  "startDongNumber": "1",
+                  "endDongNumber": "15",
+                  "startFloorNumber": "1",
+                  "endFloorNumber": "84",
+                  "startHoNumber": "1",
+                  "endHoNumber": "8",
+                  "apartmentStatus": "PENDING",
+                  "dongRange": {
+                    "start": "101",
+                    "end": "108"
+                  },
+                  "hoRange": {
+                    "start": "101",
+                    "end": "2508"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청"
+          },
+          "403": {
+            "description": "권한 없음"
+          },
+          "404": {
+            "description": "아파트를 찾을 수 없습니다"
+          }
+        }
       }
     },
     "/api/apartments/": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Apartments"
-        ]
+        ],
+        "summary": "[슈퍼관리자/관리자] 아파트 목록 조회",
+        "description": "관리자용 아파트 목록 조회. 이름, 주소, 검색키워드, 상태로 필터링 가능하며 페이지네이션 지원(page, limit).",
+        "parameters": [
+          {
+            "name": "searchKeyword",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "검색 키워드 (이름, 주소, 관리자 이름, 관리자 이메일)"
+          },
+          {
+            "name": "apartmentStatus",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "아파트 상태 (예: PENDING, APPROVED, REJECTED)"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "description": "페이지 번호"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "description": "페이지 당 항목 수"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "아파트 목록 조회 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "apartments": [
+                    {
+                      "id": "019752f2-d1d3-771f-ae1c-1db22e1618f0",
+                      "name": "테스트아파트 (제한된 정보에 포함)",
+                      "address": "서울시 중구 필지구로 100 (제한된 정보에 포함)",
+                      "officeNumber": "0262008700",
+                      "description": "테스트 아파트 설명입니다.",
+                      "startComplexNumber": "1",
+                      "endComplexNumber": "19",
+                      "startDongNumber": "1",
+                      "endDongNumber": "15",
+                      "startFloorNumber": "1",
+                      "endFloorNumber": "84",
+                      "startHoNumber": "1",
+                      "endHoNumber": "8",
+                      "apartmentStatus": "PENDING",
+                      "adminId": "019752f2-d1d3-771f-ae1c-1db22e1618f0",
+                      "adminName": "김길수",
+                      "adminContact": "01012345678",
+                      "adminEmail": "kim@example.com"
+                    }
+                  ],
+                  "totalCount": 0
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "아파트 목록 조회 실패"
+          },
+          "403": {
+            "description": "권한 없음(관리자 전용)"
+          }
+        }
       }
     },
     "/api/apartments/{id}": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Apartments"
-        ]
+        ],
+        "summary": "[슈퍼관리자/관리자] 아파트 상세 조회",
+        "description": "경로 파라미터 id에 해당하는 아파트의 상세 정보를 조회합니다.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "아파트 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "아파트 상세 조회 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "019752f2-d1d3-771f-ae1c-1db22e1618f0",
+                  "name": "테스트아파트 (제한된 정보에 포함)",
+                  "address": "서울시 중구 필지구로 100 (제한된 정보에 포함)",
+                  "officeNumber": "0262008700",
+                  "description": "테스트 아파트 설명입니다.",
+                  "startComplexNumber": "1",
+                  "endComplexNumber": "19",
+                  "startDongNumber": "1",
+                  "endDongNumber": "15",
+                  "startFloorNumber": "1",
+                  "endFloorNumber": "84",
+                  "startHoNumber": "1",
+                  "endHoNumber": "8",
+                  "apartmentStatus": "PENDING",
+                  "adminId": "019752f2-d1d3-771f-ae1c-1db22e1618f0",
+                  "adminName": "김길수",
+                  "adminContact": "01012345678",
+                  "adminEmail": "kim@example.com",
+                  "dongRange": {
+                    "start": "101",
+                    "end": "108"
+                  },
+                  "hoRange": {
+                    "start": "101",
+                    "end": "2508"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청"
+          },
+          "403": {
+            "description": "권한 없음(관리자 전용)"
+          },
+          "404": {
+            "description": "아파트를 찾을 수 없습니다"
+          }
+        }
       }
     },
     "/api/residents/file/template": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Residents"
-        ]
+        ],
+        "summary": "[관리자] 입주민 업로드 템플릿 다운로드",
+        "description": "입주민 업로드용 CSV 템플릿을 다운로드합니다. 응답 헤더에 Content-Type: text/csv 및 Content-Disposition: attachment; filename=\"residents.csv\" 등을 포함합니다.",
+        "responses": {
+          "200": {
+            "description": "입주민 업로드 템플릿 다운로드 성공",
+            "content": {
+              "text/csv": {
+                "example": "id,building,unitNumber,contact,name,isHouseholder\n\n"
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "CSV 파일 컨텐츠 타입",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Disposition": {
+                "description": "파일 다운로드를 위한 헤더 예: attachment; filename=\"residents.csv\"; filename*=UTF-8'KOREAN'\"입주민명부.csv\"",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "입주민 업로드 템플릿 다운로드 실패"
+          },
+          "500": {
+            "description": "입주민 업로드 템플릿 다운로드 실패(서버 오류)"
+          }
+        }
       }
     },
     "/api/residents/file": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Residents"
-        ]
+        ],
+        "summary": "[관리자] 입주민 목록 파일 다운로드",
+        "description": "입주민 목록을 CSV 파일로 다운로드합니다. 페이지네이션 및 필터(동, 호수, 거주여부, 위리브 가입 여부, 키워드)를 지원합니다.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "description": "페이지 번호 (기본값: 1)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "description": "페이지 당 아이템 수 (기본값: 20, 최대 100)"
+          },
+          {
+            "name": "building",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "동"
+          },
+          {
+            "name": "unitNumber",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "호수"
+          },
+          {
+            "name": "residenceStatus",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "거주 여부 (Available values: RESIDENCE, NO_RESIDENCE)"
+          },
+          {
+            "name": "isRegistered",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "위리브 가입 여부"
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "검색어(이름, 연락처)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "입주민 목록 파일 다운로드 성공",
+            "content": {
+              "text/csv": {
+                "example": "id,building,unitNumber,contact,name,isHouseholder,approvalStatus\n"
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "CSV 파일 컨텐츠 타입",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Disposition": {
+                "description": "파일 다운로드를 위한 헤더 예: attachment; filename=\"residents_YYYYMMDD_HHMMSS.csv\"",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "입주민 목록 파일 다운로드 실패"
+          },
+          "401": {
+            "description": "입주민 목록 파일 다운로드 실패(권한 없음)"
+          },
+          "500": {
+            "description": "입주민 목록 파일 다운로드 실패(서버 오류)"
+          }
+        }
       }
     },
     "/api/residents/from-file": {
       "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Residents"
-        ]
+        ],
+        "summary": "[관리자] 파일로부터 입주민 리소스 생성",
+        "description": "CSV 파일을 업로드해 여러 입주민을 생성합니다. form-data의 file 필드에 CSV(binary)를 넣어 전송하세요.",
+        "responses": {
+          "201": {
+            "description": "파일로부터 입주민 리소스 생성 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "5명의 입주민이 등록되었습니다",
+                  "count": 5
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "파일로부터 입주민 리소스 생성 실패"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "CSV 파일"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        }
       }
     },
     "/api/residents/{id}": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Residents"
-        ]
+        ],
+        "summary": "[관리자] 입주민 상세 조회",
+        "description": "경로 파라미터 id에 해당하는 입주민의 상세 정보를 조회합니다.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "입주민 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "입주민 상세 조회 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "string",
+                  "userId": {},
+                  "building": "string",
+                  "unitNumber": "string",
+                  "contact": "string",
+                  "name": "string",
+                  "email": {},
+                  "residenceStatus": "RESIDENCE",
+                  "isHouseholder": "HOUSEHOLDER",
+                  "isRegistered": true,
+                  "approvalStatus": "PENDING"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "입주민 상세 조회 실패"
+          },
+          "404": {
+            "description": "입주민을 찾을 수 없습니다"
+          },
+          "500": {
+            "description": "서버 오류"
+          }
+        }
       },
       "delete": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Residents"
-        ]
+        ],
+        "summary": "[관리자] 입주민 정보 삭제",
+        "description": "경로 파라미터 id에 해당하는 입주민 정보를 삭제합니다.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "입주민 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "입주민 정보 삭제 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "작업이 성공적으로 완료되었습니다"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "입주민 정보 삭제 실패"
+          },
+          "403": {
+            "description": "권한 없음"
+          },
+          "404": {
+            "description": "입주민을 찾을 수 없습니다"
+          },
+          "500": {
+            "description": "서버 오류"
+          }
+        }
       },
       "patch": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Residents"
-        ]
+        ],
+        "summary": "[관리자] 입주민 정보 수정",
+        "description": "경로 파라미터 id에 해당하는 입주민 정보를 수정합니다.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "입주민 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "입주민 정보 수정 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "string",
+                  "userId": {},
+                  "building": "string",
+                  "unitNumber": "string",
+                  "contact": "string",
+                  "name": "string",
+                  "email": {},
+                  "residenceStatus": "RESIDENCE",
+                  "isHouseholder": "HOUSEHOLDER",
+                  "isRegistered": true,
+                  "approvalStatus": "PENDING"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "입주민 정보 수정 실패"
+          },
+          "404": {
+            "description": "입주민을 찾을 수 없습니다"
+          },
+          "500": {
+            "description": "서버 오류"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "building": "101",
+                "unitNumber": "101",
+                "contact": "01079527298",
+                "name": "홍길동",
+                "isHouseholder": "HOUSEHOLDER"
+              }
+            }
+          }
+        }
       }
     },
     "/api/residents/": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Residents"
-        ]
+        ],
+        "summary": "[관리자] 입주민 목록 조회",
+        "description": "입주민 목록을 조회합니다. 페이지네이션과 동(건물), 호수, 거주여부, 위리브 가입 여부, 키워드 검색을 지원합니다.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "description": "페이지 번호 (기본값: 1)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "description": "페이지 당 아이템 수 (기본값: 20, 최대 100)"
+          },
+          {
+            "name": "building",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "동"
+          },
+          {
+            "name": "unitNumber",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "호수"
+          },
+          {
+            "name": "residenceStatus",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "거주 여부 (Available values: RESIDENCE, NO_RESIDENCE)"
+          },
+          {
+            "name": "isRegistered",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "위리브 가입 여부"
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "검색어(이름, 연락처)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "입주민 목록 조회 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "residents": [
+                    {
+                      "id": "string",
+                      "userId": {},
+                      "building": "string",
+                      "unitNumber": "string",
+                      "contact": "string",
+                      "name": "string",
+                      "email": {},
+                      "residenceStatus": "RESIDENCE",
+                      "isHouseholder": "HOUSEHOLDER",
+                      "isRegistered": true,
+                      "approvalStatus": "PENDING"
+                    }
+                  ],
+                  "message": "string",
+                  "count": 0,
+                  "totalCount": 0
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "입주민 목록 조회 실패"
+          },
+          "403": {
+            "description": "권한 없음(관리자 전용)"
+          }
+        }
       },
       "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
           "Residents"
-        ]
+        ],
+        "summary": "[관리자] 입주민 리소스 생성(개별 등록)",
+        "description": "입주민(개별) 리소스를 생성합니다.",
+        "responses": {
+          "201": {
+            "description": "입주민 리소스 생성(개별 등록) 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "string",
+                  "userId": {},
+                  "building": "string",
+                  "unitNumber": "string",
+                  "contact": "string",
+                  "name": "string",
+                  "email": {},
+                  "residenceStatus": "RESIDENCE",
+                  "isHouseholder": "HOUSEHOLDER",
+                  "isRegistered": true,
+                  "approvalStatus": "PENDING"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "입주민 리소스 생성(개별 등록) 실패"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              },
+              "example": {
+                "building": "101",
+                "unitNumber": "101",
+                "contact": "01079527298",
+                "name": "홍길동",
+                "isHouseholder": "HOUSEHOLDER"
+              }
+            }
+          }
+        }
       }
     },
     "/api/complaints/": {
@@ -431,57 +1463,43 @@
             "name": "page",
             "in": "query",
             "description": "페이지 번호 (기본값: 1)",
-            "schema": {
-              "type": "integer"
-            }
+            "type": "integer"
           },
           {
             "name": "limit",
             "in": "query",
             "description": "페이지당 항목 수 (기본값: 10, 최대: 100)",
-            "schema": {
-              "type": "integer"
-            }
+            "type": "integer"
           },
           {
             "name": "status",
             "in": "query",
             "description": "민원 상태 필터 (PENDING, IN_PROGRESS, RESOLVED, REJECTED)",
-            "schema": {
-              "type": "string"
-            }
+            "type": "string"
           },
           {
             "name": "isPublic",
             "in": "query",
             "description": "공개 여부 필터",
-            "schema": {
-              "type": "boolean"
-            }
+            "type": "boolean"
           },
           {
             "name": "dong",
             "in": "query",
             "description": "동 번호 필터",
-            "schema": {
-              "type": "string"
-            }
+            "type": "string"
           },
           {
             "name": "ho",
             "in": "query",
             "description": "호수 필터",
-            "schema": {
-              "type": "string"
-            }
+            "type": "string"
           },
           {
             "name": "keyword",
             "in": "query",
             "description": "제목 검색 키워드",
-            "schema": {
-              "type": "string"
-            }
+            "type": "string"
           }
         ],
         "responses": {
@@ -535,9 +1553,7 @@
             "name": "complaintId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            },
+            "type": "string",
             "description": "조회할 민원의 UUID"
           }
         ],
@@ -600,9 +1616,7 @@
             "name": "complaintId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            },
+            "type": "string",
             "description": "수정할 민원의 UUID"
           }
         ],
@@ -665,9 +1679,7 @@
             "name": "complaintId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            },
+            "type": "string",
             "description": "삭제할 민원의 UUID"
           }
         ],
@@ -709,9 +1721,7 @@
             "name": "complaintId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            },
+            "type": "string",
             "description": "상태를 변경할 민원의 UUID"
           }
         ],
@@ -957,9 +1967,7 @@
             "name": "commentId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            },
+            "type": "string",
             "description": "삭제할 댓글의 UUID"
           }
         ],
@@ -999,9 +2007,7 @@
             "name": "commentId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            },
+            "type": "string",
             "description": "수정할 댓글의 UUID"
           }
         ],
@@ -1278,25 +2284,19 @@
             "name": "page",
             "in": "query",
             "description": "페이지 번호 (기본값: 1)",
-            "schema": {
-              "type": "integer"
-            }
+            "type": "integer"
           },
           {
             "name": "limit",
             "in": "query",
             "description": "페이지당 항목 수 (기본값: 10, 최대: 100)",
-            "schema": {
-              "type": "integer"
-            }
+            "type": "integer"
           },
           {
             "name": "unreadOnly",
             "in": "query",
             "description": "읽지 않은 메시지가 있는 채팅방만 조회",
-            "schema": {
-              "type": "boolean"
-            }
+            "type": "boolean"
           }
         ],
         "responses": {
@@ -1406,9 +2406,7 @@
             "name": "roomId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            },
+            "type": "string",
             "description": "채팅방 ID (UUID)"
           }
         ],
@@ -1485,26 +2483,20 @@
             "name": "roomId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            },
+            "type": "string",
             "description": "채팅방 ID (UUID)"
           },
           {
             "name": "page",
             "in": "query",
             "description": "페이지 번호 (최소값: 2, 기본값: 2)",
-            "schema": {
-              "type": "integer"
-            }
+            "type": "integer"
           },
           {
             "name": "limit",
             "in": "query",
             "description": "페이지당 메시지 수 (기본값: 50, 최대: 100)",
-            "schema": {
-              "type": "integer"
-            }
+            "type": "integer"
           }
         ],
         "responses": {
