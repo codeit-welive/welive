@@ -36,3 +36,18 @@ export const APARTMENT_VALIDATION = {
   /** 관리번호 최대 길이 */
   OFFICE_NUMBER_MAX_LENGTH: 15,
 } as const;
+
+/**
+ * 회원 가입 알림 설정
+ * @description 민원 상태 변경 시 작성자에게 전송되는 알림 메시지 및 타입
+ */
+export const SIGN_UP_NOTIFICATIONS = {
+  ADMIN: {
+    type: 'SIGNUP_REQ' as const,
+    content: '회원 가입 요청이 접수되었습니다.',
+  },
+  USER: {
+    type: 'SIGNUP_REQ' as const,
+    content: '회원 가입 요청이 접수되었습니다.',
+  },
+} as const;

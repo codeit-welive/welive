@@ -1,6 +1,6 @@
 {
   "name": "welive",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Codeit1Team Project Welive",
   "main": "dist/index.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "build": "npm run clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "_section4": "Test",
     "test": "cross-env NODE_ICU_DATA=node_modules/full-icu NODE_ENCODING=utf8 NODE_ENV=test dotenv -e .env.test -- jest --runInBand",
+    "test:migrate": "ts-node -r tsconfig-paths/register scripts/test/migrateTestDB.ts",
     "test:reset": "ts-node -r tsconfig-paths/register scripts/test/resetTestDB.ts",
     "_section5": "Development",
     "dev:be": "cross-env NODE_ICU_DATA=node_modules/full-icu NODE_ENCODING=utf8 NODE_ENV=development nodemon --watch src --ext ts --exec \"ts-node -r tsconfig-paths/register src/index.ts\"",

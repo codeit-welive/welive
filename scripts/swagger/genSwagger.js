@@ -19,7 +19,7 @@ const baseDoc = {
         type: 'apiKey',
         in: 'cookie',
         name: 'access_token',
-        description: '로그인 시 발급되는 JWT 액세스 토큰 (쿠키 기반 인증)',
+        description: '로그인 시 발급되는 JWT 액세스 토큰',
       },
     },
   },
@@ -27,8 +27,10 @@ const baseDoc = {
 };
 
 // prettier-ignore
-const domains = [
-  'auth',
+const domainsAuth = ['auth'];
+
+// prettier-ignore
+const domainsRest = [
   'users',
   'apartments',
   'residents',
@@ -38,16 +40,30 @@ const domains = [
   'comments',
   'notifications',
   'events',
-  'notifications',
   'poll-scheduler',
   'chats',
 ];
 
 const modules = [
-  ...domains.map((d) => ({
+  // 1. Auth (최상단 고정)
+  ...domainsAuth.map((d) => ({
     file: path.join(root, 'src/modules', d, `${d}.router.ts`),
     prefix: `/${d}`,
   })),
+
+  // 2. 나머지 도메인 순서대로
+  ...domainsRest.map((d) => ({
+    file: path.join(root, 'src/modules', d, `${d}.router.ts`),
+    prefix: `/${d}`,
+  })),
+
+  // 3. options 라우터는 polls 밖에 있으므로 별도 추가
+  {
+    file: path.join(root, 'src/modules/polls/options', 'options.router.ts'),
+    prefix: '/options',
+  },
+
+  // 4. health 라우터(App)
   {
     file: path.join(root, 'src/core/health', 'health.router.ts'),
     prefix: '/',
@@ -71,7 +87,9 @@ const generateSwagger = async () => {
 
   for (const m of modules) {
     const paths = await genForModule(m.file);
-    const tagName = capitalize(m.prefix.split('/').pop() || 'Default');
+
+    const lastSeg = m.prefix.split('/').filter(Boolean).pop();
+    const tagName = capitalize(lastSeg || path.basename(m.file, '.router.ts'));
 
     finalSpec.tags.push({
       name: tagName,
