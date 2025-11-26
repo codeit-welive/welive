@@ -340,7 +340,7 @@ describe('[Apartments] 통합 테스트', () => {
     // 관리자용 필드
     expect(res.body).toHaveProperty('officeNumber', '0200000001');
     expect(res.body).toHaveProperty('apartmentStatus');
-    expect(res.body).toHaveProperty('adminID');
+    expect(res.body).toHaveProperty('adminId');
     expect(res.body).toHaveProperty('adminName');
     expect(res.body).toHaveProperty('adminContact');
     expect(res.body).toHaveProperty('adminEmail');

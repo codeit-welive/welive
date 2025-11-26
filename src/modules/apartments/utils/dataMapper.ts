@@ -17,7 +17,7 @@ export const mapApartmentListData = (data: ApartmentResponseDto[], userRole: Use
       startHoNumber: item.startHoNumber,
       endHoNumber: item.endHoNumber,
       apartmentStatus: item.admin?.joinStatus,
-      adminID: item.admin?.id,
+      adminId: item.admin?.id,
       adminName: item.admin?.name,
       adminContact: item.admin?.contact,
       adminEmail: item.admin?.email,
@@ -47,7 +47,7 @@ export const mapApartmentDetailData = (data: ApartmentResponseDto, userRole: Use
       userRole !== UserRole.USER && {
         officeNumber: data.apartmentManagementNumber,
         apartmentStatus: data.admin?.joinStatus,
-        adminID: data.admin?.id,
+        adminId: data.admin?.id,
         adminName: data.admin?.name,
         adminContact: data.admin?.contact,
         adminEmail: data.admin?.email,

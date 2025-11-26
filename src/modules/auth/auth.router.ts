@@ -153,7 +153,7 @@ authRouter.route('/residents/status').patch(
 );
 
 authRouter
-  .route('/admins/:adminID')
+  .route('/admins/:adminId')
   .patch(
     // #swagger.tags = ['Auth']
     // #swagger.summary = '[슈퍼 관리자] 관리자 정보(아파트 정보) 수정'
