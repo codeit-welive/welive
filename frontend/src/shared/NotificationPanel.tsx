@@ -11,12 +11,11 @@ export interface Notification {
 
 interface NotificationPanelProps {
   notifications: Notification[];
-  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   onClose: () => void;
   onMarkAsRead: (notificationId: string) => Promise<void>;
 }
 
-// 상대 시간 포맷 함수
+// 상대 시간 포맷 함수는 그대로
 function getRelativeTime(isoString: string) {
   const now = new Date();
   const date = new Date(isoString);
@@ -32,16 +31,13 @@ function getRelativeTime(isoString: string) {
 
 export default function NotificationPanel({
   notifications,
-  setNotifications,
   onClose,
   onMarkAsRead,
 }: NotificationPanelProps) {
-  // 알림 클릭 시 읽음 처리
   const handleClick = async (notificationId: string) => {
     try {
       await onMarkAsRead(notificationId);
-
-      setNotifications((prev) => prev.filter((alarm) => alarm.notificationId !== notificationId));
+      // 상태 업데이트는 부모(onMarkAsRead) / store에서 처리하므로 여기서는 끝
     } catch (error) {
       console.error('알림 처리 실패:', error);
     }
