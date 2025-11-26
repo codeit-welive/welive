@@ -1,7 +1,32 @@
+/**
+ * @file sanitize.ts
+ * @description
+ * 요청 본문(req.body)에 포함된 특정 필드만을 선별적으로 HTML Sanitizing 하는 미들웨어.
+ *
+ * ## 주요 목적
+ * - 사용자가 입력한 문자열에 포함될 수 있는 위험한 HTML 태그/속성을 제거하여 XSS 공격을 방지.
+ * - 도메인별로 sanitize 대상 필드를 명확히 정의(sanitizeTargets)하고,
+ *   각 라우터에서 sanitizeMiddleware('comments')처럼 선언형으로 적용.
+ * - 검증(Zod) → Sanitize → Controller 흐름에서,
+ *   컨트롤러에 도달하기 전에 입력값이 반드시 정화되도록 설계.
+ *
+ * ## 동작 방식
+ * - sanitizeTargets 에 정의된 필드만 선택적으로 정화.
+ * - 문자열: DOMPurify 기반으로 HTML 제거
+ * - 배열/객체: 재귀적으로 모든 값에 sanitize 적용
+ *
+ * ## 기술적 특징
+ * - JSDOM / DOMPurify는 모듈 로드 시 1회 초기화되어 런타임 성능과 빌드 호환성을 보장.
+ * - Swagger 문서 생성(SWAGGER_BUILD=true) 시에는 정적 분석 중 불필요한 초기화를 방지하기 위해
+ *   sanitize 미들웨어가 NO-OP(단순 next 호출)로 동작하도록 설계됨.
+ */
+
 import type { RequestHandler } from 'express';
 import { JSDOM } from 'jsdom';
 import createDOMPurifyModule from 'isomorphic-dompurify';
 import { sanitizeTargets, type SanitizeDomain } from './sanitizeTargets';
+
+const isSwaggerBuild = process.env.SWAGGER_BUILD === 'true';
 
 const window = new JSDOM('').window as unknown as Window;
 
@@ -50,7 +75,7 @@ const sanitizePickedFields = (body: any, fields: readonly string[]) => {
  * - 요청 본문(req.body)의 특정 필드를 안전하게 정화하여 XSS를 방지
  *
  * @example
- * import { sanitizeMiddleware } from '#core/sanitize';
+ * import sanitizeMiddleware from '#core/sanitize';
  *
  * router.post(
  *   '/',
@@ -62,10 +87,17 @@ const sanitizePickedFields = (body: any, fields: readonly string[]) => {
  * @param {SanitizeDomain} domain - sanitize 대상 domain (complaints, comments, etc)
  * @returns {RequestHandler} - Express 미들웨어 함수
  */
-export const sanitizeMiddleware = (domain: SanitizeDomain): RequestHandler => {
+const sanitizeMiddleware = (domain: SanitizeDomain): RequestHandler => {
+  // Swagger 빌드 중에는 sanitize 자체를 비활성화 (swagger-autogen 무한 import 방지)
+  if (isSwaggerBuild) {
+    return (_req, _res, next) => next();
+  }
+
   return (req, _res, next) => {
     const targets = sanitizeTargets[domain];
     if (targets?.length && req.body) sanitizePickedFields(req.body, targets);
     next();
   };
 };
+
+export default sanitizeMiddleware;

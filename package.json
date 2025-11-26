@@ -33,7 +33,7 @@
     "start": "npm run start:be && npm run start:fe",
     "stop": "pm2 delete welive-be || true && pm2 delete welive-fe || true",
     "_section7": "Swagger",
-    "swagger:generate": "node scripts/genSwagger.js"
+    "swagger:generate": "cross-env SWAGGER_BUILD=true node scripts/genSwagger.js"
   },
   "repository": {
     "type": "git",
