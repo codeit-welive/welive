@@ -211,7 +211,7 @@ model Notice {
   updatedAt DateTime @updatedAt
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   boardId String
   board   Board  @relation(fields: [boardId], references: [id])
@@ -237,7 +237,7 @@ model Complaint {
   updatedAt DateTime @updatedAt
 
   userId String
-  user   User   @relation("ComplaintUser", fields: [userId], references: [id])
+  user   User   @relation("ComplaintUser", fields: [userId], references: [id], onDelete: SetNull)
 
   boardId String
   board   Board  @relation(fields: [boardId], references: [id])
@@ -261,7 +261,7 @@ model Poll {
   updatedAt          DateTime @updatedAt
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   boardId String
   board   Board  @relation(fields: [boardId], references: [id])
@@ -290,7 +290,7 @@ model PollOption {
 model PollVote {
   id     String @id @default(uuid())
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   pollId String
   poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
@@ -314,7 +314,7 @@ model Comment {
   updatedAt DateTime @updatedAt
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   boardType BoardType // 응답/요청 DTO
   boardId   String
@@ -339,7 +339,7 @@ model Notification {
   pollId      String?
 
   recipientId String @map("receiverId")
-  recipient   User   @relation(fields: [recipientId], references: [id])
+  recipient   User   @relation(fields: [recipientId], references: [id], onDelete: Cascade)
 }
 
 model Event {
