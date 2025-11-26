@@ -22,7 +22,7 @@ RUN npx prisma generate --schema=prisma/schema.prisma
 RUN npm run build
 
 # generate swagger (CJS)
-RUN npm run swagger:generate
+RUN SWAGGER_BUILD=true npm run swagger:generate
 
 # ---------- runtime ----------
 FROM node:20-alpine AS runtime

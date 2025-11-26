@@ -24,26 +24,37 @@ import type { RequestHandler } from 'express';
 import { sanitizeTargets, type SanitizeDomain } from './sanitizeTargets';
 
 /**
- * Lazy-loaded DOMPurify instance
+ * Swagger 빌드 여부 판단
+ * - SWAGGER_BUILD=true 로 scripts/genSwagger.js 실행 시 purifier 우회
  */
-let DOMPurify: any = null;
+const IS_SWAGGER_BUILD = process.env.SWAGGER_BUILD === 'true';
 
 /**
- * DOMPurify 초기화 (lazy)
- * - swagger-autogen(빌드 단계)에서는 jsdom을 실행하면 crash → 동적 import 로 해결
+ * Lazy Purifier 인스턴스
  */
-const loadPurifier = async () => {
-  if (!DOMPurify) {
-    const { JSDOM } = await import('jsdom');
-    const createDOMPurifyModule: any = await import('isomorphic-dompurify');
+let purifier: any = null;
 
-    const window = new JSDOM('').window as unknown as Window;
+/**
+ * Purifier 로더
+ * - 실제 서버 런타임에서 첫 호출 시 jsdom + DOMPurify 로드
+ * - Swagger 빌드(SWAGGER_BUILD=true)에서는 NOOP으로 치환하여 프리즈 방지
+ */
+const getPurifier = async () => {
+  if (purifier) return purifier;
 
-    const createDOMPurify = (createDOMPurifyModule as any).default || createDOMPurifyModule;
-
-    DOMPurify = createDOMPurify(window);
+  if (IS_SWAGGER_BUILD) {
+    purifier = { sanitize: (v: unknown) => v };
+    return purifier;
   }
-  return DOMPurify;
+
+  const { JSDOM } = await import('jsdom');
+  const window = new JSDOM('').window as unknown as Window;
+
+  const dompurifyModule = await import('isomorphic-dompurify');
+  const createPurify = (dompurifyModule as any).default ?? (dompurifyModule as any).createDOMPurify ?? dompurifyModule;
+
+  purifier = createPurify(window);
+  return purifier;
 };
 
 /**
@@ -55,14 +66,20 @@ const loadPurifier = async () => {
  * @param {unknown} v - 정화할 값 (str, arr, obj, primitive 등)
  * @returns {unknown} 정화된 값
  */
-const sanitizeValue = (v: unknown): unknown => {
+const sanitizeValue = async (v: unknown): Promise<unknown> => {
+  const purify = await getPurifier();
+
   if (typeof v === 'string') {
-    return DOMPurify.sanitize(v, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+    return purify.sanitize(v, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
   }
-  if (Array.isArray(v)) return v.map(sanitizeValue);
+  if (Array.isArray(v)) {
+    const arr = [];
+    for (const item of v) arr.push(await sanitizeValue(item));
+    return arr;
+  }
   if (v && typeof v === 'object') {
     const next: Record<string, unknown> = {};
-    for (const [k, val] of Object.entries(v)) next[k] = sanitizeValue(val);
+    for (const [k, val] of Object.entries(v)) next[k] = await sanitizeValue(val);
     return next;
   }
   return v;
@@ -76,10 +93,10 @@ const sanitizeValue = (v: unknown): unknown => {
  * @param {Record<string, unknown>} body - 요청 body(req.body)
  * @param {readonly string[]} fields - sanitize 대상 field 목록
  */
-const sanitizePickedFields = (body: any, fields: readonly string[]) => {
+const sanitizePickedFields = async (body: any, fields: readonly string[]) => {
   if (!body || typeof body !== 'object') return;
   for (const field of fields) {
-    if (field in body) body[field] = sanitizeValue(body[field]);
+    if (field in body) body[field] = await sanitizeValue(body[field]);
   }
 };
 
@@ -104,14 +121,8 @@ const sanitizePickedFields = (body: any, fields: readonly string[]) => {
  */
 const sanitizeMiddleware = (domain: SanitizeDomain): RequestHandler => {
   return async (req, _res, next) => {
-    const purifier = await loadPurifier();
-
     const targets = sanitizeTargets[domain];
-    if (targets?.length && req.body) {
-      // DOMPurify instance 셋업
-      DOMPurify = purifier;
-      sanitizePickedFields(req.body, targets);
-    }
+    if (targets?.length && req.body) await sanitizePickedFields(req.body, targets);
     next();
   };
 };
