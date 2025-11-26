@@ -14,7 +14,7 @@
 
 - Frontend: https://welive.mimu.live
 - Backend: https://api.mimu.live
-- Swagger 문서: https://api.mimu.live/api/docs
+- Swagger 문서: https://api.mimu.live/docs
 - GitHub Repository: https://github.com/codeit-welive/welive
 - 최종 발표 자료: 준비 중
 - 시연 영상: 준비 중
