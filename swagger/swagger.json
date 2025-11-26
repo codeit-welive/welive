@@ -11,7 +11,7 @@
         "type": "apiKey",
         "in": "cookie",
         "name": "access_token",
-        "description": "로그인 시 발급되는 JWT 액세스 토큰 (쿠키 기반 인증)"
+        "description": "로그인 시 발급되는 JWT 액세스 토큰"
       }
     }
   },
@@ -23,7 +23,9 @@
   "paths": {
     "/auth/signup": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[일반 사용자] 회원가입",
         "description": "사용자 정보를 입력받아 새로운 계정을 생성합니다. 역할에 따라 추가 정보를 입력받을 수 있습니다.",
         "responses": {
@@ -80,7 +82,9 @@
     },
     "/auth/signup/admin": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[관리자] 회원가입",
         "description": "관리자 정보를 입력받아 새로운 계정을 생성합니다 역할에 따라 추가 정보를 입력받을 수 있습니다",
         "responses": {
@@ -146,7 +150,9 @@
     },
     "/auth/signup/super-admin": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[관리자] 회원가입",
         "description": "관리자 정보를 입력받아 새로운 계정을 생성합니다 역할에 따라 추가 정보를 입력받을 수 있습니다",
         "responses": {
@@ -210,7 +216,9 @@
     },
     "/auth/login": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[모든 사용자] 로그인",
         "description": "사용자 정보를 입력받아 로그인합니다.",
         "responses": {
@@ -274,7 +282,9 @@
     },
     "/auth/logout": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[모든 사용자] 로그아웃",
         "description": "",
         "responses": {
@@ -289,7 +299,9 @@
     },
     "/auth/refresh": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[모든 사용자] 토큰 갱신",
         "description": "",
         "responses": {
@@ -311,7 +323,9 @@
     },
     "/auth/admins/{adminId}/status": {
       "patch": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[슈퍼 관리자] 관리자 가입 상태 변경(단건)",
         "description": "경로 파라미터 adminId에 해당하는 관리자 가입 상태를 변경합니다.",
         "parameters": [
@@ -360,7 +374,9 @@
     },
     "/auth/admins/status": {
       "patch": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[슈퍼 관리자] 관리자 가입 상태 일괄 변경",
         "description": "여러 관리자 계정의 가입 상태를 일괄로 변경합니다. 요청 바디에 status 값을 담아 전송하세요.",
         "responses": {
@@ -400,7 +416,9 @@
     },
     "/auth/residents/{residentId}/status": {
       "patch": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[관리자] 주민 가입 상태 변경(단건)",
         "description": "경로 파라미터 residentId에 해당하는 주민의 가입 상태를 변경합니다.",
         "parameters": [
@@ -449,7 +467,9 @@
     },
     "/auth/residents/status": {
       "patch": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[관리자] 주민 가입 상태 일괄 변경",
         "description": "여러 주민 계정의 가입 상태를 일괄로 변경합니다. 요청 바디에 status 값을 담아 전송하세요.",
         "responses": {
@@ -487,9 +507,11 @@
         }
       }
     },
-    "/api/auth/admins/{adminId}": {
+    "/auth/admins/{adminId}": {
       "delete": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[슈퍼관리자] 관리자 정보(아파트 정보 포함) 삭제",
         "description": "경로 파라미터 adminId에 해당하는 관리자의 계정 및 아파트 정보를 삭제합니다.",
         "parameters": [
@@ -524,7 +546,9 @@
         }
       },
       "patch": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[슈퍼 관리자] 관리자 정보(아파트 정보) 수정",
         "description": "경로 파라미터 adminId에 해당하는 관리자의 아파트 정보를 수정합니다.",
         "parameters": [
@@ -580,7 +604,9 @@
     },
     "/auth/cleanup": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "[최고관리자/관리자] 거절 계정 일괄 정리",
         "description": "거절된 관리자/사용자 계정을 일괄 정리합니다.",
         "responses": {
@@ -605,10 +631,14 @@
     },
     "/users/me": {
       "patch": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "[사용자] 유저 정보 수정",
         "description": "현재 로그인한 사용자의 정보를 수정합니다. 비밀번호 변경 또는 아바타 이미지 업로드가 가능합니다.",
-        "consumes": ["multipart/form-data"],
+        "consumes": [
+          "multipart/form-data"
+        ],
         "responses": {
           "200": {
             "description": "유저 정보 수정 성공",
@@ -665,7 +695,9 @@
     },
     "/apartments/public": {
       "get": {
-        "tags": ["Apartments"],
+        "tags": [
+          "Apartments"
+        ],
         "summary": "[공개용/회원가입] 아파트 목록 조회",
         "description": "아파트 목록을 조회합니다.",
         "responses": {
@@ -691,7 +723,9 @@
     },
     "/apartments/public/{id}": {
       "get": {
-        "tags": ["Apartments"],
+        "tags": [
+          "Apartments"
+        ],
         "summary": "[공개용/회원가입] 아파트 기본 정보 상세 조회",
         "description": "경로 파라미터 id에 해당하는 아파트의 공개용(제한된) 기본 정보를 조회합니다.",
         "parameters": [
@@ -749,7 +783,9 @@
     },
     "/apartments/": {
       "get": {
-        "tags": ["Apartments"],
+        "tags": [
+          "Apartments"
+        ],
         "summary": "[슈퍼관리자/관리자] 아파트 목록 조회",
         "description": "관리자용 아파트 목록 조회. 이름, 주소, 검색키워드, 상태로 필터링 가능하며 페이지네이션 지원(page, limit).",
         "parameters": [
@@ -826,7 +862,9 @@
     },
     "/apartments/{id}": {
       "get": {
-        "tags": ["Apartments"],
+        "tags": [
+          "Apartments"
+        ],
         "summary": "[슈퍼관리자/관리자] 아파트 상세 조회",
         "description": "경로 파라미터 id에 해당하는 아파트의 상세 정보를 조회합니다.",
         "parameters": [
@@ -888,7 +926,9 @@
     },
     "/residents/file/template": {
       "get": {
-        "tags": ["Residents"],
+        "tags": [
+          "Residents"
+        ],
         "summary": "[관리자] 입주민 업로드 템플릿 다운로드",
         "description": "입주민 업로드용 CSV 템플릿을 다운로드합니다. 응답 헤더에 Content-Type: text/csv 및 Content-Disposition: attachment; filename=\"residents.csv\" 등을 포함합니다.",
         "responses": {
@@ -925,7 +965,9 @@
     },
     "/residents/file": {
       "get": {
-        "tags": ["Residents"],
+        "tags": [
+          "Residents"
+        ],
         "summary": "[관리자] 입주민 목록 파일 다운로드",
         "description": "입주민 목록을 CSV 파일로 다운로드합니다. 페이지네이션 및 필터(동, 호수, 거주여부, 위리브 가입 여부, 키워드)를 지원합니다.",
         "parameters": [
@@ -1016,7 +1058,9 @@
     },
     "/residents/from-file": {
       "post": {
-        "tags": ["Residents"],
+        "tags": [
+          "Residents"
+        ],
         "summary": "[관리자] 파일로부터 입주민 리소스 생성",
         "description": "CSV 파일을 업로드해 여러 입주민을 생성합니다. form-data의 file 필드에 CSV(binary)를 넣어 전송하세요.",
         "responses": {
@@ -1048,7 +1092,9 @@
                     "description": "CSV 파일"
                   }
                 },
-                "required": ["file"]
+                "required": [
+                  "file"
+                ]
               }
             }
           }
@@ -1057,7 +1103,9 @@
     },
     "/residents/{id}": {
       "get": {
-        "tags": ["Residents"],
+        "tags": [
+          "Residents"
+        ],
         "summary": "[관리자] 입주민 상세 조회",
         "description": "경로 파라미터 id에 해당하는 입주민의 상세 정보를 조회합니다.",
         "parameters": [
@@ -1102,7 +1150,9 @@
         }
       },
       "delete": {
-        "tags": ["Residents"],
+        "tags": [
+          "Residents"
+        ],
         "summary": "[관리자] 입주민 정보 삭제",
         "description": "경로 파라미터 id에 해당하는 입주민 정보를 삭제합니다.",
         "parameters": [
@@ -1140,7 +1190,9 @@
         }
       },
       "patch": {
-        "tags": ["Residents"],
+        "tags": [
+          "Residents"
+        ],
         "summary": "[관리자] 입주민 정보 수정",
         "description": "경로 파라미터 id에 해당하는 입주민 정보를 수정합니다.",
         "parameters": [
@@ -1204,7 +1256,9 @@
     },
     "/residents/": {
       "get": {
-        "tags": ["Residents"],
+        "tags": [
+          "Residents"
+        ],
         "summary": "[관리자] 입주민 목록 조회",
         "description": "입주민 목록을 조회합니다. 페이지네이션과 동(건물), 호수, 거주여부, 위리브 가입 여부, 키워드 검색을 지원합니다.",
         "parameters": [
@@ -1295,7 +1349,9 @@
         }
       },
       "post": {
-        "tags": ["Residents"],
+        "tags": [
+          "Residents"
+        ],
         "summary": "[관리자] 입주민 리소스 생성(개별 등록)",
         "description": "입주민(개별) 리소스를 생성합니다.",
         "responses": {
@@ -1344,7 +1400,9 @@
     },
     "/complaints/": {
       "post": {
-        "tags": ["Complaints"],
+        "tags": [
+          "Complaints"
+        ],
         "summary": "[민원] 민원 생성",
         "description": "입주민(USER)이 새로운 민원을 생성합니다. 본인이 속한 아파트의 게시판에만 민원을 작성할 수 있습니다. <br><br>**Request Body:**<br>- title (string, 필수): 민원 제목 (2-100자)<br>- content (string, 필수): 민원 내용 (10-2000자)<br>- isPublic (boolean, 선택): 공개 여부 (기본값: false)<br>- boardId (string, 필수): 게시판 ID (UUID)",
         "responses": {
@@ -1383,7 +1441,9 @@
         }
       },
       "get": {
-        "tags": ["Complaints"],
+        "tags": [
+          "Complaints"
+        ],
         "summary": "[민원] 민원 목록 조회",
         "description": "권한에 따라 민원 목록을 조회합니다. USER는 본인이 속한 아파트의 공개 민원 + 본인 작성 민원을 조회하고, ADMIN은 관리 아파트의 모든 민원을 조회합니다. 페이지네이션 및 필터링을 지원합니다.",
         "parameters": [
@@ -1471,7 +1531,9 @@
     },
     "/complaints/{complaintId}": {
       "get": {
-        "tags": ["Complaints"],
+        "tags": [
+          "Complaints"
+        ],
         "summary": "[민원] 민원 상세 조회",
         "description": "민원 상세 정보를 조회합니다. USER는 본인이 작성한 민원 또는 공개된 민원만 조회 가능하고, ADMIN은 관리 아파트의 모든 민원을 조회할 수 있습니다. 댓글 목록도 함께 반환됩니다.",
         "parameters": [
@@ -1532,7 +1594,9 @@
         }
       },
       "patch": {
-        "tags": ["Complaints"],
+        "tags": [
+          "Complaints"
+        ],
         "summary": "[민원] 민원 수정",
         "description": "입주민(USER)이 본인이 작성한 민원을 수정합니다. 제목, 내용, 공개 여부를 부분적으로 수정할 수 있습니다. PENDING 상태의 민원만 수정 가능합니다. <br><br>**Request Body (모두 선택):**<br>- title (string): 민원 제목 (2-100자)<br>- content (string): 민원 내용 (10-2000자)<br>- isPublic (boolean): 공개 여부",
         "parameters": [
@@ -1593,7 +1657,9 @@
         }
       },
       "delete": {
-        "tags": ["Complaints"],
+        "tags": [
+          "Complaints"
+        ],
         "summary": "[민원] 민원 삭제",
         "description": "민원을 삭제합니다. USER는 본인이 작성한 PENDING 상태의 민원만 삭제 가능하고, ADMIN은 관리 아파트의 모든 민원을 삭제할 수 있습니다(상태 무관).",
         "parameters": [
@@ -1633,7 +1699,9 @@
     },
     "/complaints/{complaintId}/status": {
       "patch": {
-        "tags": ["Complaints"],
+        "tags": [
+          "Complaints"
+        ],
         "summary": "[민원] 민원 상태 변경 (관리자 전용)",
         "description": "관리자(ADMIN)가 민원의 처리 상태를 변경합니다. 접수 중(PENDING), 처리 중(IN_PROGRESS), 완료(RESOLVED), 반려(REJECTED) 중 하나로 변경할 수 있습니다. 민원 상세 정보와 댓글 목록을 함께 반환합니다. <br><br>**Request Body:**<br>- status (string, 필수): 변경할 민원 상태 (PENDING, IN_PROGRESS, RESOLVED, REJECTED)",
         "parameters": [
@@ -1706,105 +1774,572 @@
     },
     "/polls/": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+        "tags": [
+          "Polls"
+        ],
+        "summary": "[투표] 투표 목록 조회",
+        "description": "권한에 따라 투표 목록을 조회합니다. USER는 본인 아파트의 투표만 조회하며, ADMIN은 관리 아파트의 투표 전체를 조회합니다. 페이지네이션 및 검색을 지원합니다.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "페이지 번호 (기본값: 1)",
+            "type": "integer"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "페이지 크기 (기본값: 10)",
+            "type": "integer"
+          },
+          {
+            "name": "buildingPermission",
+            "in": "query",
+            "description": "투표권자 필터링 (0, 1, 2 등)",
+            "type": "integer"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "투표 상태 (PENDING, IN_PROGRESS, CLOSED)",
+            "type": "string"
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "제목/내용 검색",
+            "type": "string"
           }
-        },
-        "tags": ["Polls"]
+        ],
+        "responses": {
+          "200": {
+            "description": "투표 목록 조회 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "polls": [
+                    {
+                      "pollId": "poll-uuid",
+                      "userId": "user-uuid",
+                      "title": "제 104기 동대표 선출",
+                      "writerName": "강관리자",
+                      "buildingPermission": 0,
+                      "createdAt": "2024-01-20T20:00:00Z",
+                      "updatedAt": "2025-06-08T08:30:00Z",
+                      "startDate": "2025-06-01T00:00:00Z",
+                      "endDate": "2025-06-10T00:00:00Z",
+                      "status": "PENDING"
+                    }
+                  ],
+                  "totalCount": 42
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 (쿼리 검증 실패)"
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "403": {
+            "description": "권한 없음 (ADMIN 또는 USER 역할 필요)"
+          }
+        }
       },
       "post": {
-        "description": "",
+        "tags": [
+          "Polls"
+        ],
+        "summary": "[투표] 투표 생성",
+        "description": "관리자(ADMIN)가 새로운 투표를 생성합니다. 투표 제목, 내용, 기간, 투표권자(buildingPermission), 옵션 목록 등을 포함합니다.",
         "responses": {
-          "default": {
-            "description": ""
+          "201": {
+            "description": "투표 생성 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "정상적으로 등록 처리되었습니다"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 (필수 필드 누락, 유효성 검증 실패)"
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "403": {
+            "description": "권한 없음 (ADMIN 역할 필요)"
           }
         },
-        "tags": ["Polls"]
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "boardId": "board-uuid-1234",
+                "status": "IN_PROGRESS",
+                "title": "제 3기 동대표 선출",
+                "content": "동대표를 선출합니다. 투표에 참여해주세요",
+                "buildingPermission": 0,
+                "startDate": "2025-06-01T00:00:00Z",
+                "endDate": "2025-06-10T00:00:00Z",
+                "options": [
+                  {
+                    "title": "101호"
+                  },
+                  {
+                    "title": "404호"
+                  },
+                  {
+                    "title": "504호"
+                  }
+                ]
+              }
+            }
+          }
+        }
       }
     },
     "/polls/{pollId}": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+        "tags": [
+          "Polls"
+        ],
+        "summary": "[투표] 투표 상세 조회",
+        "description": "특정 투표의 상세 정보를 조회합니다. USER는 본인 아파트의 투표만 조회할 수 있으며 ADMIN은 관리 아파트의 투표 전체를 조회할 수 있습니다.",
+        "parameters": [
+          {
+            "name": "pollId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "조회할 투표 ID(UUID)"
           }
-        },
-        "tags": ["Polls"]
+        ],
+        "responses": {
+          "200": {
+            "description": "투표 상세 조회 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "pollId": "poll-uuid",
+                  "userId": "user-uuid",
+                  "title": "제 104기 동대표 선출",
+                  "writerName": "강관리자",
+                  "buildingPermission": 0,
+                  "createdAt": "2024-01-20T20:00:00Z",
+                  "updatedAt": "2025-06-08T08:30:00Z",
+                  "startDate": "2025-06-01T00:00:00Z",
+                  "endDate": "2025-06-10T00:00:00Z",
+                  "status": "PENDING",
+                  "content": "동 대표를 선출합니다. 투표 참여해주세요.",
+                  "boardName": "주민투표",
+                  "options": [
+                    {
+                      "id": "optionId(uuid)",
+                      "title": "1번 후보",
+                      "voteCount": 42
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 (ID 형식 오류)"
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "403": {
+            "description": "권한 없음"
+          },
+          "404": {
+            "description": "투표를 찾을 수 없음"
+          }
+        }
       },
       "delete": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+        "tags": [
+          "Polls"
+        ],
+        "summary": "[투표] 투표 삭제",
+        "description": "관리자(ADMIN)가 투표를 삭제합니다.",
+        "parameters": [
+          {
+            "name": "pollId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "삭제할 투표 ID(UUID)"
           }
-        },
-        "tags": ["Polls"]
+        ],
+        "responses": {
+          "200": {
+            "description": "투표 삭제 성공"
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "403": {
+            "description": "권한 없음 (ADMIN 역할 필요)"
+          },
+          "404": {
+            "description": "투표를 찾을 수 없음"
+          }
+        }
       },
       "patch": {
-        "description": "",
+        "tags": [
+          "Polls"
+        ],
+        "summary": "[투표] 투표 수정",
+        "description": "관리자(ADMIN)가 투표를 수정합니다. 제목, 내용, 옵션, 투표 기간, 상태 등을 수정할 수 있습니다.",
+        "parameters": [
+          {
+            "name": "pollId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "수정할 투표의 ID(UUID)"
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "투표 수정 성공"
+          },
+          "400": {
+            "description": "잘못된 요청 (유효성 검증 실패)"
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "403": {
+            "description": "권한 없음 (ADMIN 역할 필요)"
+          },
+          "404": {
+            "description": "투표를 찾을 수 없음"
           }
         },
-        "tags": ["Polls"]
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "title": "제 2회 돌려돌려 돌림판",
+                "content": "관리비 몰빵 묻고 더블로 갑니다.",
+                "buildingPermission": 0,
+                "startDate": "2025-06-11T12:00:00.000Z",
+                "endDate": "2025-06-12T20:00:00.000Z",
+                "status": "PENDING",
+                "options": [
+                  {
+                    "title": "1번 후보: 나는 아니길"
+                  }
+                ]
+              }
+            }
+          }
+        }
       }
     },
     "/notices/": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+        "tags": [
+          "Notices"
+        ],
+        "summary": "[공지] 공지사항 목록 조회",
+        "description": "권한에 따라 공지사항 목록을 조회합니다. USER는 본인 아파트의 공지를 조회하고, ADMIN은 관리 아파트의 공지를 조회합니다. 검색, 카테고리, 페이지네이션을 지원합니다.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "페이지 번호 (기본값: 1)",
+            "type": "integer"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "페이지 크기 (기본값: 5)",
+            "type": "integer"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "공지 카테고리 필터",
+            "type": "string",
+            "enum": [
+              "MAINTENANCE",
+              "EMERGENCY",
+              "COMMUNITY",
+              "RESIDENT_VOTE",
+              "RESIDENT_COUNCIL",
+              "COMPLAINT",
+              "ETC"
+            ]
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "검색어 (제목/내용 포함)",
+            "type": "string"
           }
-        },
-        "tags": ["Notices"]
+        ],
+        "responses": {
+          "200": {
+            "description": "공지 목록 조회 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "notices": [
+                    {
+                      "noticeId": "notice-uuid",
+                      "userId": "user-uuid",
+                      "category": "MAINTENANCE",
+                      "title": "현관문 도어락이 고장났어요",
+                      "writerName": "김세대",
+                      "createdAt": "2025-06-04T08:30:00Z",
+                      "updatedAt": "2025-06-08T08:30:00Z",
+                      "viewsCount": 26,
+                      "commentsCount": 3,
+                      "isPinned": true
+                    }
+                  ],
+                  "totalCount": 42
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 (쿼리 오류)"
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "403": {
+            "description": "권한 없음"
+          }
+        }
       },
       "post": {
-        "description": "",
+        "tags": [
+          "Notices"
+        ],
+        "summary": "[공지] 공지사항 생성",
+        "description": "관리자(ADMIN)가 공지사항을 생성합니다. 제목, 내용, 카테고리, 고정 여부, 게시기간 등을 포함합니다.",
         "responses": {
-          "default": {
-            "description": ""
+          "201": {
+            "description": "공지 생성 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "정상적으로 등록 처리되었습니다"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 (유효성 검증 실패)"
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "403": {
+            "description": "권한 없음 (ADMIN 역할 필요)"
           }
         },
-        "tags": ["Notices"]
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "category": "MAINTENANCE",
+                "title": "승강기 정기점검에 따른 일시 운행 중단 안내",
+                "content": "매월 실시하는 승강기 정기점검 관계로 아래와 같이 각 승강기별로 일시 운행 중단",
+                "boardId": "board-uuid-1234",
+                "isPinned": false,
+                "startDate": "2025-06-01T00:00:00Z",
+                "endDate": "2025-06-10T00:00:00Z"
+              }
+            }
+          }
+        }
       }
     },
     "/notices/{noticeId}": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+        "tags": [
+          "Notices"
+        ],
+        "summary": "[공지] 공지사항 상세 조회",
+        "description": "특정 공지사항의 상세 정보를 조회합니다. 카테고리, 제목, 작성자 정보, 댓글 목록 등이 함께 반환됩니다.",
+        "parameters": [
+          {
+            "name": "noticeId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "공지사항 ID(UUID)"
           }
-        },
-        "tags": ["Notices"]
+        ],
+        "responses": {
+          "200": {
+            "description": "공지 상세 조회 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "noticeId": "notice-uuid",
+                  "userId": "user-uuid",
+                  "category": "MAINTENANCE",
+                  "title": "현관문 도어락이 고장났어요",
+                  "writerName": "김세대",
+                  "createdAt": "2025-06-04T08:30:00Z",
+                  "updatedAt": "2025-06-08T08:30:00Z",
+                  "viewsCount": 26,
+                  "commentsCount": 3,
+                  "isPinned": true,
+                  "content": "도어락 비밀번호가 눌러지지 않습니다. 빠른 수리 부탁드립니다.",
+                  "boardName": "공지사항",
+                  "comments": [
+                    {
+                      "id": "comment-uuid",
+                      "userId": "user-uuid",
+                      "content": "수정된 댓글 내용입니다.",
+                      "createdAt": "2025-06-19T14:12:14.396Z",
+                      "updatedAt": "2025-06-20T03:29:00.000Z",
+                      "writerName": "워그레이몬"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "경로 파라미터 오류"
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "403": {
+            "description": "권한 없음"
+          },
+          "404": {
+            "description": "공지사항을 찾을 수 없음"
+          }
+        }
       },
       "delete": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+        "tags": [
+          "Notices"
+        ],
+        "summary": "[공지] 공지사항 삭제",
+        "description": "관리자(ADMIN)가 공지사항을 삭제합니다.",
+        "parameters": [
+          {
+            "name": "noticeId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "삭제할 공지사항 ID(UUID)"
           }
-        },
-        "tags": ["Notices"]
+        ],
+        "responses": {
+          "200": {
+            "description": "공지 삭제 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "정상적으로 삭제 처리되었습니다"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "403": {
+            "description": "권한 없음 (ADMIN 역할 필요)"
+          },
+          "404": {
+            "description": "공지사항을 찾을 수 없음"
+          }
+        }
       },
       "patch": {
-        "description": "",
+        "tags": [
+          "Notices"
+        ],
+        "summary": "[공지] 공지사항 수정",
+        "description": "관리자(ADMIN)가 공지사항을 수정합니다. 제목, 내용, 카테고리, 게시판, 고정 여부, 게시기간 등을 수정할 수 있습니다.",
+        "parameters": [
+          {
+            "name": "noticeId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "수정할 공지사항 ID(UUID)"
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "공지 수정 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "noticeId": "notice-uuid",
+                  "userId": "user-uuid",
+                  "category": "MAINTENANCE",
+                  "title": "현관문 도어락이 고장났어요",
+                  "writerName": "김세대",
+                  "createdAt": "2025-06-04T08:30:00Z",
+                  "updatedAt": "2025-06-08T08:30:00Z",
+                  "viewsCount": 26,
+                  "commentsCount": 3,
+                  "isPinned": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 (유효성 검증 실패)"
+          },
+          "401": {
+            "description": "인증 필요"
+          },
+          "403": {
+            "description": "권한 없음 (ADMIN 역할 필요 또는 작성자 불일치)"
+          },
+          "404": {
+            "description": "공지사항을 찾을 수 없음"
           }
         },
-        "tags": ["Notices"]
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "category": "MAINTENANCE",
+                "title": "승강기 정기점검에 따른 일시 운행 중단 안내",
+                "content": "매월 실시하는 승강기 정기점검 관계로 각 승강기별로 일시 운행 중단",
+                "boardId": "board-uuid-1234",
+                "isPinned": false,
+                "startDate": "2025-06-01T00:00:00Z",
+                "endDate": "2025-06-10T00:00:00Z",
+                "userId": "user-uuid"
+              }
+            }
+          }
+        }
       }
     },
     "/comments/": {
       "post": {
-        "tags": ["Comments"],
+        "tags": [
+          "Comments"
+        ],
         "summary": "[댓글] 댓글 생성",
         "description": "입주민(USER) 또는 관리자(ADMIN)가 민원 또는 공지사항에 새로운 댓글을 작성합니다.<br><br>**Request Body:**<br>- content (string, 필수): 댓글 내용 (1-500자)<br>- boardType (string, 필수): 게시판 타입 (COMPLAINT 또는 NOTICE)<br>- boardId (string, 필수): 게시글 ID (UUID)",
         "responses": {
@@ -1855,7 +2390,9 @@
     },
     "/comments/{commentId}": {
       "delete": {
-        "tags": ["Comments"],
+        "tags": [
+          "Comments"
+        ],
         "summary": "[댓글] 댓글 삭제",
         "description": "댓글을 삭제합니다. USER는 본인이 작성한 댓글만 삭제할 수 있으며, ADMIN은 관리하는 아파트의 모든 댓글을 삭제할 수 있습니다.",
         "parameters": [
@@ -1893,7 +2430,9 @@
         }
       },
       "patch": {
-        "tags": ["Comments"],
+        "tags": [
+          "Comments"
+        ],
         "summary": "[댓글] 댓글 수정",
         "description": "사용자가 본인이 작성한 댓글을 수정합니다. 다른 사용자의 댓글은 수정할 수 없습니다.<br><br>**Request Body:**<br>- content (string, 필수): 댓글 내용 (1-500자)<br>- boardType (string, 필수): 게시판 타입 (COMPLAINT 또는 NOTICE)<br>- boardId (string, 필수): 게시글 ID (UUID)",
         "parameters": [
@@ -1956,7 +2495,9 @@
     },
     "/notifications/{id}/read": {
       "patch": {
-        "tags": ["Notifications"],
+        "tags": [
+          "Notifications"
+        ],
         "summary": "[알림] 알림 읽음 처리",
         "description": "지정한 알림을 읽음 상태(isChecked: true)로 변경합니다. 본인에게 전송된 알림만 읽음 처리할 수 있습니다.",
         "parameters": [
@@ -2013,38 +2554,137 @@
     },
     "/events/": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+        "tags": [
+          "Events"
+        ],
+        "summary": "이벤트 목록 조회",
+        "description": "조회 연도(year)와 월(month)을 기준으로 아파트(apartmentId)의 Notice/Poll 기반 이벤트 목록을 조회합니다.",
+        "parameters": [
+          {
+            "name": "apartmentId",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "아파트 ID(UUID)"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "number",
+            "required": true,
+            "description": "조회 연도"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "type": "number",
+            "required": true,
+            "description": "조회 월(1~12)"
           }
-        },
-        "tags": ["Events"]
+        ],
+        "responses": {
+          "200": {
+            "description": "이벤트 목록 조회 성공",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "id": "eventsId",
+                    "start": "2025-06-13T00:00:00.000Z",
+                    "end": "2025-06-15T23:59:59.999Z",
+                    "title": "입주민 총회 안내",
+                    "category": "GENERAL",
+                    "type": "NOTICE"
+                  }
+                ]
+              }
+            }
+          }
+        }
       },
       "put": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+        "tags": [
+          "Events"
+        ],
+        "summary": "이벤트 생성/업데이트",
+        "description": "게시글(NOTICE 또는 POLL)의 boardId와 기간(startDate, endDate)을 기반으로 이벤트를 생성하거나 갱신합니다.",
+        "parameters": [
+          {
+            "name": "boardType",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "게시물 타입(NOTICE 또는 POLL)"
+          },
+          {
+            "name": "boardId",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "게시글 ID(UUID)"
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "이벤트 시작일(ISO 날짜)"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "이벤트 종료일(ISO 날짜)"
           }
-        },
-        "tags": ["Events"]
+        ],
+        "responses": {
+          "204": {
+            "description": "이벤트 생성/업데이트 성공"
+          }
+        }
       }
     },
     "/events/{eventId}": {
       "delete": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
+        "tags": [
+          "Events"
+        ],
+        "summary": "이벤트 삭제",
+        "description": "이벤트 ID(eventId)를 사용하여 단일 이벤트를 삭제합니다.",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "이벤트 ID(UUID)"
           }
-        },
-        "tags": ["Events"]
+        ],
+        "responses": {
+          "200": {
+            "description": "이벤트 삭제 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "eventsId",
+                  "startDate": "2025-06-13T00:00:00.000Z",
+                  "endDate": "2025-06-15T23:59:59.999Z",
+                  "boardType": "NOTICE",
+                  "noticeId": "01975d4f-f44c-7f82-b765-eb294c888fed",
+                  "pollId": null
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/poll-scheduler/ping": {
       "get": {
-        "tags": ["Poll-scheduler"],
+        "tags": [
+          "Poll-scheduler"
+        ],
         "summary": "Poll 스케줄러 상태 확인",
         "description": "서버에 스케줄러가 정상 작동 중인지 확인하기 위한 개발/운영용 엔드포인트입니다. 프론트에서는 사용하지 않습니다.",
         "responses": {
@@ -2073,7 +2713,9 @@
     },
     "/chats/my-room": {
       "get": {
-        "tags": ["Chats"],
+        "tags": [
+          "Chats"
+        ],
         "summary": "[채팅] 내 채팅방 조회 (입주민)",
         "description": "입주민(USER)이 자신의 채팅방 정보를 조회합니다. 채팅방이 없으면 404 에러를 반환합니다.",
         "responses": {
@@ -2118,7 +2760,9 @@
         }
       },
       "post": {
-        "tags": ["Chats"],
+        "tags": [
+          "Chats"
+        ],
         "summary": "[채팅] 채팅방 생성 (입주민)",
         "description": "입주민(USER)이 관리자와의 1:1 채팅방을 생성합니다. 이미 채팅방이 있으면 기존 채팅방을 반환합니다 (멱등성 보장).",
         "responses": {
@@ -2154,7 +2798,9 @@
     },
     "/chats/rooms": {
       "get": {
-        "tags": ["Chats"],
+        "tags": [
+          "Chats"
+        ],
         "summary": "[채팅] 채팅방 목록 조회 (관리자)",
         "description": "관리자(ADMIN)가 관리하는 아파트의 채팅방 목록을 조회합니다. 페이지네이션 및 읽지 않은 메시지 필터링을 지원합니다.",
         "parameters": [
@@ -2223,7 +2869,9 @@
         }
       },
       "post": {
-        "tags": ["Chats"],
+        "tags": [
+          "Chats"
+        ],
         "summary": "[채팅] 채팅방 생성 (관리자)",
         "description": "관리자(ADMIN)가 특정 입주민과의 1:1 채팅방을 생성합니다. 이미 채팅방이 있으면 기존 채팅방을 반환합니다 (멱등성 보장). 관리하는 아파트의 입주민만 채팅방 생성 가능합니다.<br><br>**Request Body:**<br>- residentId (string, 필수): 입주민 ID (UUID)",
         "responses": {
@@ -2272,7 +2920,9 @@
     },
     "/chats/rooms/{roomId}": {
       "get": {
-        "tags": ["Chats"],
+        "tags": [
+          "Chats"
+        ],
         "summary": "[채팅] 채팅방 상세 조회 (초기 로드)",
         "description": "채팅방 상세 정보와 최신 메시지 50개를 조회합니다. 조회 시 자동으로 읽음 처리됩니다. ADMIN은 관리하는 아파트의 채팅방만, USER는 본인의 채팅방만 조회 가능합니다.",
         "parameters": [
@@ -2347,7 +2997,9 @@
     },
     "/chats/rooms/{roomId}/messages": {
       "get": {
-        "tags": ["Chats"],
+        "tags": [
+          "Chats"
+        ],
         "summary": "[채팅] 메시지 목록 조회 (과거 메시지)",
         "description": "채팅방의 과거 메시지를 페이지네이션으로 조회합니다. 무한 스크롤 구현을 위해 사용됩니다. page는 2부터 시작합니다 (1페이지는 채팅방 상세 조회의 recentMessages에서 제공).",
         "parameters": [
@@ -2421,9 +3073,117 @@
         }
       }
     },
+    "/options/{optionId}/vote": {
+      "post": {
+        "summary": "투표하기",
+        "description": "pollOption(optionId)에 대해 USER 권한 사용자가 투표를 수행합니다.",
+        "parameters": [
+          {
+            "name": "optionId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "투표 옵션 ID(UUID)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "format": {
+                  "type": "string",
+                  "example": "uuid"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "투표 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "투표 완료: 옵션 제목",
+                  "updatedOption": {
+                    "id": "optionId",
+                    "title": "옵션 제목",
+                    "votes": "3"
+                  },
+                  "winnerOption": {
+                    "id": "optionId",
+                    "title": "옵션 제목",
+                    "votes": "5"
+                  },
+                  "options": [
+                    {
+                      "id": "optionId",
+                      "title": "옵션 제목",
+                      "votes": "득표수"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Options"
+        ]
+      },
+      "delete": {
+        "summary": "투표 취소",
+        "description": "USER 권한 사용자가 해당 옵션(optionId)에 대해 투표를 취소합니다.",
+        "parameters": [
+          {
+            "name": "optionId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "투표 옵션 ID(UUID)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "format": {
+                  "type": "string",
+                  "example": "uuid"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "투표 취소 성공",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "투표가 취소되었습니다.",
+                  "updatedOption": {
+                    "id": "optionId",
+                    "title": "옵션 제목",
+                    "votes": "1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Options"
+        ]
+      }
+    },
     "/": {
       "get": {
-        "tags": ["Health"],
+        "tags": [
+          "Health"
+        ],
         "summary": "서버 및 DB 헬스체크",
         "description": "서버 실행 상태, DB 연결 여부, Uptime, Timestamp 등을 확인하기 위한 헬스체크 엔드포인트입니다.",
         "responses": {
@@ -2496,10 +3256,6 @@
       "description": "Events 관련 API"
     },
     {
-      "name": "Notifications",
-      "description": "Notifications 관련 API"
-    },
-    {
       "name": "Poll-scheduler",
       "description": "Poll-scheduler 관련 API"
     },
@@ -2508,8 +3264,12 @@
       "description": "Chats 관련 API"
     },
     {
-      "name": "Default",
-      "description": "Default 관련 API"
+      "name": "Options",
+      "description": "Options 관련 API"
+    },
+    {
+      "name": "Health",
+      "description": "Health 관련 API"
     }
   ]
 }
