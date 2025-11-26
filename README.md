@@ -230,10 +230,6 @@ BASE_URL=https://your.domain.com
 # FRONT (프론트엔드 오리진)
 FRONT_URL=https://your.domain.com
 
-# FILE URL (정적 업로드 접근용)
-FILE_BASE_URL_DEV=http://localhost:3001/api/uploads
-FILE_BASE_URL=https://your.domain.com/api/uploads
-
 # RUNTIME
 CORS_ORIGIN=https://your.domain.com
 ACCESS_TOKEN_SECRET=your_accesstoken_secret
