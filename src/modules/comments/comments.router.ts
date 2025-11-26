@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authMiddleware from '#middlewares/authMiddleware';
 import requireRole from '#middlewares/requireRole';
+import sanitizeMiddleware from '#core/sanitize';
 import { validateCommentCreate, validateCommentPatch, validateCommentDelete } from './comments.validator';
 import { createCommentHandler, patchCommentHandler, deleteCommentHandler } from './comments.controller';
 
@@ -22,6 +23,7 @@ commentRouter.route('/').post(
   authMiddleware,
   requireRole(['ADMIN', 'USER']),
   validateCommentCreate,
+  sanitizeMiddleware('comments'),
   createCommentHandler
 );
 
@@ -48,6 +50,7 @@ commentRouter
     authMiddleware,
     requireRole(['ADMIN', 'USER']),
     validateCommentPatch,
+    sanitizeMiddleware('comments'),
     patchCommentHandler
   )
   .delete(

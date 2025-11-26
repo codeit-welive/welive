@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authMiddleware from '#middlewares/authMiddleware';
 import requireRole from '#middlewares/requireRole';
+import sanitizeMiddleware from '#core/sanitize';
 import {
   validateComplaintCreate,
   validateComplaintListQuery,
@@ -28,6 +29,7 @@ complaintRouter.route('/').post(
   authMiddleware,
   requireRole(['USER']),
   validateComplaintCreate,
+  sanitizeMiddleware('complaints'),
   //#swagger.tags = ['Complaints']
   //#swagger.summary = '[민원] 민원 생성'
   //#swagger.description = '입주민(USER)이 새로운 민원을 생성합니다. 본인이 속한 아파트의 게시판에만 민원을 작성할 수 있습니다. <br><br>**Request Body:**<br>- title (string, 필수): 민원 제목 (2-100자)<br>- content (string, 필수): 민원 내용 (10-2000자)<br>- isPublic (boolean, 선택): 공개 여부 (기본값: false)<br>- boardId (string, 필수): 게시판 ID (UUID)'
@@ -93,6 +95,7 @@ complaintRouter.route('/:complaintId').patch(
   requireRole(['USER']),
   validateComplaintParams,
   validateComplaintPatch,
+  sanitizeMiddleware('complaints'),
   //#swagger.tags = ['Complaints']
   //#swagger.summary = '[민원] 민원 수정'
   //#swagger.description = '입주민(USER)이 본인이 작성한 민원을 수정합니다. 제목, 내용, 공개 여부를 부분적으로 수정할 수 있습니다. PENDING 상태의 민원만 수정 가능합니다. <br><br>**Request Body (모두 선택):**<br>- title (string): 민원 제목 (2-100자)<br>- content (string): 민원 내용 (10-2000자)<br>- isPublic (boolean): 공개 여부'
