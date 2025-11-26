@@ -21,7 +21,7 @@
     }
   ],
   "paths": {
-    "/api/auth/signup": {
+    "/auth/signup": {
       "post": {
         "tags": [
           "Auth"
@@ -80,7 +80,7 @@
         }
       }
     },
-    "/api/auth/signup/admin": {
+    "/auth/signup/admin": {
       "post": {
         "tags": [
           "Auth"
@@ -148,7 +148,7 @@
         }
       }
     },
-    "/api/auth/signup/super-admin": {
+    "/auth/signup/super-admin": {
       "post": {
         "tags": [
           "Auth"
@@ -214,7 +214,7 @@
         }
       }
     },
-    "/api/auth/login": {
+    "/auth/login": {
       "post": {
         "tags": [
           "Auth"
@@ -280,7 +280,7 @@
         }
       }
     },
-    "/api/auth/logout": {
+    "/auth/logout": {
       "post": {
         "tags": [
           "Auth"
@@ -297,7 +297,7 @@
         }
       }
     },
-    "/api/auth/refresh": {
+    "/auth/refresh": {
       "post": {
         "tags": [
           "Auth"
@@ -321,7 +321,7 @@
         }
       }
     },
-    "/api/auth/admins/{adminId}/status": {
+    "/auth/admins/{adminId}/status": {
       "patch": {
         "tags": [
           "Auth"
@@ -372,7 +372,7 @@
         }
       }
     },
-    "/api/auth/admins/status": {
+    "/auth/admins/status": {
       "patch": {
         "tags": [
           "Auth"
@@ -414,7 +414,7 @@
         }
       }
     },
-    "/api/auth/residents/{residentId}/status": {
+    "/auth/residents/{residentId}/status": {
       "patch": {
         "tags": [
           "Auth"
@@ -465,7 +465,7 @@
         }
       }
     },
-    "/api/auth/residents/status": {
+    "/auth/residents/status": {
       "patch": {
         "tags": [
           "Auth"
@@ -602,7 +602,7 @@
         }
       }
     },
-    "/api/auth/cleanup": {
+    "/auth/cleanup": {
       "post": {
         "tags": [
           "Auth"
@@ -629,7 +629,7 @@
         }
       }
     },
-    "/api/users/me": {
+    "/users/me": {
       "patch": {
         "tags": [
           "Users"
@@ -693,7 +693,7 @@
         }
       }
     },
-    "/api/apartments/public": {
+    "/apartments/public": {
       "get": {
         "tags": [
           "Apartments"
@@ -721,7 +721,7 @@
         }
       }
     },
-    "/api/apartments/public/{id}": {
+    "/apartments/public/{id}": {
       "get": {
         "tags": [
           "Apartments"
@@ -781,7 +781,7 @@
         }
       }
     },
-    "/api/apartments/": {
+    "/apartments/": {
       "get": {
         "tags": [
           "Apartments"
@@ -860,7 +860,7 @@
         }
       }
     },
-    "/api/apartments/{id}": {
+    "/apartments/{id}": {
       "get": {
         "tags": [
           "Apartments"
@@ -924,7 +924,7 @@
         }
       }
     },
-    "/api/residents/file/template": {
+    "/residents/file/template": {
       "get": {
         "tags": [
           "Residents"
@@ -963,7 +963,7 @@
         }
       }
     },
-    "/api/residents/file": {
+    "/residents/file": {
       "get": {
         "tags": [
           "Residents"
@@ -1056,7 +1056,7 @@
         }
       }
     },
-    "/api/residents/from-file": {
+    "/residents/from-file": {
       "post": {
         "tags": [
           "Residents"
@@ -1101,7 +1101,7 @@
         }
       }
     },
-    "/api/residents/{id}": {
+    "/residents/{id}": {
       "get": {
         "tags": [
           "Residents"
@@ -1254,7 +1254,7 @@
         }
       }
     },
-    "/api/residents/": {
+    "/residents/": {
       "get": {
         "tags": [
           "Residents"
@@ -1398,7 +1398,7 @@
         }
       }
     },
-    "/api/complaints/": {
+    "/complaints/": {
       "post": {
         "tags": [
           "Complaints"
@@ -1529,7 +1529,7 @@
         }
       }
     },
-    "/api/complaints/{complaintId}": {
+    "/complaints/{complaintId}": {
       "get": {
         "tags": [
           "Complaints"
@@ -1697,7 +1697,7 @@
         }
       }
     },
-    "/api/complaints/{complaintId}/status": {
+    "/complaints/{complaintId}/status": {
       "patch": {
         "tags": [
           "Complaints"
@@ -1772,7 +1772,7 @@
         }
       }
     },
-    "/api/polls/": {
+    "/polls/": {
       "get": {
         "description": "",
         "responses": {
@@ -1796,7 +1796,7 @@
         ]
       }
     },
-    "/api/polls/{pollId}": {
+    "/polls/{pollId}": {
       "get": {
         "description": "",
         "responses": {
@@ -1831,7 +1831,7 @@
         ]
       }
     },
-    "/api/notices/": {
+    "/notices/": {
       "get": {
         "description": "",
         "responses": {
@@ -1855,7 +1855,7 @@
         ]
       }
     },
-    "/api/notices/{noticeId}": {
+    "/notices/{noticeId}": {
       "get": {
         "description": "",
         "responses": {
@@ -1890,7 +1890,7 @@
         ]
       }
     },
-    "/api/comments/": {
+    "/comments/": {
       "post": {
         "tags": [
           "Comments"
@@ -1943,7 +1943,7 @@
         }
       }
     },
-    "/api/comments/{commentId}": {
+    "/comments/{commentId}": {
       "delete": {
         "tags": [
           "Comments"
@@ -2048,7 +2048,7 @@
         }
       }
     },
-    "/api/notifications/{id}/read": {
+    "/notifications/{id}/read": {
       "patch": {
         "tags": [
           "Notifications"
@@ -2107,7 +2107,7 @@
         }
       }
     },
-    "/api/events/": {
+    "/events/": {
       "get": {
         "description": "",
         "responses": {
@@ -2131,7 +2131,7 @@
         ]
       }
     },
-    "/api/events/{eventId}": {
+    "/events/{eventId}": {
       "delete": {
         "description": "",
         "responses": {
@@ -2144,7 +2144,7 @@
         ]
       }
     },
-    "/api/poll-scheduler/ping": {
+    "/poll-scheduler/ping": {
       "get": {
         "tags": [
           "Poll-scheduler"
@@ -2175,7 +2175,7 @@
         }
       }
     },
-    "/api/chats/my-room": {
+    "/chats/my-room": {
       "get": {
         "tags": [
           "Chats"
@@ -2260,7 +2260,7 @@
         }
       }
     },
-    "/api/chats/rooms": {
+    "/chats/rooms": {
       "get": {
         "tags": [
           "Chats"
@@ -2382,7 +2382,7 @@
         }
       }
     },
-    "/api/chats/rooms/{roomId}": {
+    "/chats/rooms/{roomId}": {
       "get": {
         "tags": [
           "Chats"
@@ -2459,7 +2459,7 @@
         }
       }
     },
-    "/api/chats/rooms/{roomId}/messages": {
+    "/chats/rooms/{roomId}/messages": {
       "get": {
         "tags": [
           "Chats"
@@ -2537,17 +2537,38 @@
         }
       }
     },
-    "/api/": {
+    "/": {
       "get": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        },
         "tags": [
-          "Api"
-        ]
+          "Health"
+        ],
+        "summary": "서버 및 DB 헬스체크",
+        "description": "서버 실행 상태, DB 연결 여부, Uptime, Timestamp 등을 확인하기 위한 헬스체크 엔드포인트입니다.",
+        "responses": {
+          "200": {
+            "description": "정상적으로 헬스체크 응답 반환",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "ok",
+                  "uptime": 1234.56,
+                  "db": "connected",
+                  "timestamp": "2025-11-26T07:00:00.000Z"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "헬스체크 실패 또는 DB 연결 오류",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Health check failed"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -2605,8 +2626,8 @@
       "description": "Chats 관련 API"
     },
     {
-      "name": "Api",
-      "description": "Api 관련 API"
+      "name": "Default",
+      "description": "Default 관련 API"
     }
   ]
 }

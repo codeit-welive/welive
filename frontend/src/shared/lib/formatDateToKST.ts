@@ -1,5 +1,8 @@
 export const formatDateToKST = (dateStr: string) => {
-  const date = new Date(dateStr.replace(' ', 'T') + 'Z');
+  const date = dateStr.includes('T')
+    ? new Date(dateStr)
+    : new Date(dateStr.replace(' ', 'T') + 'Z');
+
   return date
     .toLocaleString('ko-KR', {
       timeZone: 'Asia/Seoul',
