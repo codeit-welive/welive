@@ -1,11 +1,7 @@
 import axios from 'axios';
 
 const getBaseUrl = (): string => {
-  if (typeof window !== 'undefined') {
-    const storedUrl = localStorage.getItem('apiBaseUrl');
-    if (storedUrl && storedUrl.startsWith('http')) return storedUrl;
-  }
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9000/api';
+  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 };
 
 const axiosInstance = axios.create({
@@ -19,7 +15,6 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config;
 
     const isRefreshUrl = originalRequest.url?.includes('/auth/refresh');
-
     const isAuthUrl =
       originalRequest.url?.includes('/auth/login') ||
       originalRequest.url?.includes('/auth/signup') ||
@@ -33,7 +28,9 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         console.error('리프레시 에러', refreshError);
-        window.location.href = '/';
+        if (typeof window !== 'undefined') {
+          window.location.href = '/';
+        }
       }
     }
 
