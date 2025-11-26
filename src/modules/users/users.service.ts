@@ -1,5 +1,6 @@
 import { hashPassword, isPasswordValid } from '#helpers/passwordUtils';
 import ApiError from '#errors/ApiError';
+import env from '#core/env';
 import { findUserById, updateUser } from './users.repo';
 import { USER_MESSAGES as MSG } from '#constants/user.constants';
 import { assertAllowedByMagic } from '#core/files/assertAllowedByMagic';
@@ -53,7 +54,7 @@ export const updateUserService = async (userId: string, { body, file }: UpdateUs
   const updatedUser = await updateUser(userId, updates);
 
   // 기존 아바타 삭제
-  if (updates.avatar && user.avatar) deleteImageFromS3(user.avatar); // fire-and-forget
+  if (updates.avatar && user.avatar !== env.DEFAULT_AVATAR_URL) deleteImageFromS3(user.avatar); // fire-and-forget
 
   return {
     message: `${updatedUser.name}${MSG.UPDATE_SUCCESS}`,
