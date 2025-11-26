@@ -11,7 +11,7 @@ const baseDoc = {
   info: {
     title: '위리브 API',
     description: '위리브 API 명세서',
-    version: '1.0.2',
+    version: '1.0.0',
   },
   components: {
     securitySchemes: {
@@ -46,9 +46,11 @@ const domains = [
 const modules = [
   ...domains.map((d) => ({
     file: path.join(root, 'src/modules', d, `${d}.router.ts`),
+    prefix: `/${d}`,
   })),
   {
     file: path.join(root, 'src/core/health', 'health.router.ts'),
+    prefix: '/',
   },
 ];
 
@@ -62,13 +64,6 @@ const genForModule = async (modFile) => {
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
-// 파일명 기반으로 태그명 생성
-const getTagName = (filePath) => {
-  const base = path.basename(filePath, '.ts'); // ex: notices.router
-  const [name] = base.split('.'); // ex: notices
-  return capitalize(name); // ex: Notices
-};
-
 const generateSwagger = async () => {
   fs.mkdirSync(outDir, { recursive: true });
 
@@ -76,7 +71,7 @@ const generateSwagger = async () => {
 
   for (const m of modules) {
     const paths = await genForModule(m.file);
-    const tagName = getTagName(m.file);
+    const tagName = capitalize(m.prefix.split('/').pop() || 'Default');
 
     finalSpec.tags.push({
       name: tagName,
@@ -84,11 +79,13 @@ const generateSwagger = async () => {
     });
 
     for (const [p, val] of Object.entries(paths)) {
+      const prefixed = `${m.prefix}${p}`.replace(/\/+/g, '/');
+
       for (const method of Object.keys(val)) {
         if (!val[method].tags) val[method].tags = [tagName];
       }
 
-      finalSpec.paths[p] = val;
+      finalSpec.paths[prefixed] = val;
     }
   }
 
