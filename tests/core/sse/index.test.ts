@@ -23,9 +23,7 @@ describe('[SSE] 라우터 동작 검증', () => {
       },
     ] as any);
 
-    const routeLayer = (router as any).stack.find(
-      (layer: any) => layer?.route && layer.route.path === '/notifications/sse'
-    );
+    const routeLayer = (router as any).stack.find((layer: any) => layer.route && layer.route.path === '/');
     if (!routeLayer) throw new Error('SSE route not found');
 
     const layers = routeLayer.route.stack;
