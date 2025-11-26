@@ -507,7 +507,7 @@
         }
       }
     },
-    "/api/auth/admins/{adminID}": {
+    "/api/auth/admins/{adminId}": {
       "delete": {
         "tags": [
           "Auth"
@@ -515,12 +515,6 @@
         "summary": "[슈퍼관리자] 관리자 정보(아파트 정보 포함) 삭제",
         "description": "경로 파라미터 adminId에 해당하는 관리자의 계정 및 아파트 정보를 삭제합니다.",
         "parameters": [
-          {
-            "name": "adminID",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
           {
             "name": "adminId",
             "in": "path",
@@ -558,12 +552,6 @@
         "summary": "[슈퍼 관리자] 관리자 정보(아파트 정보) 수정",
         "description": "경로 파라미터 adminId에 해당하는 관리자의 아파트 정보를 수정합니다.",
         "parameters": [
-          {
-            "name": "adminID",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
           {
             "name": "adminId",
             "in": "path",
