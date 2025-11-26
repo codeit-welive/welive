@@ -13,6 +13,8 @@ import {
   deleteRejectedUser,
   patchApartmentInfoRepo,
   deleteApartmentRepo,
+  getSuperAdminIdList,
+  getAdminIdByApartmentName,
 } from './auth.repo';
 import { SignupSuperAdminRequestDto, SignupAdminRequestDto, SignupUserRequestDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -24,6 +26,11 @@ import ApiError from '#errors/ApiError';
 import { JoinStatus, UserRole } from '@prisma/client';
 import { checkDuplicateApartment, checkDuplicateUser } from '#helpers/checkDuplicate';
 import { PatchApartmentBodyDto } from './dto/auth.dto';
+import { SIGN_UP_NOTIFICATIONS } from '#constants/auth.constant';
+import { createAndSendNotification } from '#core/utils/notificationHelper';
+import { createLimit } from '#core/utils/Limiter';
+
+const limit = createLimit(5);
 
 export const registSuperAdmin = async (data: SignupSuperAdminRequestDto) => {
   await checkDuplicateUser(data.username, data.email, data.contact);
@@ -41,6 +48,22 @@ export const registAdmin = async (data: SignupAdminRequestDto) => {
   const { userData, apartmentData } = await adminDataMapper(data);
   const createdUser = await createAdmin(userData, apartmentData);
 
+  // 모든 Super Admin에게 알림 전송
+  const notification = SIGN_UP_NOTIFICATIONS.ADMIN;
+  const superAdmins = await getSuperAdminIdList();
+  for (const admin of superAdmins) {
+    limit(async () => {
+      createAndSendNotification(
+        {
+          content: notification.content,
+          notificationType: notification.type,
+          recipientId: admin.id,
+        },
+        admin.id
+      );
+    });
+  }
+
   return createdUser;
 };
 
@@ -50,6 +73,19 @@ export const registUser = async (data: SignupUserRequestDto) => {
     ...data,
     password: await hashPassword(data.password),
   });
+
+  // 아파트 관리자에게 알림 전송
+  const notification = SIGN_UP_NOTIFICATIONS.USER;
+  const apartment = await getAdminIdByApartmentName(data.apartmentName);
+  createAndSendNotification(
+    {
+      content: notification.content,
+      notificationType: notification.type,
+      recipientId: createdUser.id,
+    },
+    apartment.adminId as unknown as string
+  );
+
   return createdUser;
 };
 

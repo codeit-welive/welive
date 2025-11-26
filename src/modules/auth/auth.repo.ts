@@ -336,3 +336,19 @@ export const deleteRejectedUser = async (targetRole: UserRole, apartmentName: st
     });
   });
 };
+
+export const getSuperAdminIdList = async () => {
+  return prisma.user.findMany({
+    where: { role: UserRole.SUPER_ADMIN },
+    select: { id: true },
+  });
+};
+
+export const getAdminIdByApartmentName = async (apartmentName: string) => {
+  return prisma.apartment.findUniqueOrThrow({
+    where: { apartmentName },
+    select: {
+      adminId: true,
+    },
+  });
+};
