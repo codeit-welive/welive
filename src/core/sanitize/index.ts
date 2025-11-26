@@ -62,10 +62,12 @@ const sanitizePickedFields = (body: any, fields: readonly string[]) => {
  * @param {SanitizeDomain} domain - sanitize 대상 domain (complaints, comments, etc)
  * @returns {RequestHandler} - Express 미들웨어 함수
  */
-export const sanitizeMiddleware = (domain: SanitizeDomain): RequestHandler => {
+const sanitizeMiddleware = (domain: SanitizeDomain): RequestHandler => {
   return (req, _res, next) => {
     const targets = sanitizeTargets[domain];
     if (targets?.length && req.body) sanitizePickedFields(req.body, targets);
     next();
   };
 };
+
+export default sanitizeMiddleware;

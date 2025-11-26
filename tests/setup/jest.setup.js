@@ -2,6 +2,12 @@
 const fs = require('fs');
 const { Writable } = require('stream');
 
+// Sanitize Mock (jsdom / dompurify 로딩 방지)
+jest.mock('#core/sanitize', () => ({
+  __esModule: true,
+  default: () => (req, res, next) => next(),
+}));
+
 // env.test.ts에서는 Prisma를 로드하지 않도록 처리
 const testPath = (expect.getState && expect.getState().testPath) || '';
 const isEnvTest = /\benv\.test\.ts$/.test(testPath);
