@@ -296,8 +296,10 @@ export const patchApartmentInfoRepo = async (
 };
 
 export const deleteApartmentRepo = async (adminId: string) => {
-  return await prisma.user.delete({
-    where: { id: adminId },
+  return await prisma.$transaction(async (tx) => {
+    await tx.user.delete({
+      where: { id: adminId },
+    });
   });
 };
 /**
