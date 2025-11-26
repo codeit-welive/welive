@@ -2,6 +2,10 @@ import { useNotificationStore } from '../store/notify.store';
 
 let eventSource: EventSource | null = null;
 
+interface ExtendedEventSourceInit extends EventSourceInit {
+  withCredentials?: boolean;
+}
+
 export function connectSse(userId: string) {
   if (eventSource) {
     eventSource.close();
@@ -14,7 +18,7 @@ export function connectSse(userId: string) {
   const url = `${baseUrl}/notifications/sse?userId=${userId}`;
   console.log('🔔 SSE connecting:', url);
 
-  eventSource = new EventSource(url, { withCredentials: true } as any);
+  eventSource = new EventSource(url, { withCredentials: true } as ExtendedEventSourceInit);
 
   eventSource.onopen = () => {
     console.log('🔔 SSE 연결 성공');
