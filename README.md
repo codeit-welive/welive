@@ -15,6 +15,7 @@
 - Frontend: https://welive.mimu.live
 - Backend: https://api.mimu.live
 - Swagger 문서: https://api.mimu.live/docs
+  - SUPER_ADMIN 계정 로그인 필요
 - GitHub Repository: https://github.com/codeit-welive/welive
 - 최종 발표 자료: 준비 중
 - 시연 영상: 준비 중
