@@ -4,6 +4,7 @@ import { CivilListType } from '@/entities/civil/type';
 import Link from 'next/link';
 import Select from '@/shared/Select';
 import { statusOptions } from './CivilListFilter';
+import { formatDateToKST } from '@/shared/lib/formatDateToKST';
 
 type Props = {
   data: CivilListType[];
@@ -105,7 +106,7 @@ export default function CivilListTable({
                     </td>
                     <td className={tdClass}>
                       <div className='line-clamp-1' title={item.createdAt}>
-                        {item.createdAt}
+                        {formatDateToKST(item.createdAt)}
                       </div>
                     </td>
                     <td className={tdClass}>
