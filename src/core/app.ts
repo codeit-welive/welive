@@ -48,6 +48,9 @@ import httpLogger from '#core/httpLogger';
 import { errorHandler } from '#middlewares/errorHandler';
 import ApiError from '#errors/ApiError';
 
+import authMiddleware from '#core/middlewares/authMiddleware';
+import requireRole from '#core/middlewares/requireRole';
+
 const app: Application = express();
 
 /**
@@ -176,14 +179,27 @@ app.use(API_PREFIX, routes);
 /**
  * Swagger
  */
-app.use(
-  `${API_PREFIX}/docs`,
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerDoc, {
-    explorer: true,
-    customSiteTitle: 'WeLive API Docs',
-  })
-);
+if (env.NODE_ENV === 'production') {
+  app.use(
+    `${API_PREFIX}/docs`,
+    authMiddleware,
+    requireRole(['SUPER_ADMIN']),
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDoc, {
+      explorer: true,
+      customSiteTitle: 'WeLive API Docs',
+    })
+  );
+} else {
+  app.use(
+    `${API_PREFIX}/docs`,
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDoc, {
+      explorer: true,
+      customSiteTitle: 'WeLive API Docs',
+    })
+  );
+}
 
 /**
  * 404 핸들러
