@@ -79,6 +79,7 @@ export const getApartmentIdByAdminId = async (adminId: string) => {
     },
     select: {
       id: true,
+      apartmentName: true,
     },
   });
 };

@@ -15,6 +15,7 @@ import {
   deleteApartmentRepo,
   getSuperAdminIdList,
   getAdminIdByApartmentName,
+  getUserIdListByApartmentName,
 } from './auth.repo';
 import { SignupSuperAdminRequestDto, SignupAdminRequestDto, SignupUserRequestDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -184,4 +185,17 @@ export const cleanupRejectedUsers = async (role: UserRole, adminId: string | und
     apartmentName = apartment?.apartment?.apartmentName;
   }
   await deleteRejectedUser(targetRole, apartmentName);
+};
+
+/**
+ * 특정 아파트에 속한 USER ID 리스트 반환
+ *
+ * @description
+ * - 외부(controller)에서 호출되는 비즈니스 로직 계층입니다.
+ * - 알림 전송, SSE 대상 조회 등에서 재사용됩니다.
+ *
+ * @param apartmentName 조회 대상 아파트 이름
+ */
+export const getUserIdsForApartment = async (apartmentName: string) => {
+  return await getUserIdListByApartmentName(apartmentName);
 };
