@@ -47,7 +47,7 @@ describe('[Notifications] 통합 테스트', () => {
         data: {
           username: 'notification_user',
           password: 'pw',
-          contact: '01000000061',
+          contact: '01000001061',
           name: '알림유저',
           email: TEST_EMAILS[0],
           role: 'USER',
@@ -58,7 +58,7 @@ describe('[Notifications] 통합 테스트', () => {
         data: {
           username: 'notification_other',
           password: 'pw',
-          contact: '01000000062',
+          contact: '01000001062',
           name: '다른유저',
           email: TEST_EMAILS[1],
           role: 'USER',
