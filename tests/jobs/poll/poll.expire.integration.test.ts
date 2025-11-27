@@ -4,6 +4,7 @@
  */
 
 import { describe, it, beforeAll, afterAll, beforeEach, afterEach, expect, jest } from '@jest/globals';
+import { setImmediate as nodeSetImmediate } from 'timers';
 import prisma from '#core/prisma';
 import { closeExpiredPolls } from '#jobs/poll/poll.expire.handler';
 import { sendSseToUser } from '#sse/sseEmitter';
@@ -73,7 +74,8 @@ const extractNotificationId = (v: any): string | undefined => {
 
 const flushMicrotasks = async (ticks = 2) => {
   for (let i = 0; i < ticks; i++) {
-    await new Promise(setImmediate);
+    await Promise.resolve();
+    await new Promise<void>((resolve) => nodeSetImmediate(resolve));
   }
 };
 
@@ -81,7 +83,7 @@ const waitForNotificationCount = async (pollId: string, expected: number, maxTic
   for (let i = 0; i < maxTicks; i++) {
     const count = await prisma.notification.count({ where: { pollId } });
     if (count === expected) return;
-    await new Promise(setImmediate);
+    await flushMicrotasks(1);
   }
 };
 
@@ -139,10 +141,18 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   jest.clearAllMocks();
+
+  // 이 파일 한정으로 fake timers 적용
+  jest.useFakeTimers({ legacyFakeTimers: true });
+  jest.clearAllTimers();
+
   await cleanupTestScope();
 });
 
 afterEach(async () => {
+  // “미래 만료 예약 setTimeout”이 남아 CI를 붙잡지 않도록 정리
+  jest.clearAllTimers();
+  jest.useRealTimers();
   await flushMicrotasks();
 });
 
@@ -297,33 +307,23 @@ describe('[PollExpireHandler] Integration', () => {
       },
     });
 
-    const pending: Promise<any>[] = [];
-    const scheduled: Array<{ fn: (...args: any[]) => any; delay: number; args: any[] }> = [];
-
-    const originalSetTimeout = globalThis.setTimeout;
-
-    (globalThis as any).setTimeout = ((fn: any, delay?: any, ...args: any[]) => {
-      scheduled.push({ fn, delay: Number(delay), args });
-      return 0 as unknown as NodeJS.Timeout;
-    }) as typeof setTimeout;
+    const setTimeoutSpy = jest.spyOn(globalThis, 'setTimeout');
 
     try {
       await closeExpiredPolls();
 
-      // 3초대 후보만 (다른 poll 타이머 오염 방지)
-      const candidates = scheduled.filter((t) => t.delay >= 2500 && t.delay <= 3500);
+      const candidates = (setTimeoutSpy.mock.calls as any[][])
+        .map((c) => ({ fn: c[0], delay: Number(c[1]), args: c.slice(2) }))
+        .filter((t) => t.delay >= 2500 && t.delay <= 3500);
+
       expect(candidates.length).toBeGreaterThanOrEqual(1);
 
-      for (const t of candidates) {
-        const ret = t.fn(...t.args);
-        if (ret && typeof ret.then === 'function') pending.push(ret);
+      // 후보 중 1개만 실행(중복 실행/오염 방지)
+      const t = candidates[0];
+      const ret = t.fn(...t.args);
+      if (ret && typeof ret.then === 'function') await ret;
 
-        await Promise.all(pending);
-        await flushMicrotasks();
-
-        const updatedMid = await prisma.poll.findUnique({ where: { id: poll.id } });
-        if (updatedMid?.status === PollStatus.CLOSED) break;
-      }
+      await flushMicrotasks();
 
       const updated = await prisma.poll.findUnique({ where: { id: poll.id } });
       expect(updated?.status).toBe(PollStatus.CLOSED);
@@ -333,7 +333,7 @@ describe('[PollExpireHandler] Integration', () => {
       const calls = await getSseCallsForPoll(poll.id);
       expect(calls).toHaveLength(2);
     } finally {
-      globalThis.setTimeout = originalSetTimeout;
+      setTimeoutSpy.mockRestore();
     }
   });
 });

@@ -3,7 +3,7 @@
  * @description Poll 활성화 통합 테스트 (Prisma + 실제 예약 로직)
  */
 
-import { describe, it, beforeAll, afterAll, beforeEach, expect, jest } from '@jest/globals';
+import { describe, it, beforeAll, afterAll, beforeEach, afterEach, expect, jest } from '@jest/globals';
 import prisma from '#core/prisma';
 import { activateReadyPolls } from '#jobs/poll/poll.activate.handler';
 import { sendSseToUser } from '#sse/sseEmitter';
@@ -69,7 +69,20 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   jest.clearAllMocks();
+
+  // timer는 fake timers로 통제 + 정리 가능하게 만든다
+  jest.useFakeTimers({ legacyFakeTimers: true });
+  jest.clearAllTimers();
+
   await cleanupTestScope();
+});
+
+afterEach(async () => {
+  // 테스트 끝나고 남은 timer를 정리해서 CI hang 방지
+  jest.runOnlyPendingTimers();
+  await new Promise(setImmediate);
+  jest.clearAllTimers();
+  jest.useRealTimers();
 });
 
 afterAll(async () => {
@@ -131,7 +144,7 @@ describe('[PollActivateHandler] Integration', () => {
         name: '관리자',
         email: ADMIN_EMAIL,
         role: UserRole.ADMIN,
-        avatar: 'https://test.com/admin.png',
+        avatar: 'https://test.com/avatar.png',
         joinStatus: JoinStatus.APPROVED,
         isActive: true,
       },
@@ -214,28 +227,31 @@ describe('[PollActivateHandler] Integration', () => {
     });
 
     let capturedDelay: number | undefined;
-
-    // Prisma 깨지지 않게 fakeTimers 쓰지 말고 setTimeout만 직접 가로챔
-    // + setTimeout 콜백이 async일 수 있으니, 반환 Promise를 모아서 await
     const pending: Promise<any>[] = [];
-    const originalSetTimeout = globalThis.setTimeout;
 
-    (globalThis as any).setTimeout = ((fn: (...args: any[]) => any, delay?: number, ...args: any[]) => {
+    // setTimeout을 spyOn + mockImplementation으로 가로채고 즉시 실행
+    const setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(((
+      fn: (...args: any[]) => any,
+      delay?: number,
+      ...args: any[]
+    ) => {
       capturedDelay = delay as number;
 
       const ret = fn(...args);
       if (ret && typeof ret.then === 'function') pending.push(ret);
 
+      // fake timer id 반환
       return 0 as unknown as NodeJS.Timeout;
-    }) as typeof setTimeout;
+    }) as unknown as typeof setTimeout);
 
     try {
       await activateReadyPolls();
 
-      // setTimeout 콜백 내부 작업(activatePoll + 알림 전송)까지 완전히 끝날 때까지 대기
+      // 콜백이 async일 수 있으니 내부 작업까지 끝까지 대기
       await Promise.all(pending);
       await new Promise(setImmediate);
 
+      expect(setTimeoutSpy).toHaveBeenCalled();
       expect(typeof capturedDelay).toBe('number');
       expect(capturedDelay!).toBeGreaterThanOrEqual(2500);
       expect(capturedDelay!).toBeLessThanOrEqual(3500);
@@ -245,7 +261,7 @@ describe('[PollActivateHandler] Integration', () => {
 
       expect(sendSseToUser).toHaveBeenCalledTimes(2);
     } finally {
-      globalThis.setTimeout = originalSetTimeout;
+      setTimeoutSpy.mockRestore();
     }
   });
 });
