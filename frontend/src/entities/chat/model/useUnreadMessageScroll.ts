@@ -114,7 +114,7 @@ export function useUnreadMessageScroll({
     if (scrollRef.current && (shouldScrollToBottom || isNearBottom)) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, shouldScrollToBottom, hasScrolledToUnread, isNearBottom]);
+  }, [messages.length, shouldScrollToBottom, hasScrolledToUnread, isNearBottom]);
 
   // 스크롤 이벤트 핸들러: 사용자가 맨 아래 근처에 있는지 확인
   const handleScroll = () => {
@@ -129,6 +129,11 @@ export function useUnreadMessageScroll({
     const isUserNearBottom = scrollBottom < 100;
 
     setIsNearBottom(isUserNearBottom);
+
+    // ✅ 사용자가 위로 스크롤하면 자동 스크롤 비활성화
+    if (!isUserNearBottom) {
+      setShouldScrollToBottom(false);
+    }
   };
 
   // 읽지 않은 메시지 마커를 표시할지 결정
