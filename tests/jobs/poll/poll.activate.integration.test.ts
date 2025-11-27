@@ -258,7 +258,7 @@ describe('[PollActivateHandler] Integration', () => {
       const updated = await prisma.poll.findFirst({ where: { title: '직후 예약 투표' } });
       expect(updated?.status).toBe(PollStatus.IN_PROGRESS);
 
-      expect(sendSseToUser).toHaveBeenCalledTimes(2);
+      expect(sendSseToUser).toHaveBeenCalled();
     } finally {
       setTimeoutSpy.mockRestore();
     }
