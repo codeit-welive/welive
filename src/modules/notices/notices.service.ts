@@ -15,7 +15,6 @@ import ApiError from '#errors/ApiError';
 import { createLimit } from '#core/utils/Limiter';
 import { getUserIdsForApartment } from '#modules/auth/auth.service';
 import { createAndSendNotification } from '#core/utils/notificationHelper';
-import { getApartmentNameByIdRepo } from '#modules/apartments/apartments.repo';
 
 const limit = createLimit(5);
 
@@ -30,16 +29,13 @@ const limit = createLimit(5);
 export const createNoticeService = async (userId: string, data: NoticeCreateDTO) => {
   // 1. 관리자가 속한 아파트 ID 조회
   const apartment = await getApartmentIdByAdminId(userId);
-  if (!apartment?.id) throw ApiError.badRequest();
-
-  const apartmentName = await getApartmentNameByIdRepo(apartment.id);
-  if (!apartmentName) throw ApiError.badRequest();
+  if (!apartment) throw ApiError.badRequest();
 
   // 2. 공지 생성
   const notice = await createNoticeRepo(data, apartment.id);
 
   // 3. 아파트 주민 전체 ID 조회
-  const residentUserIds = (await getUserIdsForApartment(apartmentName)).map((u) => u.id);
+  const residentUserIds = (await getUserIdsForApartment(apartment.apartmentName)).map((u) => u.id);
 
   if (residentUserIds.length === 0) {
     return notice;
