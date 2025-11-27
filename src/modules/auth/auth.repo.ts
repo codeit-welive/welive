@@ -354,3 +354,27 @@ export const getAdminIdByApartmentName = async (apartmentName: string) => {
     },
   });
 };
+
+/**
+ * 특정 아파트에 속한 USER 유저들의 ID 리스트 조회
+ *
+ * @description
+ * - 알림 전송 등의 내부 용도에서 사용하기 위해 id만 반환합니다.
+ * - User → Resident → Apartment 관계를 기반으로 필터링합니다.
+ *
+ * @param apartmentName 조회할 아파트 이름
+ * @returns USER id 리스트
+ */
+export const getUserIdListByApartmentName = async (apartmentName: string) => {
+  return prisma.user.findMany({
+    where: {
+      role: UserRole.USER,
+      resident: {
+        apartment: {
+          apartmentName,
+        },
+      },
+    },
+    select: { id: true },
+  });
+};

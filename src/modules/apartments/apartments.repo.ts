@@ -106,3 +106,16 @@ export const getCount = async (query: ApartmentRequestQueryDto, userRole: UserRo
     where,
   });
 };
+
+/**
+ * 아파트 ID → apartmentName 조회
+ * @returns apartmentName | null
+ */
+export const getApartmentNameByIdRepo = async (apartmentId: string) => {
+  const apt = await prisma.apartment.findUnique({
+    where: { id: apartmentId },
+    select: { apartmentName: true },
+  });
+
+  return apt?.apartmentName ?? null;
+};
