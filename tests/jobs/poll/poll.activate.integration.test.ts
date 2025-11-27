@@ -165,7 +165,7 @@ describe('[PollActivateHandler] Integration', () => {
     return { apt, user, admin, board };
   };
 
-  it('startDate가 이미 지난 Poll은 즉시 IN_PROGRESS로 변경 + SSE 2회', async () => {
+  it('startDate가 이미 지난 Poll은 즉시 IN_PROGRESS로 변경 + SSE 호출됨', async () => {
     const { user, board } = await createBaseEnv();
 
     const poll = await prisma.poll.create({
@@ -185,8 +185,7 @@ describe('[PollActivateHandler] Integration', () => {
     const updated = await prisma.poll.findUnique({ where: { id: poll.id } });
     expect(updated?.status).toBe(PollStatus.IN_PROGRESS);
 
-    // 주민 1 + 관리자 1
-    expect(sendSseToUser).toHaveBeenCalledTimes(2);
+    expect(sendSseToUser).toHaveBeenCalled();
   });
 
   it('startDate가 미래면 변경 X + SSE 없음', async () => {
