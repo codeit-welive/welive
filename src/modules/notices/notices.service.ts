@@ -12,13 +12,64 @@ import {
   updateNoticeRepo,
 } from './notices.repo';
 import ApiError from '#errors/ApiError';
+import { createLimit } from '#core/utils/Limiter';
+import { getUserIdsForApartment } from '#modules/auth/auth.service';
+import { createAndSendNotification } from '#core/utils/notificationHelper';
+import { getApartmentNameByIdRepo } from '#modules/apartments/apartments.repo';
 
+const limit = createLimit(5);
+
+/**
+ * 공지사항 생성 + 해당 아파트 주민 전체에 알림 전송
+ *
+ * @description
+ * - 오직 createNotice 시점에만 알림을 전송한다.
+ * - 알림 대상: 해당 아파트 USER 전체
+ * - 알림 내용: "새로운 공지사항이 등록되었습니다."
+ */
 export const createNoticeService = async (userId: string, data: NoticeCreateDTO) => {
-  const apartmentId = await getApartmentIdByAdminId(userId);
-  if (!apartmentId) {
-    throw ApiError.badRequest();
+  // 1. 관리자가 속한 아파트 ID 조회
+  const apartment = await getApartmentIdByAdminId(userId);
+  if (!apartment?.id) throw ApiError.badRequest();
+
+  const apartmentName = await getApartmentNameByIdRepo(apartment.id);
+  if (!apartmentName) throw ApiError.badRequest();
+
+  // 2. 공지 생성
+  const notice = await createNoticeRepo(data, apartment.id);
+
+  // 3. 아파트 주민 전체 ID 조회
+  const residentUserIds = (await getUserIdsForApartment(apartmentName)).map((u) => u.id);
+
+  if (residentUserIds.length === 0) {
+    return notice;
   }
-  return await createNoticeRepo(data, apartmentId.id);
+
+  // 4. 알림 내용
+  const content = '새로운 공지사항이 등록되었습니다.';
+
+  // 5. 병렬 알림 전송
+  const tasks = residentUserIds.map((uid) =>
+    limit(async () => {
+      try {
+        await createAndSendNotification(
+          {
+            content,
+            notificationType: 'NOTICE_REG',
+            recipientId: uid,
+            noticeId: notice.id,
+          },
+          uid
+        );
+      } catch {
+        // 전송 실패는 무시 (best-effort)
+      }
+    })
+  );
+
+  await Promise.allSettled(tasks);
+
+  return notice;
 };
 
 export const getNoticeListService = async (data: NoticeListQueryDTO, role: UserRole, userId: string) => {
