@@ -54,19 +54,27 @@ export default class ApiError extends Error {
    * @param isOperational 비즈니스 로직에서 발생한 정상 범위의 에러 여부
    */
 
-  constructor(
-    statusCode: number,
-    message: string,
-    code: ErrorCode = 'INTERNAL_ERROR',
-    details?: unknown,
-    isOperational = true
-  ) {
+  constructor(statusCode: number, message: string, code?: ErrorCode, details?: unknown, isOperational = true) {
     super(message);
+
+    // 상태 코드 자동 매핑
+    const fallbackCodeMap: Record<number, ErrorCode> = {
+      400: 'BAD_REQUEST',
+      401: 'UNAUTHORIZED',
+      403: 'FORBIDDEN',
+      404: 'NOT_FOUND',
+      409: 'CONFLICT',
+      422: 'UNPROCESSABLE',
+      429: 'TOO_MANY_REQUESTS',
+      500: 'INTERNAL_ERROR',
+    };
+
     this.statusCode = statusCode;
-    this.code = code;
+    this.code = code ?? fallbackCodeMap[statusCode] ?? 'INTERNAL_ERROR';
     this.details = details;
     this.isOperational = isOperational;
     this.name = 'ApiError';
+
     Error.captureStackTrace?.(this, this.constructor);
   }
 
