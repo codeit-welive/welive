@@ -6,31 +6,38 @@
 import { describe, it, beforeAll, afterAll, beforeEach, expect, jest } from '@jest/globals';
 import prisma from '#core/prisma';
 import { activateReadyPolls } from '#jobs/poll/poll.activate.handler';
-import { sendSseNotification } from '#sse/sseEmitter';
-import { PollStatus, BoardType, UserRole } from '@prisma/client';
+import { sendSseToUser } from '#sse/sseEmitter';
+import { PollStatus, BoardType, UserRole, JoinStatus } from '@prisma/client';
+
 process.env.__SKIP_GLOBAL_DB_CLEANUP__ = 'true';
 
+/**
+ * SSE만 mock (DB/알림 생성/대상 조회는 실제로 탐)
+ */
 jest.mock('#sse/sseEmitter', () => ({
-  sendSseNotification: jest.fn(),
+  sendSseToUser: jest.fn(),
 }));
 
 jest.mock('#core/logger', () => ({
-  logger: { polls: { debug: jest.fn(), error: jest.fn() } },
+  logger: {
+    polls: {
+      debug: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+    },
+  },
 }));
 
 const TEST_APT = 'PollActivateAPT';
-const TEST_USER = 'poll_user@test.com';
+const USER_EMAIL = 'poll_user@test.com';
+const ADMIN_EMAIL = 'poll_admin@test.com';
 
 const cleanupTestScope = async () => {
   await prisma.$transaction([
-    prisma.event.deleteMany({
-      where: { apartment: { apartmentName: TEST_APT } },
-    }),
     prisma.notification.deleteMany({
-      where: { recipient: { email: TEST_USER } },
-    }),
-    prisma.comment.deleteMany({
-      where: { board: { apartment: { apartmentName: TEST_APT } } },
+      where: {
+        OR: [{ recipient: { email: USER_EMAIL } }, { recipient: { email: ADMIN_EMAIL } }],
+      },
     }),
     prisma.pollVote.deleteMany({
       where: { poll: { board: { apartment: { apartmentName: TEST_APT } } } },
@@ -44,11 +51,14 @@ const cleanupTestScope = async () => {
     prisma.board.deleteMany({
       where: { apartment: { apartmentName: TEST_APT }, type: BoardType.POLL },
     }),
+    prisma.user.deleteMany({
+      where: { email: { in: [USER_EMAIL, ADMIN_EMAIL] } },
+    }),
+    prisma.resident.deleteMany({
+      where: { apartment: { apartmentName: TEST_APT } },
+    }),
     prisma.apartment.deleteMany({
       where: { apartmentName: TEST_APT },
-    }),
-    prisma.user.deleteMany({
-      where: { email: TEST_USER },
     }),
   ]);
 };
@@ -59,14 +69,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   jest.clearAllMocks();
-  jest.useFakeTimers({ legacyFakeTimers: true });
   await cleanupTestScope();
-});
-
-afterEach(async () => {
-  jest.runOnlyPendingTimers();
-  await new Promise(setImmediate);
-  jest.useRealTimers();
 });
 
 afterAll(async () => {
@@ -91,16 +94,52 @@ describe('[PollActivateHandler] Integration', () => {
       },
     });
 
+    const resident = await prisma.resident.create({
+      data: {
+        name: '일반유저',
+        contact: '01000000061',
+        building: '101',
+        unitNumber: '1001',
+        apartment: { connect: { id: apt.id } },
+        isRegistered: true,
+        approvalStatus: 'APPROVED',
+        residenceStatus: 'RESIDENCE',
+        isHouseholder: 'HOUSEHOLDER',
+      },
+    });
+
     const user = await prisma.user.create({
       data: {
         username: 'poll_user',
         password: 'pw',
         contact: '01000000061',
         name: '테스트유저',
-        email: TEST_USER,
+        email: USER_EMAIL,
         role: UserRole.USER,
         avatar: 'https://test.com/avatar.png',
+        resident: { connect: { id: resident.id } },
+        joinStatus: JoinStatus.APPROVED,
+        isActive: true,
       },
+    });
+
+    const admin = await prisma.user.create({
+      data: {
+        username: 'poll_admin',
+        password: 'pw',
+        contact: '01000000062',
+        name: '관리자',
+        email: ADMIN_EMAIL,
+        role: UserRole.ADMIN,
+        avatar: 'https://test.com/admin.png',
+        joinStatus: JoinStatus.APPROVED,
+        isActive: true,
+      },
+    });
+
+    await prisma.apartment.update({
+      where: { id: apt.id },
+      data: { admin: { connect: { id: admin.id } } },
     });
 
     const board = await prisma.board.create({
@@ -110,10 +149,10 @@ describe('[PollActivateHandler] Integration', () => {
       },
     });
 
-    return { user, board, apt };
+    return { apt, user, admin, board };
   };
 
-  it('startDate가 이미 지난 Poll은 즉시 IN_PROGRESS로 변경되어야 함', async () => {
+  it('startDate가 이미 지난 Poll은 즉시 IN_PROGRESS로 변경 + SSE 2회', async () => {
     const { user, board } = await createBaseEnv();
 
     const poll = await prisma.poll.create({
@@ -129,13 +168,15 @@ describe('[PollActivateHandler] Integration', () => {
     });
 
     await activateReadyPolls();
-    const updated = await prisma.poll.findUnique({ where: { id: poll.id } });
 
+    const updated = await prisma.poll.findUnique({ where: { id: poll.id } });
     expect(updated?.status).toBe(PollStatus.IN_PROGRESS);
-    expect(sendSseNotification).toHaveBeenCalledTimes(1);
+
+    // 주민 1 + 관리자 1
+    expect(sendSseToUser).toHaveBeenCalledTimes(2);
   });
 
-  it('startDate가 미래인 Poll은 변경되지 않아야 함', async () => {
+  it('startDate가 미래면 변경 X + SSE 없음', async () => {
     const { user, board } = await createBaseEnv();
 
     const poll = await prisma.poll.create({
@@ -151,13 +192,13 @@ describe('[PollActivateHandler] Integration', () => {
     });
 
     await activateReadyPolls();
-    const unchanged = await prisma.poll.findUnique({ where: { id: poll.id } });
 
+    const unchanged = await prisma.poll.findUnique({ where: { id: poll.id } });
     expect(unchanged?.status).toBe(PollStatus.PENDING);
-    expect(sendSseNotification).not.toHaveBeenCalled();
+    expect(sendSseToUser).not.toHaveBeenCalled();
   });
 
-  it('startDate가 3초 내라면 setTimeout 예약이 생성되어야 함', async () => {
+  it('startDate가 3초 내이면 setTimeout 예약 + 실행 완료 후 IN_PROGRESS + SSE 2회', async () => {
     const { user, board } = await createBaseEnv();
 
     await prisma.poll.create({
@@ -174,30 +215,37 @@ describe('[PollActivateHandler] Integration', () => {
 
     let capturedDelay: number | undefined;
 
-    const setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(((
-      fn: (...args: any[]) => void,
-      delay?: number,
-      ...args: any[]
-    ) => {
+    // Prisma 깨지지 않게 fakeTimers 쓰지 말고 setTimeout만 직접 가로챔
+    // + setTimeout 콜백이 async일 수 있으니, 반환 Promise를 모아서 await
+    const pending: Promise<any>[] = [];
+    const originalSetTimeout = globalThis.setTimeout;
+
+    (globalThis as any).setTimeout = ((fn: (...args: any[]) => any, delay?: number, ...args: any[]) => {
       capturedDelay = delay as number;
 
-      // 타이머 즉시 실행
-      fn(...args);
+      const ret = fn(...args);
+      if (ret && typeof ret.then === 'function') pending.push(ret);
 
-      // fake timer id 반환
       return 0 as unknown as NodeJS.Timeout;
-    }) as unknown as typeof setTimeout);
+    }) as typeof setTimeout;
 
-    await activateReadyPolls();
+    try {
+      await activateReadyPolls();
 
-    expect(setTimeoutSpy).toHaveBeenCalled();
-    expect(typeof capturedDelay).toBe('number');
-    expect(capturedDelay!).toBeGreaterThanOrEqual(2500);
-    expect(capturedDelay!).toBeLessThanOrEqual(3500);
+      // setTimeout 콜백 내부 작업(activatePoll + 알림 전송)까지 완전히 끝날 때까지 대기
+      await Promise.all(pending);
+      await new Promise(setImmediate);
 
-    const updated = await prisma.poll.findFirst({ where: { title: '직후 예약 투표' } });
-    expect(updated?.status).toBe(PollStatus.IN_PROGRESS);
+      expect(typeof capturedDelay).toBe('number');
+      expect(capturedDelay!).toBeGreaterThanOrEqual(2500);
+      expect(capturedDelay!).toBeLessThanOrEqual(3500);
 
-    setTimeoutSpy.mockRestore();
+      const updated = await prisma.poll.findFirst({ where: { title: '직후 예약 투표' } });
+      expect(updated?.status).toBe(PollStatus.IN_PROGRESS);
+
+      expect(sendSseToUser).toHaveBeenCalledTimes(2);
+    } finally {
+      globalThis.setTimeout = originalSetTimeout;
+    }
   });
 });
