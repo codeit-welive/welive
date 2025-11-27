@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { getBuildingPermission } from '@/shared/lib/getBuildingPermission';
 import { deleteVoting } from '@/entities/voting/api/voting.api';
 import { useAuthStore } from '@/shared/store/auth.store';
+import { formatDateToKST } from '@/shared/lib/formatDateToKST';
 
 type Props = {
   data: VotingList[];
@@ -22,7 +23,8 @@ export default function VotingTable({ data, currentPage, itemsPerPage, totalCoun
   const tdClass = 'p-3 text-center text-gray-500';
   const thClass = 'p-3 font-medium';
 
-  const formatISODateToDisplay = (isoString: string) => {
+  // 기본 제공된 코드이나 사용되지 않기에 주석 처리함
+  /* const formatISODateToDisplay = (isoString: string) => {
     const date = new Date(isoString);
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -30,7 +32,7 @@ export default function VotingTable({ data, currentPage, itemsPerPage, totalCoun
     const hh = String(date.getHours()).padStart(2, '0');
     const mm = String(date.getMinutes()).padStart(2, '0');
     return `${y}-${m}-${d} ${hh}:${mm}`;
-  };
+  }; */
 
   const isVotingInProgress = (start: string, end: string) => {
     const startDate = new Date(start);
@@ -99,10 +101,10 @@ export default function VotingTable({ data, currentPage, itemsPerPage, totalCoun
             <th className={thClass}>제목</th>
             <th className={thClass}>작성자</th>
             <th className={thClass}>투표권자</th>
-            <th className={thClass}>작성일시</th>
-            <th className={thClass}>투표시작</th>
-            <th className={thClass}>투표종료</th>
-            <th className={thClass}>투표상태</th>
+            <th className={thClass}>작성 일시</th>
+            <th className={thClass}>투표 시작</th>
+            <th className={thClass}>투표 종료</th>
+            <th className={thClass}>투표 상태</th>
             {isAdminPage && <th className={thClass}>비고</th>}
           </tr>
         </thead>
@@ -134,9 +136,9 @@ export default function VotingTable({ data, currentPage, itemsPerPage, totalCoun
                 </td>
                 <td className={tdClass}>{item.writerName}</td>
                 <td className={tdClass}>{getBuildingPermission(item.buildingPermission)}</td>
-                <td className={tdClass}>{formatISODateToDisplay(item.createdAt)}</td>
-                <td className={tdClass}>{formatISODateToDisplay(item.startDate)}</td>
-                <td className={tdClass}>{formatISODateToDisplay(item.endDate)}</td>
+                <td className={tdClass}>{formatDateToKST(item.createdAt)}</td>
+                <td className={tdClass}>{formatDateToKST(item.startDate)}</td>
+                <td className={tdClass}>{formatDateToKST(item.endDate)}</td>
                 <td className={tdClass}>
                   <VotingStatusChip type='process' status={item.status} />
                 </td>
