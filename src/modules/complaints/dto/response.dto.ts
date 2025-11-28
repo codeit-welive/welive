@@ -44,3 +44,28 @@ export interface ComplaintListItemResponseDto {
   dong: string;
   ho: string;
 }
+
+// Prisma 결과 Raw 응답 DTO (repo 반환용)
+export interface ComplaintRawResponseDto {
+  id: string;
+  userId: string;
+  title: string;
+  status: ComplaintStatus;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  viewsCount: number;
+  content: string;
+  _count: { comments: number };
+  user: {
+    name: string;
+    resident: { building: string; unitNumber: string } | null;
+  };
+  comments: Array<{
+    id: string;
+    content: string;
+    createdAt: Date;
+    updatedAt: Date;
+    user: { id: string; name: string };
+  }>;
+}

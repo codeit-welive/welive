@@ -1,5 +1,6 @@
 import prisma from '../../core/prisma';
 import { ComplaintCreateDto, ComplaintPatchDto } from './dto/complaints.dto';
+import { ComplaintRawResponseDto } from './dto/response.dto';
 import { ComplaintListQuery } from './dto/querys.dto';
 import { buildComplaintWhereConditions } from './complaints.util';
 import { BoardType, ComplaintStatus } from '@prisma/client';
@@ -298,7 +299,10 @@ export const patch = async (complaintId: string, data: ComplaintPatchDto) => {
  * @param data - 변경할 상태 (ComplaintStatus)
  * @returns 상태가 변경된 민원 상세 정보 (작성자, 댓글 목록 포함)
  */
-export const patchStatus = async (complaintId: string, data: ComplaintStatus) => {
+export const patchStatus = async (
+  complaintId: string,
+  data: ComplaintStatus,
+): Promise<ComplaintRawResponseDto> => {
   return await prisma.complaint.update({
     where: { id: complaintId },
     data: {
