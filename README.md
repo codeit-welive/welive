@@ -19,7 +19,7 @@
 - GitHub Repository: https://github.com/codeit-welive/welive
 - 최종 발표 자료: https://www.canva.com/design/DAG5lY6qiKI/GFW3js2SBZA3F8Q9vJrkLg/edit
 - 시연 영상: https://drive.google.com/file/d/1C8UfyI5FkuQbRDflhq3Kx3OKuWppcZIU/view?usp=sharing
-- 팀 노션 문서: notion.so/234e98c187a680acbd98e3590dce1382?source=copy_link
+- 팀 노션 문서: https://notion.so/234e98c187a680acbd98e3590dce1382?source=copy_link
 
 ## 🛠 기술 스택
 
